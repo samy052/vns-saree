@@ -1,0 +1,62 @@
+:root {
+    --gold: #D4AF37;
+    --maroon: #800020;
+    --cream: #F5F1E8;
+    --dark-brown: #3D2817;
+}
+
+.brand-font {
+    font-family: 'Cinzel', serif;
+}
+
+.serif-text {
+    font-family: 'Playfair Display', serif;
+}
+
+/* 3D Effects */
+.saree-card-3d {
+    perspective: 1000px;
+}
+
+.saree-card-inner {
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+.saree-card-3d:hover .saree-card-inner {
+    transform: rotateY(10deg) rotateX(5deg) scale(1.02);
+}
+
+/* Animations */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.gold-shimmer {
+    background: linear-gradient(90deg, #D4AF37 0%, #F5E1A4 50%, #D4AF37 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+}
+
+/* Custom Checkbox */
+.filter-checkbox:checked {
+    background-color: var(--maroon);
+    border-color: var(--maroon);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--cream);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--maroon);
+    border-radius: 10px;
+}

@@ -1,0 +1,119 @@
+.brand-font {
+    font-family: 'Cinzel', serif;
+}
+
+.serif-text {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Scroll Reveal Animation */
+.reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Parallax Hero Image */
+.parallax-wrapper {
+    position: relative;
+    height: 80vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.parallax-bg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 120%;
+    background-image: url('https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80');
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+    filter: brightness(0.4);
+    will-change: transform;
+}
+
+/* 3D Hover Cards */
+.weaver-card {
+    perspective: 1000px;
+}
+
+.weaver-card-inner {
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+}
+
+.weaver-card:hover .weaver-card-inner {
+    transform: rotateY(10deg) rotateX(5deg);
+}
+
+/* Shimmering Text */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.gold-shimmer {
+    background: linear-gradient(90deg, #EAD186 0%, #FFF4D1 50%, #EAD186 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+}
+
+/* Hero Enhancements */
+.hero-glow-overlay {
+    background: linear-gradient(to bottom, rgba(20, 10, 5, 0.95) 0%, rgba(20, 10, 5, 0.4) 40%, rgba(20, 10, 5, 0.6) 70%, rgba(20, 10, 5, 0.95) 100%);
+}
+
+.pulse-layer {
+    animation: pulseGlow 10s ease-in-out infinite;
+    background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.15) 0%, transparent 60%);
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.15); }
+}
+
+.orb {
+    position: absolute;
+    background: radial-gradient(circle, #D4AF37 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(12px);
+    opacity: 0.3;
+    pointer-events: none;
+    animation: orbFloat 25s linear infinite;
+}
+
+@keyframes orbFloat {
+    0% { transform: translateY(110vh) translateX(-50px); }
+    100% { transform: translateY(-20vh) translateX(150px); }
+}
+
+.pattern-rotate {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6zM36 4V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    animation: patternShift 60s linear infinite;
+}
+
+@keyframes patternShift {
+    from { background-position: 0 0; }
+    to { background-position: 500px 500px; }
+}
+
+@keyframes heroFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-text-entry {
+    opacity: 0;
+    animation: heroFadeIn 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.3s;
+}

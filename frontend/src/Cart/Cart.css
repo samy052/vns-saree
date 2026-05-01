@@ -1,0 +1,36 @@
+.brand-font {
+    font-family: 'Cinzel', serif;
+}
+
+.serif-text {
+    font-family: 'Playfair Display', serif;
+}
+
+.checkout-btn-3d {
+    perspective: 1000px;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.checkout-btn-3d:hover {
+    transform: translateY(-4px) rotateX(5deg) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(128, 0, 32, 0.2);
+}
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+    animation: slideInUp 0.6s ease-out forwards;
+}
+
+.item-row:hover {
+    background-color: rgba(212, 175, 55, 0.03);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
