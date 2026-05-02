@@ -1,0 +1,64 @@
+.brand-font {
+    font-family: 'Cinzel', serif;
+}
+
+.serif-text {
+    font-family: 'Playfair Display', serif;
+}
+
+/* 3D Interactive Cards */
+.profile-card-3d {
+    perspective: 1000px;
+}
+
+.profile-card-inner {
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    transform-style: preserve-3d;
+}
+
+/* Loyalty Badge Float Animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* Custom Sidebar Active State */
+.sidebar-link.active {
+    background-color: #800020;
+    color: #D4AF37;
+    box-shadow: 0 10px 15px -3px rgba(128, 0, 32, 0.3);
+}
+
+.sidebar-link.active iconify-icon {
+    color: #D4AF37;
+}
+
+/* Shimmering Text */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.gold-shimmer {
+    background: linear-gradient(90deg, #D4AF37 0%, #F5E1A4 50%, #D4AF37 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+}
+
+/* Reveal Section Animation */
+.reveal-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s ease-out;
+}
+
+.reveal-section.reveal-active {
+    opacity: 1;
+    transform: translateY(0);
+}

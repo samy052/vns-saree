@@ -1,0 +1,60 @@
+.brand-font {
+    font-family: 'Cinzel', serif;
+}
+
+.serif-text {
+    font-family: 'Playfair Display', serif;
+}
+
+/* 3D Visual Rotation Effect */
+.product-3d-perspective {
+    perspective: 2000px;
+}
+
+.product-3d-frame {
+    transition: transform 0.1s ease-out;
+    transform-style: preserve-3d;
+}
+
+.gold-shimmer {
+    background: linear-gradient(90deg, #D4AF37 0%, #F5E1A4 50%, #D4AF37 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.reveal-up {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease-out;
+}
+
+.reveal-up.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Zoom Effect */
+.zoom-container {
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.zoom-image {
+    transition: transform 0.3s ease-out;
+}
+
+.zoom-container:hover .zoom-image {
+    transform: scale(1.5);
+}
+
+/* Custom Accordion transition */
+.accordion-content {
+    transition: all 0.4s ease-out;
+}
