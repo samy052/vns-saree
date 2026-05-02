@@ -1,25 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './Checkout.css';
 
 const Checkout = () => {
   const [activePayment, setActivePayment] = useState('card');
+  const rootRef = useRef(null);
 
   useEffect(() => {
     // Reveal animations on mount
-    const sections = document.querySelectorAll('section');
-    sections.forEach((section, index) => {
-      setTimeout(() => {
-        section.classList.add('reveal');
-      }, index * 100);
-    });
+    if (rootRef.current) {
+      const sections = rootRef.current.querySelectorAll('section');
+
+      sections.forEach((section, index) => {
+        setTimeout(() => {
+          section.classList.add('reveal');
+        }, index * 100);
+      });
+    }
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-[#F5F1E8]">
-      <Header activeItem="" />
+    <div className="relative min-h-screen flex flex-col bg-[#F5F1E8]" ref={rootRef}>
+
+
 
       <main className="flex-grow py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -236,8 +239,6 @@ const Checkout = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './Cart.css';
 
 const Cart = () => {
   return (
     <div className="min-h-screen bg-[#F5F1E8] flex flex-col">
-      <Header activeItem="cart" />
+
 
       <main className="flex-grow py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -191,8 +189,6 @@ const Cart = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

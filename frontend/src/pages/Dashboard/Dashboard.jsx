@@ -1,13 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const rootRef = useRef(null);
+
   useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
     // 3D Tilt Effect
-    const cards = document.querySelectorAll('.profile-card-3d');
+    const cards = root.querySelectorAll('.profile-card-3d');
+
     cards.forEach(card => {
       const inner = card.querySelector('.profile-card-inner');
       card.addEventListener('mousemove', (e) => {
@@ -34,12 +38,16 @@ const Dashboard = () => {
       });
     }, { threshold: 0.1 });
 
-    document.querySelectorAll('.reveal-section').forEach(section => observer.observe(section));
+    if (root) {
+      root.querySelectorAll('.reveal-section').forEach(section => observer.observe(section));
+    }
+
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-[#F5F1E8]">
-      <Header activeItem="account" />
+    <div className="relative min-h-screen flex flex-col bg-[#F5F1E8]" ref={rootRef}>
+
+
 
       <main className="flex-grow py-8 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -286,7 +294,6 @@ const Dashboard = () => {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 };

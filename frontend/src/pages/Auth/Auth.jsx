@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './Auth.css';
 
 const Auth = () => {
@@ -28,7 +26,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen relative flex flex-col overflow-x-hidden bg-[#F5F1E8]">
-      <Header activeItem="account" />
+
 
       <main className="flex-grow relative flex items-center justify-center py-12 lg:py-24 px-4">
         {/* Background Elements */}
@@ -245,8 +243,6 @@ const Auth = () => {
         </div>
 
       </main>
-
-      <Footer />
     </div>
   );
 };

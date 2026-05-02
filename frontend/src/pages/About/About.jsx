@@ -1,11 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './About.css';
 
 const About = () => {
+  const rootRef = useRef(null);
+  const parallaxRef = useRef(null);
+
   useEffect(() => {
+    const root = rootRef.current;
+    const parallax = parallaxRef.current;
+
     // Intersection Observer for Reveal Animations
     const observerOptions = {
       threshold: 0.1,
@@ -20,30 +24,34 @@ const About = () => {
       });
     }, observerOptions);
 
-    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    if (root) {
+      root.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    }
+
 
     // Parallax Effect for Hero
     const handleScroll = () => {
       const scrolled = window.pageYOffset;
-      const parallax = document.getElementById('hero-parallax');
       if (parallax) {
         parallax.style.transform = `translateY(${scrolled * 0.4}px)`;
       }
     };
+
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F1E8]">
-      <Header activeItem="about" />
+    <div className="min-h-screen flex flex-col bg-[#F5F1E8]" ref={rootRef}>
+
 
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="parallax-wrapper bg-[#140A05]">
           {/* Depth Layers */}
-          <div className="parallax-bg scale-110 opacity-60" id="hero-parallax"></div>
+          <div className="parallax-bg scale-110 opacity-60" ref={parallaxRef}></div>
+
           <div className="absolute inset-0 hero-glow-overlay z-[1]"></div>
           <div className="absolute inset-0 pulse-layer z-[2]"></div>
           <div className="absolute inset-0 pattern-rotate z-[1]"></div>
@@ -282,7 +290,7 @@ const About = () => {
         </section>
       </main>
 
-      <Footer />
+      {/* Footer removed, handled by Layout */}
     </div>
   );
 };

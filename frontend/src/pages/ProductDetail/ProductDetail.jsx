@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
@@ -9,10 +7,14 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeAccordion, setActiveAccordion] = useState('story');
 
+  const frameRef = useRef(null);
+  const perspectiveRef = useRef(null);
+  const rootRef = useRef(null);
+
   useEffect(() => {
-    // 3D Visual Rotation Simulation
-    const frame = document.querySelector('.product-3d-frame');
-    const perspective = document.querySelector('.product-3d-perspective');
+    const frame = frameRef.current;
+    const perspective = perspectiveRef.current;
+
 
     const handleMouseMove = (e) => {
       if (!perspective || !frame) return;
@@ -36,7 +38,6 @@ const ProductDetail = () => {
       perspective.addEventListener('mouseleave', handleMouseLeave);
     }
 
-    // Reveal Up Init
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -44,7 +45,11 @@ const ProductDetail = () => {
         }
       });
     }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal-up').forEach(el => observer.observe(el));
+
+    if (rootRef.current) {
+      rootRef.current.querySelectorAll('.reveal-up').forEach(el => observer.observe(el));
+    }
+
 
     return () => {
       if (perspective) {
@@ -67,9 +72,7 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#F5F1E8]">
-      <Header activeItem="collections" />
-
+    <div className="relative min-h-screen bg-[#F5F1E8]" ref={rootRef}>
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
         {/* Breadcrumbs */}
         <nav className="flex text-xs uppercase tracking-widest text-[#3D2817]/60 mb-8" aria-label="Breadcrumb">
@@ -86,8 +89,8 @@ const ProductDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Left: Image Gallery */}
           <div className="lg:col-span-7 flex flex-col md:flex-row-reverse gap-4">
-            <div className="flex-1 product-3d-perspective">
-              <div className="product-3d-frame relative bg-white rounded-xl shadow-2xl overflow-hidden border border-[#D4AF37]/20 group zoom-container">
+            <div className="flex-1 product-3d-perspective" ref={perspectiveRef}>
+              <div className="product-3d-frame relative bg-white rounded-xl shadow-2xl overflow-hidden border border-[#D4AF37]/20 group zoom-container" ref={frameRef}>
                 <img src={mainImage} alt="Main Product" className="w-full h-full object-cover zoom-image" />
                 <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-md p-2 rounded-full text-white pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                   <iconify-icon icon="lucide:rotate-3d" className="text-xl"></iconify-icon>
@@ -231,8 +234,6 @@ const ProductDetail = () => {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 };

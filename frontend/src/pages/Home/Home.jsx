@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './Home.css';
 
 const Home = () => {
+  const rootRef = useRef(null);
+
   useEffect(() => {
+    const root = rootRef.current;
+
     // Intersection Observer for reveal animations
     const observerOptions = {
       threshold: 0.1
@@ -19,25 +21,31 @@ const Home = () => {
       });
     }, observerOptions);
 
-    document.querySelectorAll('.reveal-up, .avatar-reveal').forEach(el => observer.observe(el));
+    if (root) {
+      root.querySelectorAll('.reveal-up, .avatar-reveal').forEach(el => observer.observe(el));
+    }
+
 
     // Parallax effect
     const handleScroll = () => {
       const scrolled = window.pageYOffset;
-      
-      const heroImg = document.querySelector('.saree-card-inner img');
-      if (heroImg) {
-        heroImg.style.transform = `scale(1.1) translateY(${scrolled * 0.1}px)`;
+
+      if (root) {
+        const heroImg = root.querySelector('.saree-card-inner img');
+        if (heroImg) {
+          heroImg.style.transform = `scale(1.1) translateY(${scrolled * 0.1}px)`;
+        }
+
+        root.querySelectorAll('.parallax-bg').forEach(el => {
+          const speed = el.getAttribute('data-speed') || 0.05;
+          el.style.transform = `translateY(${scrolled * speed}px)`;
+        });
       }
-      
-      document.querySelectorAll('.parallax-bg').forEach(el => {
-        const speed = el.getAttribute('data-speed') || 0.05;
-        el.style.transform = `translateY(${scrolled * speed}px)`;
-      });
     };
 
+
     window.addEventListener('scroll', handleScroll);
-    
+
     // Cleanup
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -46,15 +54,15 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#F5F1E8]">
-      <Header activeItem="home" />
+    <div className="relative min-h-screen overflow-x-hidden bg-[#F5F1E8]" ref={rootRef}>
+
 
       <main>
         {/* Hero Section */}
         <section className="relative min-h-[90vh] flex items-center bg-[#F5F1E8] overflow-hidden">
           {/* Decorative background elements */}
           <div className="absolute top-0 right-0 w-1/3 h-full opacity-5 pointer-events-none parallax-bg" data-speed="0.05">
-            <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="background pattern" />
+            <img src="https://kashi.gov.in/assets/img/assi-ghat-1.jpg" className="w-full h-full object-cover" alt="background pattern" />
           </div>
 
           <div className="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -63,8 +71,8 @@ const Home = () => {
                 Handwoven in Kashi
               </span>
               <h1 className="text-6xl lg:text-8xl font-bold text-[#800020] leading-tight mb-6">
-                Authentic <br/>
-                <span className="gold-shimmer">Banarasi</span> <br/>
+                Authentic <br />
+                <span className="gold-shimmer">Banarasi</span> <br />
                 Elegance
               </h1>
               <p className="serif-text text-xl text-[#3D2817]/80 italic mb-10 max-w-lg">
@@ -175,7 +183,7 @@ const Home = () => {
         {/* Video/Heritage Showcase */}
         <section className="py-20 bg-[#3D2817] text-white relative overflow-hidden">
           <div className="absolute inset-0 opacity-20 parallax-bg" data-speed="0.12">
-             <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale" alt="pattern" />
+            <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale" alt="pattern" />
           </div>
           <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
             <h2 className="text-3xl md:text-5xl font-bold mb-8">Every thread tells a story of Banaras</h2>
@@ -311,7 +319,7 @@ const Home = () => {
         </section>
       </main>
 
-      <Footer />
+      {/* Footer removed, handled by Layout */}
     </div>
   );
 };

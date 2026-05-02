@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './Collection.css';
 
 const Collection = () => {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#F5F1E8]">
-      <Header activeItem="collections" />
+
 
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
         {/* Breadcrumbs */}
@@ -338,8 +336,6 @@ const Collection = () => {
           </form>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 };

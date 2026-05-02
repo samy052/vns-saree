@@ -1,23 +1,27 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/Header/Header';
-import Footer from '../components/Footer/Footer';
 import './OrderConfirmation.css';
 
 const OrderConfirmation = () => {
+  const rootRef = useRef(null);
+
   useEffect(() => {
     // Reveal animations on mount
-    const reveals = document.querySelectorAll('.reveal-up');
-    reveals.forEach((el, index) => {
-      setTimeout(() => {
-        el.classList.add('active');
-      }, index * 200);
-    });
+    if (rootRef.current) {
+      const reveals = rootRef.current.querySelectorAll('.reveal-up');
+
+      reveals.forEach((el, index) => {
+        setTimeout(() => {
+          el.classList.add('active');
+        }, index * 200);
+      });
+    }
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F5F1E8]">
-      <Header activeItem="" />
+    <div className="min-h-screen flex flex-col bg-[#F5F1E8]" ref={rootRef}>
+
+
 
       <main className="flex-grow py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -226,8 +230,6 @@ const OrderConfirmation = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
