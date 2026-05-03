@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, Trash2, X } from 'lucide-react';
 import './Coupons.css';
 
 export default function Coupons() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [coupons, setCoupons] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
+
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
+
+  const fetchCoupons = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/coupons');
+      const data = await response.json();
+      setCoupons(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -27,42 +45,37 @@ export default function Coupons() {
                 <th className="px-6 py-4">Code</th>
                 <th className="px-6 py-4">Discount</th>
                 <th className="px-6 py-4">Validity</th>
-                <th className="px-6 py-4">Usage</th>
+                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="text-xs divide-y divide-[#D4AF37]/5 bg-white">
-              <tr className="hover:bg-[#FAF8F6]/50 transition-colors">
-                <td className="px-6 py-4 font-bold text-[#800020] uppercase tracking-widest font-mono">DIWALI20</td>
-                <td className="px-6 py-4 font-medium text-[#4A3F35]">20% Off</td>
-                <td className="px-6 py-4 text-gray-500">Ends 15 Nov, 2024</td>
-                <td className="px-6 py-4 text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <span>124 / 500 Used</span>
-                    <div className="w-16 h-1 bg-[#D4AF37]/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#D4AF37] rounded-full" style={{ width: '25%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right space-x-3">
-                  <button className="text-gray-400 hover:text-[#D4AF37] transition-colors"><Eye className="w-4 h-4 inline" /></button>
-                  <button className="text-gray-400 hover:text-[#800020] transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
-                </td>
-              </tr>
-              <tr className="hover:bg-[#FAF8F6]/50 transition-colors">
-                <td className="px-6 py-4 font-bold text-[#800020] uppercase tracking-widest font-mono">WELCOME10</td>
-                <td className="px-6 py-4 font-medium text-[#4A3F35]">10% Off</td>
-                <td className="px-6 py-4 text-gray-500">No Expiry</td>
-                <td className="px-6 py-4 text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <span>842 / ∞ Used</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right space-x-3">
-                  <button className="text-gray-400 hover:text-[#D4AF37] transition-colors"><Eye className="w-4 h-4 inline" /></button>
-                  <button className="text-gray-400 hover:text-[#800020] transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
-                </td>
-              </tr>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-10 text-center text-gray-400">Loading coupons...</td>
+                </tr>
+              ) : coupons.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="px-6 py-10 text-center text-gray-400">No coupons found.</td>
+                </tr>
+              ) : (
+                coupons.map((coupon) => (
+                  <tr key={coupon.id} className="hover:bg-[#FAF8F6]/50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-[#800020] uppercase tracking-widest font-mono">{coupon.code}</td>
+                    <td className="px-6 py-4 font-medium text-[#4A3F35]">{coupon.discount_percent}% Off</td>
+                    <td className="px-6 py-4 text-gray-500">{coupon.valid_until ? new Date(coupon.valid_until).toLocaleDateString() : 'No Expiry'}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border ${coupon.is_active ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                        {coupon.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-3">
+                      <button className="text-gray-400 hover:text-[#D4AF37] transition-colors"><Eye className="w-4 h-4 inline" /></button>
+                      <button className="text-gray-400 hover:text-[#800020] transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -1,15 +1,45 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 import './ProductDetail.css';
 
 const ProductDetail = () => {
-  const [mainImage, setMainImage] = useState('https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80');
+  const { slug } = useParams();
+  const { addToCart } = useCart();
+  const [product, setProduct] = useState(null);
+  const [products, setProducts] = useState([]); // For related products
+  const [loading, setLoading] = useState(true);
+  const [mainImage, setMainImage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [activeAccordion, setActiveAccordion] = useState('story');
 
   const frameRef = useRef(null);
   const perspectiveRef = useRef(null);
   const rootRef = useRef(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [prodRes, allRes] = await Promise.all([
+          fetch(`http://localhost:5001/api/products/${slug}`),
+          fetch(`http://localhost:5001/api/products`)
+        ]);
+        
+        if (!prodRes.ok) throw new Error('Product not found');
+        
+        const [prodData, allData] = await Promise.all([prodRes.json(), allRes.json()]);
+        
+        setProduct(prodData);
+        setMainImage(prodData.image_url);
+        setProducts(allData.filter(p => p.slug !== slug)); // Filter out current product
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [slug]);
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -71,6 +101,25 @@ const ProductDetail = () => {
     setActiveAccordion(prev => (prev === id ? null : id));
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F1E8]">
+        <p className="serif-text italic text-2xl text-[#800020] animate-pulse">Unveiling heritage...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F1E8]">
+        <div className="text-center">
+          <p className="serif-text italic text-2xl text-[#800020] mb-4">This masterpiece has moved.</p>
+          <Link to="/collection" className="text-[#D4AF37] font-bold uppercase tracking-widest border-b border-[#D4AF37]">Return to Collection</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen bg-[#F5F1E8]" ref={rootRef}>
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
@@ -81,7 +130,7 @@ const ProductDetail = () => {
             <iconify-icon icon="lucide:chevron-right"></iconify-icon>
             <li><Link to="/collection" className="hover:text-[#800020]">Collections</Link></li>
             <iconify-icon icon="lucide:chevron-right"></iconify-icon>
-            <li className="text-[#800020] font-bold">Katan Silk Pure</li>
+            <li className="text-[#800020] font-bold">{product.name}</li>
           </ol>
         </nav>
 
@@ -91,23 +140,20 @@ const ProductDetail = () => {
           <div className="lg:col-span-7 flex flex-col md:flex-row-reverse gap-4">
             <div className="flex-1 product-3d-perspective" ref={perspectiveRef}>
               <div className="product-3d-frame relative bg-white rounded-xl shadow-2xl overflow-hidden border border-[#D4AF37]/20 group zoom-container" ref={frameRef}>
-                <img src={mainImage} alt="Main Product" className="w-full h-full object-contain zoom-image" />
+                <img src={mainImage} alt={product.name} className="w-full h-full object-contain zoom-image" />
                 <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-md p-2 rounded-full text-white pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                   <iconify-icon icon="lucide:rotate-3d" className="text-xl"></iconify-icon>
                 </div>
-                <div className="absolute top-6 left-6 bg-[#800020] text-[#D4AF37] px-4 py-1 font-bold text-sm tracking-widest shadow-lg">
-                  22% OFF
-                </div>
+                {product.discount_percent && (
+                  <div className="absolute top-6 left-6 bg-[#800020] text-[#D4AF37] px-4 py-1 font-bold text-sm tracking-widest shadow-lg">
+                    {product.discount_percent}% OFF
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-x-visible pb-4 md:pb-0">
-              {[
-                'https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1610030469668-935142b96fe4?auto=format&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1589415413000-023a49261882?auto=format&fit=crop&q=80'
-              ].map((src, idx) => (
+              {[product.image_url].map((src, idx) => (
                 <button
                   key={idx}
                   onClick={() => changeImage(src)}
@@ -122,9 +168,9 @@ const ProductDetail = () => {
           {/* Right: Product Details */}
           <div className="lg:col-span-5 flex flex-col">
             <div className="mb-6">
-              <span className="text-[#D4AF37] font-bold text-xs uppercase tracking-[0.3em] mb-2 block">Handwoven Bridal Edit</span>
-              <h1 className="text-4xl md:text-5xl font-bold text-[#800020] mb-3 leading-tight uppercase">The Maharani's Heirloom</h1>
-              <p className="serif-text text-xl italic text-[#3D2817]/70 mb-4">Classic Maroon Pure Katan Silk with Gold Zari Brocade</p>
+              <span className="text-[#D4AF37] font-bold text-xs uppercase tracking-[0.3em] mb-2 block">{product.Variety?.name || 'Handwoven Edit'}</span>
+              <h1 className="text-4xl md:text-5xl font-bold text-[#800020] mb-3 leading-tight uppercase">{product.name}</h1>
+              <p className="serif-text text-xl italic text-[#3D2817]/70 mb-4">{product.Material?.name || 'Pure Silk'}</p>
               
               <div className="flex items-center space-x-2">
                 <div className="flex text-[#D4AF37]">
@@ -140,9 +186,13 @@ const ProductDetail = () => {
 
             <div className="bg-white/40 p-6 border border-[#D4AF37]/20 rounded-xl mb-8">
               <div className="flex items-baseline space-x-4 mb-1">
-                <span className="text-4xl font-bold text-[#3D2817]">₹42,500</span>
-                <span className="text-xl text-gray-400 line-through">₹55,000</span>
-                <span className="text-green-600 font-bold text-sm tracking-wider uppercase">SAVE ₹12,500</span>
+                <span className="text-4xl font-bold text-[#3D2817]">₹{Number(product.price).toLocaleString('en-IN')}</span>
+                {product.old_price && (
+                  <>
+                    <span className="text-xl text-gray-400 line-through">₹{Number(product.old_price).toLocaleString('en-IN')}</span>
+                    <span className="text-green-600 font-bold text-sm tracking-wider uppercase">SAVE ₹{Number(product.old_price - product.price).toLocaleString('en-IN')}</span>
+                  </>
+                )}
               </div>
               <p className="text-xs text-gray-500 italic uppercase tracking-widest">Incl. of all taxes & free worldwide shipping</p>
             </div>
@@ -159,10 +209,13 @@ const ProductDetail = () => {
                   </button>
                 </div>
 
-                <Link to="/cart" className="flex-1 h-14 bg-[#800020] text-[#D4AF37] flex items-center justify-center font-bold tracking-[0.2em] rounded-sm shadow-xl hover:bg-[#3D2817] transition-all transform hover:-translate-y-1 active:scale-95 group w-full md:w-auto">
+                <button 
+                  onClick={() => addToCart(product, quantity)}
+                  className="flex-1 h-14 bg-[#800020] text-[#D4AF37] flex items-center justify-center font-bold tracking-[0.2em] rounded-sm shadow-xl hover:bg-[#3D2817] transition-all transform hover:-translate-y-1 active:scale-95 group w-full md:w-auto"
+                >
                   <iconify-icon icon="lucide:shopping-bag" className="text-xl mr-3 group-hover:scale-110 transition-transform"></iconify-icon>
                   ADD TO SAC
-                </Link>
+                </button>
               </div>
 
               <div className="flex items-center space-x-6">
@@ -216,19 +269,14 @@ const ProductDetail = () => {
             <h2 className="text-3xl font-bold text-[#800020] uppercase brand-font">Complementary Weaves</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { title: 'Golden Organza Pure', price: '28,900', img: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80' },
-              { title: 'Emerald Buta Silk', price: '34,200', img: 'https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80' },
-              { title: 'Tussar Heritage Mix', price: '22,500', img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80' },
-              { title: 'Midnight Jaal Work', price: '48,900', img: 'https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80' }
-            ].map((p, i) => (
-              <div key={i} className="group cursor-pointer bg-white p-3 rounded-xl shadow-sm border border-[#D4AF37]/10 hover:shadow-xl transition-all">
+            {products.slice(0, 4).map((p) => (
+              <div key={p.id} className="group cursor-pointer bg-white p-3 rounded-xl shadow-sm border border-[#D4AF37]/10 hover:shadow-xl transition-all">
                 <div className="relative overflow-hidden aspect-[3/4] mb-4 rounded-lg">
-                  <img src={p.img} className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" alt={p.title} />
+                  <img src={p.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.name} />
                 </div>
-                <h3 className="brand-font text-lg text-[#800020] mb-1">{p.title}</h3>
-                <p className="text-sm text-[#3D2817] font-bold">₹{p.price}</p>
-                <button className="mt-4 w-full py-2 border border-[#800020] text-[#800020] text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-[#800020] hover:text-white transition-all">VIEW PIECE</button>
+                <h3 className="brand-font text-lg text-[#800020] mb-1">{p.name}</h3>
+                <p className="text-sm text-[#3D2817] font-bold">₹{Number(p.price).toLocaleString('en-IN')}</p>
+                <Link to={`/product/${p.slug}`} className="mt-4 block w-full py-2 border border-[#800020] text-[#800020] text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-[#800020] hover:text-white text-center transition-all">VIEW PIECE</Link>
               </div>
             ))}
           </div>

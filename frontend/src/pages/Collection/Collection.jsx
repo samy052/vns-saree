@@ -1,7 +1,31 @@
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Collection.css';
 
 const Collection = () => {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [prodRes, catRes] = await Promise.all([
+          fetch('http://localhost:5001/api/products'),
+          fetch('http://localhost:5001/api/categories')
+        ]);
+        const [prodData, catData] = await Promise.all([prodRes.json(), catRes.json()]);
+        setProducts(prodData);
+        setCategories(catData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#F5F1E8]">
 
@@ -38,22 +62,12 @@ const Collection = () => {
             <div>
               <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#800020] mb-6 border-b border-[#D4AF37]/30 pb-2">Category</h4>
               <div className="space-y-4">
-                <label className="flex items-center group cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 text-[#800020] focus:ring-[#800020] rounded-sm" />
-                  <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020] transition-colors">Bridal Classics</span>
-                </label>
-                <label className="flex items-center group cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 text-[#800020] focus:ring-[#800020] rounded-sm" />
-                  <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020] transition-colors">Festival Silks</span>
-                </label>
-                <label className="flex items-center group cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 text-[#800020] focus:ring-[#800020] rounded-sm" />
-                  <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020] transition-colors">Traditional Katan</span>
-                </label>
-                <label className="flex items-center group cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 text-[#800020] focus:ring-[#800020] rounded-sm" />
-                  <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020] transition-colors">Contemporary Fusion</span>
-                </label>
+                {categories.map((cat) => (
+                  <label key={cat.id} className="flex items-center group cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 text-[#800020] focus:ring-[#800020] rounded-sm" />
+                    <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020] transition-colors">{cat.name}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -108,200 +122,52 @@ const Collection = () => {
           {/* Product Grid */}
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {/* Product Card 1 */}
-              <div className="saree-card-3d">
-                <div className="saree-card-inner group">
-                  <Link to="/product/royal-crimson" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Crimson Katan Silk" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                    <div className="absolute top-4 right-4 z-10">
-                      <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
-                        <iconify-icon icon="lucide:heart"></iconify-icon>
-                      </button>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                      <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <span className="ml-1 text-white opacity-80">(24)</span>
+              {loading ? (
+                <div className="col-span-full text-center py-20">
+                  <p className="serif-text italic text-gray-500">Unveiling masterpieces...</p>
+                </div>
+              ) : products.length === 0 ? (
+                <div className="col-span-full text-center py-20">
+                  <p className="serif-text italic text-gray-500">No pieces found in this collection.</p>
+                </div>
+              ) : (
+                products.map((product) => (
+                  <div key={product.id} className="saree-card-3d">
+                    <div className="saree-card-inner group">
+                      <Link to={`/product/${product.slug}`} className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
+                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <div className="absolute top-4 right-4 z-10">
+                          <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
+                            <iconify-icon icon="lucide:heart"></iconify-icon>
+                          </button>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
+                          <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
+                            <iconify-icon icon="mdi:star"></iconify-icon>
+                            <iconify-icon icon="mdi:star"></iconify-icon>
+                            <iconify-icon icon="mdi:star"></iconify-icon>
+                            <iconify-icon icon="mdi:star"></iconify-icon>
+                            <iconify-icon icon="mdi:star"></iconify-icon>
+                            <span className="ml-1 text-white opacity-80">(24)</span>
+                          </div>
+                        </div>
+                      </Link>
+                      <div className="mt-4 text-center px-2">
+                        <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider">{product.name}</h3>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">
+                          {product.Material?.name || 'Pure Silk'} • {product.Variety?.name || 'Handloom'}
+                        </p>
+                        <div className="flex items-center justify-center space-x-4 mb-4">
+                          <span className="text-xl font-bold text-[#3D2817]">₹{Number(product.price).toLocaleString('en-IN')}</span>
+                        </div>
+                        <button className="w-full py-3 border border-[#800020] text-[#800020] font-bold text-xs uppercase tracking-widest hover:bg-[#800020] hover:text-[#D4AF37] transition-all">
+                          Add to Cart
+                        </button>
                       </div>
                     </div>
-                  </Link>
-                  <div className="mt-4 text-center px-2">
-                    <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider">The Royal Crimson</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Pure Katan Silk • Handloom</p>
-                    <div className="flex items-center justify-center space-x-4 mb-4">
-                      <span className="text-xl font-bold text-[#3D2817]">₹45,999</span>
-                      <span className="text-sm text-gray-400 line-through">₹52,000</span>
-                    </div>
-                    <button className="w-full py-3 border border-[#800020] text-[#800020] font-bold text-xs uppercase tracking-widest hover:bg-[#800020] hover:text-[#D4AF37] transition-all">
-                      Add to Cart
-                    </button>
                   </div>
-                </div>
-              </div>
-
-              {/* Product Card 2 */}
-              <div className="saree-card-3d">
-                <div className="saree-card-inner group">
-                  <Link to="/product/ivory-moonlight" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Ivory Brocade" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                    <div className="absolute top-4 right-4 z-10">
-                      <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
-                        <iconify-icon icon="lucide:heart"></iconify-icon>
-                      </button>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                      <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star-half"></iconify-icon>
-                        <span className="ml-1 text-white opacity-80">(18)</span>
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="mt-4 text-center px-2">
-                    <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider">Ivory Moonlight</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Tissue Silk • Zari Border</p>
-                    <div className="flex items-center justify-center space-x-4 mb-4">
-                      <span className="text-xl font-bold text-[#3D2817]">₹32,500</span>
-                    </div>
-                    <button className="w-full py-3 border border-[#800020] text-[#800020] font-bold text-xs uppercase tracking-widest hover:bg-[#800020] hover:text-[#D4AF37] transition-all">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Product Card 3 */}
-              <div className="saree-card-3d">
-                <div className="saree-card-inner group">
-                  <Link to="/product/forest-legacy" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Forest Green Silk" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                    <div className="absolute top-4 right-4 z-10">
-                      <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
-                        <iconify-icon icon="lucide:heart"></iconify-icon>
-                      </button>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                      <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <span className="ml-1 text-white opacity-80">(42)</span>
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="mt-4 text-center px-2">
-                    <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider">Forest Legacy</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Guldavari Weave • Heavy Zari</p>
-                    <div className="flex items-center justify-center space-x-4 mb-4">
-                      <span className="text-xl font-bold text-[#3D2817]">₹58,900</span>
-                    </div>
-                    <button className="w-full py-3 border border-[#800020] text-[#800020] font-bold text-xs uppercase tracking-widest hover:bg-[#800020] hover:text-[#D4AF37] transition-all">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Product Card 4 */}
-              <div className="saree-card-3d">
-                <div className="saree-card-inner group">
-                  <Link to="/product/ancient-gold" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" alt="Gold Brocade" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                    <div className="absolute top-4 right-4 z-10">
-                      <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
-                        <iconify-icon icon="lucide:heart"></iconify-icon>
-                      </button>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                      <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <span className="ml-1 text-white opacity-80">(56)</span>
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="mt-4 text-center px-2">
-                    <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider">Ancient Gold</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Antique Zari • Khadi Silk</p>
-                    <div className="flex items-center justify-center space-x-4 mb-4">
-                      <span className="text-xl font-bold text-[#3D2817]">₹84,000</span>
-                    </div>
-                    <button className="w-full py-3 border border-[#800020] text-[#800020] font-bold text-xs uppercase tracking-widest hover:bg-[#800020] hover:text-[#D4AF37] transition-all">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Product Card 5 */}
-              <div className="saree-card-3d">
-                <div className="saree-card-inner group">
-                  <Link to="/product/mystic-violet" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80" alt="Deep Violet" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                      <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <span className="ml-1 text-white opacity-80">(12)</span>
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="mt-4 text-center px-2">
-                    <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider">Mystic Violet</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Georgette Banarasi • Silver Work</p>
-                    <div className="flex items-center justify-center space-x-4 mb-4">
-                      <span className="text-xl font-bold text-[#3D2817]">₹19,500</span>
-                    </div>
-                    <button className="w-full py-3 border border-[#800020] text-[#800020] font-bold text-xs uppercase tracking-widest hover:bg-[#800020] hover:text-[#D4AF37] transition-all">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Product Card 6 */}
-              <div className="saree-card-3d">
-                <div className="saree-card-inner group">
-                  <Link to="/product/nocturnal-bloom" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1610030469915-0248719b7a37?auto=format&fit=crop&q=80" alt="Midnight Black" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                      <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <iconify-icon icon="mdi:star"></iconify-icon>
-                        <span className="ml-1 text-white opacity-80">(31)</span>
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="mt-4 text-center px-2">
-                    <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider">Nocturnal Bloom</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">Tanchoi Weave • Pure Silk</p>
-                    <div className="flex items-center justify-center space-x-4 mb-4">
-                      <span className="text-xl font-bold text-[#3D2817]">₹27,800</span>
-                    </div>
-                    <button className="w-full py-3 border border-[#800020] text-[#800020] font-bold text-xs uppercase tracking-widest hover:bg-[#800020] hover:text-[#D4AF37] transition-all">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
+                ))
+              )}
             </div>
 
             {/* Pagination */}

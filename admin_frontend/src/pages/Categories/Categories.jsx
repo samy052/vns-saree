@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Pencil, Trash2, X, Upload } from 'lucide-react';
 import './Categories.css';
 
 export default function Categories() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const toggleModal = () => setIsModalOpen(!isModalOpen);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/categories');
+      const data = await response.json();
+      setCategories(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -25,37 +43,35 @@ export default function Categories() {
             <thead className="bg-[#FAF8F6] text-[10px] uppercase font-bold text-gray-400 border-b border-[#D4AF37]/10">
               <tr>
                 <th className="px-6 py-4">Category Name</th>
-                <th className="px-6 py-4">Description</th>
-                <th className="px-6 py-4">Products Count</th>
+                <th className="px-6 py-4">Slug</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="text-xs divide-y divide-[#D4AF37]/5 bg-white">
-              <tr className="hover:bg-[#FAF8F6]/50 transition-colors">
-                <td className="px-6 py-4 font-bold text-[#4A3F35]">Bridal Wear</td>
-                <td className="px-6 py-4 text-gray-500">Exclusive heavy zari work sarees for weddings.</td>
-                <td className="px-6 py-4 font-bold text-[#D4AF37]">48 Pieces</td>
-                <td className="px-6 py-4">
-                  <span className="px-2 py-1 bg-green-50 text-green-700 rounded text-[9px] font-bold uppercase tracking-wider border border-green-100">Active</span>
-                </td>
-                <td className="px-6 py-4 text-right space-x-3">
-                  <button className="text-gray-400 hover:text-[#D4AF37] transition-colors"><Pencil className="w-4 h-4 inline" /></button>
-                  <button className="text-gray-400 hover:text-[#800020] transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
-                </td>
-              </tr>
-              <tr className="hover:bg-[#FAF8F6]/50 transition-colors">
-                <td className="px-6 py-4 font-bold text-[#4A3F35]">Festival Collection</td>
-                <td className="px-6 py-4 text-gray-500">Vibrant, lightweight silks perfect for festive occasions.</td>
-                <td className="px-6 py-4 font-bold text-[#D4AF37]">32 Pieces</td>
-                <td className="px-6 py-4">
-                  <span className="px-2 py-1 bg-green-50 text-green-700 rounded text-[9px] font-bold uppercase tracking-wider border border-green-100">Active</span>
-                </td>
-                <td className="px-6 py-4 text-right space-x-3">
-                  <button className="text-gray-400 hover:text-[#D4AF37] transition-colors"><Pencil className="w-4 h-4 inline" /></button>
-                  <button className="text-gray-400 hover:text-[#800020] transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
-                </td>
-              </tr>
+              {loading ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-10 text-center text-gray-400">Loading categories...</td>
+                </tr>
+              ) : categories.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-6 py-10 text-center text-gray-400">No categories found.</td>
+                </tr>
+              ) : (
+                categories.map((category) => (
+                  <tr key={category.id} className="hover:bg-[#FAF8F6]/50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-[#4A3F35]">{category.name}</td>
+                    <td className="px-6 py-4 text-gray-500">{category.slug}</td>
+                    <td className="px-6 py-4">
+                      <span className="px-2 py-1 bg-green-50 text-green-700 rounded text-[9px] font-bold uppercase tracking-wider border border-green-100">Active</span>
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-3">
+                      <button className="text-gray-400 hover:text-[#D4AF37] transition-colors"><Pencil className="w-4 h-4 inline" /></button>
+                      <button className="text-gray-400 hover:text-[#800020] transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

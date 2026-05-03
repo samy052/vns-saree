@@ -1,9 +1,24 @@
-import { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
 
 const Home = () => {
   const rootRef = useRef(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:5001/api/products')
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data.slice(0, 4)); // Get first 4 for featured
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching products:', err);
+        setLoading(false);
+      });
+  }, []);
 
  useEffect(() => {
   const root = rootRef.current;
@@ -144,59 +159,30 @@ const Home = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {/* Collection Card 1 */}
-              <div className="group cursor-pointer">
-                <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
-                  <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Bridal Collection" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                  <span className="absolute top-4 left-4 z-20 bg-[#D4AF37] text-[#800020] text-[10px] font-bold px-2 py-1 rounded-sm animate-pulse-gold uppercase tracking-tighter">Heritage Pick</span>
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                    <Link to="/collection" id="coll-bridal" className="block w-full py-2 bg-[#D4AF37] text-white text-center text-sm font-bold tracking-widest">VIEW COLLECTION</Link>
-                  </div>
+              {loading ? (
+                <div className="col-span-full text-center py-20">
+                  <p className="serif-text italic text-gray-600">Selecting the finest threads...</p>
                 </div>
-                <h3 className="brand-font text-xl text-[#800020] mb-1">Bridal Masterpieces</h3>
-                <p className="text-xs text-gray-500 tracking-wider">Katarn Silk & Zari</p>
-              </div>
-
-              {/* Collection Card 2 */}
-              <div className="group cursor-pointer">
-                <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
-                  <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Festival Specials" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                  <span className="absolute top-4 left-4 z-20 bg-[#D4AF37] text-[#800020] text-[10px] font-bold px-2 py-1 rounded-sm animate-pulse-gold uppercase tracking-tighter">New Arrival</span>
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                    <Link to="/collection" id="coll-festival" className="block w-full py-2 bg-[#D4AF37] text-white text-center text-sm font-bold tracking-widest">VIEW COLLECTION</Link>
-                  </div>
+              ) : products.length === 0 ? (
+                <div className="col-span-full text-center py-20">
+                  <p className="serif-text italic text-gray-600">New masterpieces arriving soon.</p>
                 </div>
-                <h3 className="brand-font text-xl text-[#800020] mb-1">Festival Specials</h3>
-                <p className="text-xs text-gray-500 tracking-wider">Georgette & Chiffon</p>
-              </div>
-
-              {/* Collection Card 3 */}
-              <div className="group cursor-pointer">
-                <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
-                  <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Traditional Pure Silk" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                    <Link to="/collection" id="coll-pure" className="block w-full py-2 bg-[#D4AF37] text-white text-center text-sm font-bold tracking-widest">VIEW COLLECTION</Link>
+              ) : (
+                products.map((product) => (
+                  <div key={product.id} className="group cursor-pointer">
+                    <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
+                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      <span className="absolute top-4 left-4 z-20 bg-[#D4AF37] text-[#800020] text-[10px] font-bold px-2 py-1 rounded-sm animate-pulse-gold uppercase tracking-tighter">Signature Piece</span>
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                        <Link to={`/product/${product.slug}`} className="block w-full py-2 bg-[#D4AF37] text-white text-center text-sm font-bold tracking-widest uppercase">VIEW DETAILS</Link>
+                      </div>
+                    </div>
+                    <h3 className="brand-font text-xl text-[#800020] mb-1">{product.name}</h3>
+                    <p className="text-xs text-gray-500 tracking-wider">₹{Number(product.price).toLocaleString('en-IN')}</p>
                   </div>
-                </div>
-                <h3 className="brand-font text-xl text-[#800020] mb-1">Traditional Classics</h3>
-                <p className="text-xs text-gray-500 tracking-wider">Pure Organza Silks</p>
-              </div>
-
-              {/* Collection Card 4 */}
-              <div className="group cursor-pointer">
-                <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
-                  <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Contemporary Fusion" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                    <Link to="/collection" id="coll-fusion" className="block w-full py-2 bg-[#D4AF37] text-white text-center text-sm font-bold tracking-widest">VIEW COLLECTION</Link>
-                  </div>
-                </div>
-                <h3 className="brand-font text-xl text-[#800020] mb-1">Contemporary Fusion</h3>
-                <p className="text-xs text-gray-500 tracking-wider">Linen Banarasi Blend</p>
-              </div>
+                ))
+              )}
             </div>
           </div>
         </section>

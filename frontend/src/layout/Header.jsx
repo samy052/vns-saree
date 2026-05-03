@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 import './Header.css';
 
 const Header = ({ activeItem }) => {
+  const { getCartCount } = useCart();
   return (
     <>
       {/* Top Notification Bar */}
@@ -52,7 +54,11 @@ const Header = ({ activeItem }) => {
               </Link>
               <Link to="/cart" className="relative hover:text-[#D4AF37] transition-all duration-300 transform hover:-translate-y-1 hover:scale-110">
                 <iconify-icon icon="lucide:shopping-bag" className="text-xl"></iconify-icon>
-                <span className="absolute -top-1.5 -right-1.5 bg-[#800020] text-[#D4AF37] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-md">2</span>
+                {getCartCount() > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-[#800020] text-[#D4AF37] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold shadow-md animate-bounce">
+                    {getCartCount()}
+                  </span>
+                )}
               </Link>
             </div>
           </div>
