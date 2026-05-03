@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
 const { sequelize } = require('../config/db');
+const EmailService = require('../services/EmailService');
 
 class OrderController {
   async createOrder(req, res) {
@@ -28,6 +29,10 @@ class OrderController {
       await OrderItem.bulkCreate(orderItems, { transaction: t });
 
       await t.commit();
+
+      // Send confirmation email (async)
+      EmailService.sendOrderConfirmation(order, items);
+
       res.status(201).json({ message: 'Order placed successfully', orderId: order.id });
     } catch (error) {
       await t.rollback();

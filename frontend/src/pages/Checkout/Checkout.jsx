@@ -46,40 +46,92 @@ const Checkout = () => {
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.address) {
+      alert("Please fill all shipping details.");
+      return;
+    }
+
     setLoading(true);
 
-    const orderData = {
-      customer_name: formData.fullName,
-      customer_email: formData.email,
-      address: formData.address,
-      city: formData.city,
-      pincode: formData.pincode,
-      phone: formData.phone,
-      total_amount: total,
-      items: cart.map(item => ({
-        id: item.id,
-        quantity: item.quantity,
-        price: item.price
-      }))
-    };
-
     try {
-      const response = await fetch('http://localhost:5001/api/orders', {
+      // 1. Create Razorpay Order on Backend
+      const orderResponse = await fetch('http://localhost:5001/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify({ amount: total })
       });
 
-      if (response.ok) {
-        clearCart();
-        navigate('/order-confirmation');
-      } else {
-        const error = await response.json();
-        alert(`Order failed: ${error.message}`);
-      }
+      const rzpOrder = await orderResponse.json();
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID, 
+        amount: rzpOrder.amount,
+        currency: "INR",
+        name: "Banaras Heritage",
+        description: "Heritage Saree Purchase",
+        order_id: rzpOrder.id,
+        handler: async function (response) {
+          // 3. Verify Payment on Backend
+          const verifyRes = await fetch('http://localhost:5001/api/razorpay/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            })
+          });
+
+          const verifyData = await verifyRes.json();
+
+          if (verifyData.success) {
+            // 4. Save Final Order to Database
+            const finalOrderData = {
+              customer_name: formData.fullName,
+              customer_email: formData.email,
+              address: formData.address,
+              city: formData.city,
+              pincode: formData.pincode,
+              phone: formData.phone,
+              total_amount: total,
+              items: cart.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+                price: item.price
+              }))
+            };
+
+            const dbRes = await fetch('http://localhost:5001/api/orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(finalOrderData)
+            });
+
+            if (dbRes.ok) {
+              clearCart();
+              navigate('/order-confirmation');
+            }
+          } else {
+            alert("Payment verification failed.");
+          }
+        },
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone
+        },
+        theme: {
+          color: "#800020"
+        }
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+
     } catch (err) {
-      console.error('Order error:', err);
-      alert('Network error while placing order.');
+      console.error('Payment error:', err);
+      alert('Error initiating payment.');
     } finally {
       setLoading(false);
     }
