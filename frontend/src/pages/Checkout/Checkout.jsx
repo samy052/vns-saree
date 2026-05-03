@@ -166,7 +166,7 @@ const Checkout = () => {
                     {/* Item 1 */}
                     <div className="flex items-center space-x-4">
                       <div className="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-[#F5F1E8]">
-                        <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="Saree" />
+                        <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" className="w-full h-full object-contain" alt="Saree" />
                       </div>
                       <div className="flex-grow">
                         <h4 className="text-xs font-bold text-[#3D2817] line-clamp-1 uppercase tracking-wider">Royal Crimson Katan Silk</h4>
@@ -177,7 +177,7 @@ const Checkout = () => {
                     {/* Item 2 */}
                     <div className="flex items-center space-x-4">
                       <div className="w-16 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-[#F5F1E8]">
-                        <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="Saree" />
+                        <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" className="w-full h-full object-contain" alt="Saree" />
                       </div>
                       <div className="flex-grow">
                         <h4 className="text-xs font-bold text-[#3D2817] line-clamp-1 uppercase tracking-wider">Emerald Meenakari Brocade</h4>

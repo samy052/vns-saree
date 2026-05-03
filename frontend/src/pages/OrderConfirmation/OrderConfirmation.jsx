@@ -97,7 +97,7 @@ const OrderConfirmation = () => {
                   {/* Item 1 */}
                   <div className="flex items-center gap-6 bg-white p-4 rounded-xl shadow-sm border border-[#D4AF37]/10">
                     <div className="w-24 h-32 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                      <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Royal Brocade" className="w-full h-full object-cover" />
+                      <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Royal Brocade" className="w-full h-full object-contain" />
                     </div>
                     <div className="flex-grow">
                       <div className="flex justify-between items-start">
@@ -116,7 +116,7 @@ const OrderConfirmation = () => {
                   {/* Item 2 */}
                   <div className="flex items-center gap-6 bg-white p-4 rounded-xl shadow-sm border border-[#D4AF37]/10">
                     <div className="w-24 h-32 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                      <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Organza Classic" className="w-full h-full object-cover" />
+                      <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Organza Classic" className="w-full h-full object-contain" />
                     </div>
                     <div className="flex-grow">
                       <div className="flex justify-between items-start">

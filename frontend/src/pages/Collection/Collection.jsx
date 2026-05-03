@@ -112,7 +112,7 @@ const Collection = () => {
               <div className="saree-card-3d">
                 <div className="saree-card-inner group">
                   <Link to="/product/royal-crimson" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Crimson Katan Silk" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Crimson Katan Silk" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute top-4 right-4 z-10">
                       <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
                         <iconify-icon icon="lucide:heart"></iconify-icon>
@@ -147,7 +147,7 @@ const Collection = () => {
               <div className="saree-card-3d">
                 <div className="saree-card-inner group">
                   <Link to="/product/ivory-moonlight" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Ivory Brocade" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Ivory Brocade" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute top-4 right-4 z-10">
                       <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
                         <iconify-icon icon="lucide:heart"></iconify-icon>
@@ -181,7 +181,7 @@ const Collection = () => {
               <div className="saree-card-3d">
                 <div className="saree-card-inner group">
                   <Link to="/product/forest-legacy" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Forest Green Silk" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Forest Green Silk" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute top-4 right-4 z-10">
                       <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
                         <iconify-icon icon="lucide:heart"></iconify-icon>
@@ -215,7 +215,7 @@ const Collection = () => {
               <div className="saree-card-3d">
                 <div className="saree-card-inner group">
                   <Link to="/product/ancient-gold" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" alt="Gold Brocade" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" alt="Gold Brocade" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute top-4 right-4 z-10">
                       <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
                         <iconify-icon icon="lucide:heart"></iconify-icon>
@@ -249,7 +249,7 @@ const Collection = () => {
               <div className="saree-card-3d">
                 <div className="saree-card-inner group">
                   <Link to="/product/mystic-violet" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80" alt="Deep Violet" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80" alt="Deep Violet" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
                       <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
                         <iconify-icon icon="mdi:star"></iconify-icon>
@@ -278,7 +278,7 @@ const Collection = () => {
               <div className="saree-card-3d">
                 <div className="saree-card-inner group">
                   <Link to="/product/nocturnal-bloom" className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                    <img src="https://images.unsplash.com/photo-1610030469915-0248719b7a37?auto=format&fit=crop&q=80" alt="Midnight Black" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1610030469915-0248719b7a37?auto=format&fit=crop&q=80" alt="Midnight Black" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
                       <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
                         <iconify-icon icon="mdi:star"></iconify-icon>
@@ -325,7 +325,7 @@ const Collection = () => {
       {/* Newsletter Section */}
       <section className="py-20 bg-[#3D2817] text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale" alt="pattern" />
+          <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-contain grayscale" alt="pattern" />
         </div>
         <div className="max-w-xl mx-auto text-center px-4 relative z-10">
           <h2 className="text-3xl font-bold mb-4 uppercase tracking-[0.2em] text-[#D4AF37] brand-font">Don't Miss a Weave</h2>

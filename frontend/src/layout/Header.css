@@ -14,3 +14,29 @@
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
 }
+
+/* Logo Animations */
+.maroon-shimmer {
+    background: linear-gradient(90deg, #800020 0%, #D81B43 20%, #800020 40%, #800020 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
+    transition: all 0.5s ease;
+}
+
+.group:hover .maroon-shimmer {
+    background: linear-gradient(90deg, #D4AF37 0%, #F5E1A4 20%, #D4AF37 40%, #D4AF37 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@keyframes tracking-breathe {
+    0%, 100% { letter-spacing: 0.5em; opacity: 0.8; }
+    50% { letter-spacing: 0.65em; opacity: 1; text-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
+}
+
+.animate-tracking-breathe {
+    animation: tracking-breathe 4s ease-in-out infinite;
+}
