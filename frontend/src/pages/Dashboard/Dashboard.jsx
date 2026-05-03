@@ -60,13 +60,13 @@ const Dashboard = () => {
 
           {/* User Hero Section */}
           <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-xl border border-[#D4AF37]/20 mb-12 flex flex-col md:flex-row items-center gap-10 overflow-hidden relative reveal-section">
-            <div className="absolute top-0 right-0 w-64 h-full opacity-5 pointer-events-none">
-              <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="pattern" />
+            <div className="absolute top-0 right-0 w-64 h-full opacity-15 pointer-events-none">
+              <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-contain" alt="pattern" />
             </div>
 
             <div className="relative flex-shrink-0">
               <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full border-4 border-[#D4AF37] p-1 shadow-2xl overflow-hidden bg-white">
-                <img src="https://i.pravatar.cc/150?u=aditirao" alt="Aditi Rao" className="w-full h-full object-cover rounded-full" />
+                <img src="https://i.pravatar.cc/150?u=aditirao" alt="Aditi Rao" className="w-full h-full object-contain rounded-full" />
               </div>
               <div className="absolute -bottom-2 -right-2 bg-[#800020] w-12 h-12 rounded-full flex items-center justify-center border-2 border-white animate-float">
                 <iconify-icon icon="mdi:crown" className="text-2xl text-[#D4AF37]"></iconify-icon>
@@ -167,7 +167,7 @@ const Dashboard = () => {
                   {/* Order Card 1 */}
                   <div className="bg-white rounded-2xl p-6 border border-[#D4AF37]/10 shadow-sm flex flex-col md:flex-row items-center gap-8 group hover:border-[#D4AF37]/30 transition-all">
                     <div className="w-24 h-32 rounded-xl overflow-hidden shadow-md flex-shrink-0">
-                      <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
                     </div>
                     <div className="flex-grow">
                       <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
@@ -197,7 +197,7 @@ const Dashboard = () => {
                   {/* Order Card 2 (Delivered) */}
                   <div className="bg-white/60 rounded-2xl p-6 border border-[#D4AF37]/10 shadow-sm flex flex-col md:flex-row items-center gap-8 opacity-80 group">
                     <div className="w-24 h-32 rounded-xl overflow-hidden shadow-md flex-shrink-0 grayscale-[50%] group-hover:grayscale-0 transition-all duration-500">
-                      <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-cover" />
+                      <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-contain" />
                     </div>
                     <div className="flex-grow">
                       <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
@@ -234,7 +234,7 @@ const Dashboard = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="group relative overflow-hidden rounded-2xl aspect-[3/4] shadow-lg">
-                      <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-4 flex flex-col justify-end">
                         <p className="text-white font-bold text-xs uppercase tracking-widest">Emerald Jaal</p>
                         <p className="text-[#D4AF37] text-[10px] font-bold">₹34,500</p>
@@ -244,7 +244,7 @@ const Dashboard = () => {
                       </button>
                     </div>
                     <div className="group relative overflow-hidden rounded-2xl aspect-[3/4] shadow-lg">
-                      <img src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <img src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-4 flex flex-col justify-end">
                         <p className="text-white font-bold text-xs uppercase tracking-widest">Midnight Silk</p>
                         <p className="text-[#D4AF37] text-[10px] font-bold">₹22,900</p>

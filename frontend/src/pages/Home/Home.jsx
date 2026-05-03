@@ -5,33 +5,31 @@ import './Home.css';
 const Home = () => {
   const rootRef = useRef(null);
 
-  useEffect(() => {
-    const root = rootRef.current;
+ useEffect(() => {
+  const root = rootRef.current;
+  if (!root) return;
 
-    // Intersection Observer for reveal animations
-    const observerOptions = {
-      threshold: 0.1
-    };
+  // 1. Intersection Observer (One-time reveal)
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+        // Ek baar animation ho gayi toh observe karna band kar do
+        observer.unobserve(entry.target); 
+      }
+    });
+  }, { threshold: 0.1 });
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('active');
-        }
-      });
-    }, observerOptions);
+  root.querySelectorAll('.reveal-up, .avatar-reveal').forEach(el => observer.observe(el));
 
-    if (root) {
-      root.querySelectorAll('.reveal-up, .avatar-reveal').forEach(el => observer.observe(el));
-    }
-
-
-    // Parallax effect
-    const handleScroll = () => {
-      const scrolled = window.pageYOffset;
-
-      if (root) {
+  // 2. Optimized Parallax
+  let ticking = false;
+  const handleScroll = () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrolled = window.pageYOffset;
         const heroImg = root.querySelector('.saree-card-inner img');
+        
         if (heroImg) {
           heroImg.style.transform = `scale(1.1) translateY(${scrolled * 0.1}px)`;
         }
@@ -40,18 +38,20 @@ const Home = () => {
           const speed = el.getAttribute('data-speed') || 0.05;
           el.style.transform = `translateY(${scrolled * speed}px)`;
         });
-      }
-    };
+        
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
 
+  window.addEventListener('scroll', handleScroll, { passive: true });
 
-    window.addEventListener('scroll', handleScroll);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      observer.disconnect();
-    };
-  }, []);
+  return () => {
+    window.removeEventListener('scroll', handleScroll);
+    observer.disconnect();
+  };
+}, []);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#F5F1E8]" ref={rootRef}>
@@ -59,30 +59,40 @@ const Home = () => {
 
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-[90vh] flex items-center bg-[#F5F1E8] overflow-hidden">
-          {/* Decorative background elements */}
-          <div className="absolute top-0 right-0 w-1/3 h-full opacity-5 pointer-events-none parallax-bg" data-speed="0.05">
-            <img src="https://kashi.gov.in/assets/img/assi-ghat-1.jpg" className="w-full h-full object-cover" alt="background pattern" />
-          </div>
+        <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+          {/* Background Image */}
+          <img 
+            src="https://images.pexels.com/photos/16747080/pexels-photo-16747080.jpeg?cs=srgb&dl=pexels-stijn-dijkstra-1306815-16747080.jpg&fm=jpg" 
+            className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none z-0" 
+            alt="Kashi Background" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#F5F1E8] via-transparent to-transparent z-0"></div>
 
-          <div className="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="z-10">
-              <span className="inline-block text-[#D4AF37] tracking-[0.4em] uppercase text-sm mb-4 font-bold">
-                Handwoven in Kashi
-              </span>
-              <h1 className="text-6xl lg:text-8xl font-bold text-[#800020] leading-tight mb-6">
-                Authentic <br />
-                <span className="gold-shimmer">Banarasi</span> <br />
-                Elegance
+          <div className="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+            <div className="flex flex-col justify-center">
+              <div className="overflow-hidden">
+                <span className="inline-block text-[#D4AF37] tracking-[0.4em] uppercase text-sm mb-4 font-bold animate-fade-in-up">
+                  Handwoven in Kashi
+                </span>
+              </div>
+              
+              <h1 className="text-6xl lg:text-8xl font-bold text-[#800020] leading-[1.1] mb-6 animate-fade-in-up delay-100">
+                <span className="animate-elegant-breath block">
+                  Authentic <br />
+                  <span className="gold-shimmer inline-block">Banarasi</span> <br />
+                  Elegance
+                </span>
               </h1>
-              <p className="serif-text text-xl text-[#3D2817]/80 italic mb-10 max-w-lg">
+              
+              <p className="serif-text text-xl text-[#3D2817]/80 italic mb-10 max-w-lg animate-fade-in-up delay-300">
                 Where six yards of pure silk meets the timeless craftsmanship of generations. Experience luxury that breathes heritage.
               </p>
-              <div className="flex flex-wrap gap-6">
-                <Link to="/collection" id="hero-cta-shop" className="px-8 py-4 bg-[#800020] text-[#D4AF37] font-bold rounded-sm border border-[#800020] hover:bg-transparent hover:text-[#800020] transition-all duration-300 shadow-xl shimmer-btn-wrap text-center">
+              
+              <div className="flex flex-wrap gap-6 animate-fade-in-up delay-500">
+                <Link to="/collection" id="hero-cta-shop" className="px-8 py-4 bg-[#800020] text-[#D4AF37] font-bold rounded-sm border border-[#800020] hover:bg-transparent hover:text-[#800020] transition-all duration-300 shadow-xl shimmer-btn-wrap text-center hover:scale-105 transform">
                   SHOP COLLECTION
                 </Link>
-                <a href="#" id="hero-cta-story" className="px-8 py-4 border border-[#800020] text-[#800020] font-bold rounded-sm hover:bg-[#800020] hover:text-white transition-all duration-300 shimmer-btn-wrap">
+                <a href="#" id="hero-cta-story" className="px-8 py-4 border border-[#800020] text-[#800020] font-bold rounded-sm hover:bg-[#800020] hover:text-white transition-all duration-300 shimmer-btn-wrap hover:scale-105 transform">
                   OUR HERITAGE
                 </a>
               </div>
@@ -91,18 +101,29 @@ const Home = () => {
             <div className="relative flex justify-center items-center">
               {/* 3D Floating Saree Visual */}
               <div className="relative saree-card-3d">
-                <div className="saree-card-inner w-[300px] h-[450px] lg:w-[400px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-[#D4AF37]/50 animate-float">
-                  <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Premium Banarasi Saree" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#3D2817]/80 to-transparent flex items-end p-8">
-                    <div className="text-white">
-                      <p className="text-[#D4AF37] text-xs font-bold tracking-widest mb-1">Katan Silk Pure</p>
-                      <h3 className="text-2xl font-bold">The Royal Brocade</h3>
+                <div className="saree-card-inner w-[300px] h-[450px] lg:w-[400px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl border-4 border-[#D4AF37]/50 animate-float relative z-10">
+                  <img src="https://tilfi.com/cdn/shop/products/KOH0003Red_Kashi_PureKatanSilkKashiGhatSaree_1200x.jpg?v=1689252962" alt="Premium Banarasi Saree" className="w-full h-full object-cover" />
+                  
+                  {/* Elegant Text Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#2D1B0E]/95 via-[#3D2817]/40 to-transparent flex items-end p-8 opacity-90 hover:opacity-100 transition-opacity duration-700">
+                    <div className="text-white transform translate-y-4 hover:translate-y-0 transition-transform duration-700 ease-out w-full">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="h-px bg-[#D4AF37] flex-grow transform origin-left scale-x-100 transition-transform duration-1000 delay-100"></div>
+                        <p className="text-[#D4AF37] text-[10px] font-bold tracking-[0.3em] uppercase whitespace-nowrap">Katan Silk Pure</p>
+                        <div className="h-px bg-[#D4AF37] flex-grow transform origin-right scale-x-100 transition-transform duration-1000 delay-100"></div>
+                      </div>
+                      <h3 className="text-3xl lg:text-4xl font-bold brand-font text-center drop-shadow-lg">The Royal Brocade</h3>
                     </div>
                   </div>
                 </div>
-                {/* Floating Gold accents */}
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-[#800020]/10 rounded-full blur-3xl"></div>
+                
+                {/* Dynamic Glowing Accents */}
+                <div className="absolute -top-16 -right-16 w-48 h-48 bg-gradient-to-br from-[#D4AF37]/20 to-transparent rounded-full blur-[40px] animate-pulse z-0 group-hover:from-[#D4AF37]/40 transition-colors duration-700"></div>
+                <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-gradient-to-tr from-[#800020]/20 to-transparent rounded-full blur-[50px] animate-pulse z-0 group-hover:from-[#800020]/40 transition-colors duration-700" style={{ animationDelay: '1.5s' }}></div>
+                
+                {/* Micro-animations (Sparkles) */}
+                <div className="absolute top-1/4 -right-6 w-2 h-2 bg-[#D4AF37] rounded-full shadow-[0_0_15px_#D4AF37] animate-ping z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-300"></div>
+                <div className="absolute bottom-1/3 -left-8 w-1.5 h-1.5 bg-[#D4AF37] rounded-full shadow-[0_0_10px_#D4AF37] animate-ping z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-700" style={{ animationDuration: '2s' }}></div>
               </div>
             </div>
           </div>
@@ -126,7 +147,7 @@ const Home = () => {
               {/* Collection Card 1 */}
               <div className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
-                  <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Bridal Collection" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Bridal Collection" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                   <span className="absolute top-4 left-4 z-20 bg-[#D4AF37] text-[#800020] text-[10px] font-bold px-2 py-1 rounded-sm animate-pulse-gold uppercase tracking-tighter">Heritage Pick</span>
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
@@ -140,7 +161,7 @@ const Home = () => {
               {/* Collection Card 2 */}
               <div className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
-                  <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" alt="Festival Specials" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Festival Specials" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                   <span className="absolute top-4 left-4 z-20 bg-[#D4AF37] text-[#800020] text-[10px] font-bold px-2 py-1 rounded-sm animate-pulse-gold uppercase tracking-tighter">New Arrival</span>
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
@@ -154,7 +175,7 @@ const Home = () => {
               {/* Collection Card 3 */}
               <div className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
-                  <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Traditional Pure Silk" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Traditional Pure Silk" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
                     <Link to="/collection" id="coll-pure" className="block w-full py-2 bg-[#D4AF37] text-white text-center text-sm font-bold tracking-widest">VIEW COLLECTION</Link>
@@ -167,7 +188,7 @@ const Home = () => {
               {/* Collection Card 4 */}
               <div className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-lg aspect-[3/4] mb-4 shadow-lg transition-transform duration-500 group-hover:-translate-y-2">
-                  <img src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80" alt="Contemporary Fusion" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Contemporary Fusion" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
                     <Link to="/collection" id="coll-fusion" className="block w-full py-2 bg-[#D4AF37] text-white text-center text-sm font-bold tracking-widest">VIEW COLLECTION</Link>
@@ -183,7 +204,7 @@ const Home = () => {
         {/* Video/Heritage Showcase */}
         <section className="py-20 bg-[#3D2817] text-white relative overflow-hidden">
           <div className="absolute inset-0 opacity-20 parallax-bg" data-speed="0.12">
-            <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale" alt="pattern" />
+            <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-contain grayscale" alt="pattern" />
           </div>
           <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
             <h2 className="text-3xl md:text-5xl font-bold mb-8">Every thread tells a story of Banaras</h2>
@@ -230,7 +251,7 @@ const Home = () => {
                 <p className="serif-text text-lg italic mb-8">"The intricate zari work is beyond my imagination. I wore it for my wedding and everyone couldn't stop praising the craftsmanship of this pure Katan silk."</p>
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 avatar-reveal">
-                    <img src="https://i.pravatar.cc/150?u=priya" alt="User" className="w-full h-full object-cover" />
+                    <img src="https://i.pravatar.cc/150?u=priya" alt="User" className="w-full h-full object-contain" />
                   </div>
                   <div>
                     <h4 className="font-bold text-[#3D2817]">Priya Sharma</h4>
@@ -251,7 +272,7 @@ const Home = () => {
                 <p className="serif-text text-lg italic mb-8">"Authentic Banarasi sarees are hard to find online, but Banaras Heritage is the real deal. The weight and texture of the silk speak volumes."</p>
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 avatar-reveal">
-                    <img src="https://i.pravatar.cc/150?u=ananya" alt="User" className="w-full h-full object-cover" />
+                    <img src="https://i.pravatar.cc/150?u=ananya" alt="User" className="w-full h-full object-contain" />
                   </div>
                   <div>
                     <h4 className="font-bold text-[#3D2817]">Ananya Reddy</h4>
@@ -272,7 +293,7 @@ const Home = () => {
                 <p className="serif-text text-lg italic mb-8">"Fastest shipping I've experienced. The packaging was royal, ensuring the delicate silk arrived in perfect condition. Truly a premium experience."</p>
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 avatar-reveal">
-                    <img src="https://i.pravatar.cc/150?u=meera" alt="User" className="w-full h-full object-cover" />
+                    <img src="https://i.pravatar.cc/150?u=meera" alt="User" className="w-full h-full object-contain" />
                   </div>
                   <div>
                     <h4 className="font-bold text-[#3D2817]">Meera Kapoor</h4>
@@ -319,7 +340,6 @@ const Home = () => {
         </section>
       </main>
 
-      {/* Footer removed, handled by Layout */}
     </div>
   );
 };

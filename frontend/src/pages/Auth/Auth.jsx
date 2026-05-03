@@ -41,7 +41,7 @@ const Auth = () => {
           <div className="hidden lg:flex lg:w-1/2 relative bg-[#2D1B0E] p-12 flex-col justify-between overflow-hidden border-l border-[#D4AF37]/20">
             {/* Decorative Overlay */}
             <div className="absolute inset-0 opacity-20 grayscale pointer-events-none">
-              <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="pattern" />
+              <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-contain" alt="pattern" />
             </div>
 
             {/* Brand Logo Overlay */}
@@ -65,7 +65,7 @@ const Auth = () => {
               <p className="serif-text text-xl italic text-white/90 leading-relaxed mb-6">"Each saree is a piece of living history. The craftsmanship is so pure, it truly feels like royalty when draped."</p>
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 rounded-full border-2 border-[#D4AF37] overflow-hidden">
-                  <img src="https://i.pravatar.cc/150?u=aish" alt="User" className="w-full h-full object-cover" />
+                  <img src="https://i.pravatar.cc/150?u=aish" alt="User" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <p className="font-bold text-white tracking-wide">Aditi Varma</p>

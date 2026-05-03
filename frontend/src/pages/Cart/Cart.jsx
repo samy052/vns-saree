@@ -21,7 +21,7 @@ const Cart = () => {
               {/* Item 1 */}
               <div className="bg-white rounded-lg p-6 shadow-sm border border-[#D4AF37]/10 flex flex-col sm:flex-row items-center gap-6 item-row transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                 <div className="w-32 h-40 flex-shrink-0 rounded overflow-hidden shadow-md">
-                  <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1583391733956-6c7827448d08?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-contain" />
                 </div>
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="brand-font text-xl text-[#800020] mb-1">Katan Silk Pure</h3>
@@ -52,7 +52,7 @@ const Cart = () => {
               {/* Item 2 */}
               <div className="bg-white rounded-lg p-6 shadow-sm border border-[#D4AF37]/10 flex flex-col sm:flex-row items-center gap-6 item-row transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 <div className="w-32 h-40 flex-shrink-0 rounded overflow-hidden shadow-md">
-                  <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-contain" />
                 </div>
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="brand-font text-xl text-[#800020] mb-1">Organza Gold Zari</h3>
@@ -83,7 +83,7 @@ const Cart = () => {
               {/* Item 3 */}
               <div className="bg-white rounded-lg p-6 shadow-sm border border-[#D4AF37]/10 flex flex-col sm:flex-row items-center gap-6 item-row transition-all duration-300 animate-slide-up" style={{ animationDelay: '0.3s' }}>
                 <div className="w-32 h-40 flex-shrink-0 rounded overflow-hidden shadow-md">
-                  <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&q=80" alt="Saree" className="w-full h-full object-contain" />
                 </div>
                 <div className="flex-grow text-center sm:text-left">
                   <h3 className="brand-font text-xl text-[#800020] mb-1">Georgette Butidar</h3>

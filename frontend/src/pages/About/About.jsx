@@ -102,7 +102,7 @@ const About = () => {
               </div>
               <div className="relative reveal group">
                 <div className="aspect-square rounded-2xl overflow-hidden shadow-2xl transition-transform duration-700 group-hover:scale-105 border border-[#D4AF37]/20">
-                  <img src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80" alt="Vintage Weaving" className="w-full h-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80" alt="Vintage Weaving" className="w-full h-full object-contain" />
                 </div>
                 <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-[#D4AF37] p-1 rounded-xl shadow-2xl rotate-3">
                   <div className="w-full h-full bg-[#800020] flex flex-col items-center justify-center text-center p-4">
@@ -178,7 +178,7 @@ const About = () => {
               <div className="weaver-card reveal">
                 <div className="weaver-card-inner">
                   <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 group border border-white/10">
-                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex items-end">
                       <p className="text-[10px] tracking-widest leading-relaxed uppercase font-bold text-[#D4AF37]">Artisan since 1982</p>
                     </div>
@@ -192,7 +192,7 @@ const About = () => {
               <div className="weaver-card reveal" style={{ transitionDelay: '200ms' }}>
                 <div className="weaver-card-inner">
                   <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 group border border-white/10">
-                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex items-end">
                       <p className="text-[10px] tracking-widest leading-relaxed uppercase font-bold text-[#D4AF37]">3rd Gen Artisan</p>
                     </div>
@@ -206,7 +206,7 @@ const About = () => {
               <div className="weaver-card reveal" style={{ transitionDelay: '400ms' }}>
                 <div className="weaver-card-inner">
                   <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 group border border-white/10">
-                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80" className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex items-end">
                       <p className="text-[10px] tracking-widest leading-relaxed uppercase font-bold text-[#D4AF37]">Pattern Expert</p>
                     </div>
@@ -253,10 +253,10 @@ const About = () => {
               </div>
               <div className="lg:w-1/2 grid grid-cols-2 gap-4">
                 <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-2xl border border-white/10">
-                  <img src="https://images.unsplash.com/photo-1610030469915-0248719b7a37?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="Eco silk" />
+                  <img src="https://images.unsplash.com/photo-1610030469915-0248719b7a37?auto=format&fit=crop&q=80" className="w-full h-full object-contain" alt="Eco silk" />
                 </div>
                 <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-2xl mt-8 border border-white/10">
-                  <img src="https://images.unsplash.com/photo-1610030469668-935142b96fe4?auto=format&fit=crop&q=80" className="w-full h-full object-cover" alt="Handloom" />
+                  <img src="https://images.unsplash.com/photo-1610030469668-935142b96fe4?auto=format&fit=crop&q=80" className="w-full h-full object-contain" alt="Handloom" />
                 </div>
               </div>
             </div>
