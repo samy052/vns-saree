@@ -1,0 +1,47 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './layout/Layout';
+import Dashboard from './pages/Dashboard/Dashboard';
+import Users from './pages/Users/Users';
+import Products from './pages/Products/Products';
+import Categories from './pages/Categories/Categories';
+import Sizes from './pages/Sizes/Sizes';
+import Colors from './pages/Colors/Colors';
+import Fabrics from './pages/Fabrics/Fabrics';
+import Coupons from './pages/Coupons/Coupons';
+import Occasions from './pages/Occasions/Occasions';
+import Orders from './pages/Orders/Orders';
+import Inventory from './pages/Inventory/Inventory';
+import Reviews from './pages/Reviews/Reviews';
+import Analytics from './pages/Analytics/Analytics';
+import Payments from './pages/Payments/Payments';
+import Login from './pages/Auth/Login';
+import Profile from './pages/Profile/Profile';
+
+export default function App() {
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/sizes" element={<Sizes />} />
+          <Route path="/colors" element={<Colors />} />
+          <Route path="/fabrics" element={<Fabrics />} />
+          <Route path="/coupons" element={<Coupons />} />
+          <Route path="/occasions" element={<Occasions />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/payments" element={<Payments />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
+}
