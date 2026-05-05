@@ -1,13 +1,17 @@
 const Coupon = require('../models/Coupon');
 const Category = require('../models/Category');
+const Product = require('../models/Product');
+const Variety = require('../models/Variety');
+const Color = require('../models/Color');
+const Occasion = require('../models/Occasion');
 
 class CouponService {
   async getAllCoupons() {
-    return await Coupon.findAll({ include: Category });
+    return await Coupon.findAll();
   }
 
   async getCouponById(id) {
-    return await Coupon.findByPk(id, { include: Category });
+    return await Coupon.findByPk(id);
   }
 
   async getCouponByCode(code) {

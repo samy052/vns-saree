@@ -3,33 +3,38 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Folder,
+  GitBranch,
   Loader2,
   Layers,
+  AlertCircle,
+  ArrowRight,
   AlertTriangle,
   CheckCircle,
-  AlertCircle,
   Search,
 } from "lucide-react";
 import { API_ENDPOINTS } from "../../config/api";
-import "./Categories.css";
+import { useNavigate } from "react-router-dom";
+import "./Varieties.css";
 
-const INITIAL_FORM = { name: "", description: "" };
+const INITIAL_FORM = { name: "", description: "", category_id: "" };
 
-export default function Categories() {
-  const [categories, setCategories] = useState([]);
+export default function Varieties() {
+  const navigate = useNavigate();
   const [varieties, setVarieties] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingVariety, setEditingVariety] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Single modal system for all messages (success/error/confirm)
+  // Single modal system for all messages
   const [modal, setModal] = useState({
     show: false,
-    type: "info", // 'success' | 'error' | 'confirm' | 'warning' | 'danger'
+    type: "info",
     title: "",
     message: "",
     onConfirm: null,
@@ -44,31 +49,47 @@ export default function Categories() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [catRes, varRes] = await Promise.all([
-        fetch(API_ENDPOINTS.categories),
+      const [varRes, catRes, prodRes] = await Promise.all([
         fetch(API_ENDPOINTS.varieties),
+        fetch(API_ENDPOINTS.categories),
+        fetch(API_ENDPOINTS.products),
       ]);
 
-      let cats = await catRes.json();
       let vars = await varRes.json();
+      let cats = await catRes.json();
+      let prods = await prodRes.json();
 
       // Ensure arrays and sort by id descending (newest first)
-      if (!Array.isArray(cats)) cats = cats.data || [];
       if (!Array.isArray(vars)) vars = vars.data || [];
+      if (!Array.isArray(cats)) cats = cats.data || [];
+      if (!Array.isArray(prods)) prods = prods.data || [];
 
       // Sort by id descending - last added shows first
-      cats.sort((a, b) => b.id - a.id);
+      vars.sort((a, b) => b.id - a.id);
 
-      setCategories(cats);
       setVarieties(vars);
+      setCategories(cats);
+      setProducts(prods);
     } catch (err) {
-      showModal("error", "Error", "Failed to load data from server");
+      showModal(
+        "error",
+        "Error",
+        "Failed to load data from server",
+        closeModal,
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Unified modal handler
+  // Check if variety is linked to any products
+  const getLinkedProducts = (varietyId) => {
+    return products.filter((p) => p.variety_id === varietyId);
+  };
+
+  // Check if no categories - show redirect modal
+  const showNoCategoryModal = categories.length === 0 && !loading;
+
   const showModal = (
     type,
     title,
@@ -93,21 +114,34 @@ export default function Categories() {
     }, 200);
   };
 
-  // Filter categories based on search term
-  const filteredCategories = categories.filter(
-    (cat) =>
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (cat.description &&
-        cat.description.toLowerCase().includes(searchTerm.toLowerCase())),
-  );
+  const openFormModal = (variety = null) => {
+    // Check if categories exist before opening modal for new variety
+    if (!variety && categories.length === 0) {
+      showModal(
+        "error",
+        "No Categories Found",
+        "Please create at least one category before adding varieties.",
+        () => {
+          closeModal();
+          navigate("/categories");
+        },
+      );
+      return;
+    }
 
-  const openFormModal = (cat = null) => {
-    if (cat) {
-      setEditingCategory(cat);
-      setFormData({ name: cat.name, description: cat.description || "" });
+    if (variety) {
+      setEditingVariety(variety);
+      setFormData({
+        name: variety.name,
+        description: variety.description || "",
+        category_id: variety.category_id,
+      });
     } else {
-      setEditingCategory(null);
-      setFormData(INITIAL_FORM);
+      setEditingVariety(null);
+      // Pre-select category if filtered
+      const preSelectedCategory =
+        selectedCategory || (categories.length > 0 ? categories[0].id : "");
+      setFormData({ ...INITIAL_FORM, category_id: preSelectedCategory });
     }
     setIsModalOpen(true);
   };
@@ -120,17 +154,25 @@ export default function Categories() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!formData.category_id) {
+      showModal(
+        "error",
+        "Select Category",
+        "Please select a category first!",
+        closeModal,
+      );
+      return;
+    }
 
     const itemName = formData.name;
-    const slug = generateSlug(itemName);
+    const slug = editingVariety ? editingVariety.slug : generateSlug(itemName);
 
-    // Confirmation modal
     showModal(
       "confirm",
-      editingCategory ? "Update Category?" : "Create Category?",
-      editingCategory
+      editingVariety ? "Update Variety?" : "Create Variety?",
+      editingVariety
         ? `Are you sure you want to update "${itemName}"?`
-        : `Are you sure you want to create category "${itemName}"?`,
+        : `Are you sure you want to create variety "${itemName}"?`,
       async () => {
         setSubmitting(true);
         closeModal();
@@ -138,14 +180,15 @@ export default function Categories() {
         const payload = {
           name: formData.name,
           description: formData.description,
-          slug: editingCategory ? editingCategory.slug : slug,
+          category_id: parseInt(formData.category_id),
+          slug: slug,
         };
 
         try {
-          const url = editingCategory
-            ? `${API_ENDPOINTS.categories}/${editingCategory.id}`
-            : API_ENDPOINTS.categories;
-          const method = editingCategory ? "PUT" : "POST";
+          const url = editingVariety
+            ? `${API_ENDPOINTS.varieties}/${editingVariety.id}`
+            : API_ENDPOINTS.varieties;
+          const method = editingVariety ? "PUT" : "POST";
           const res = await fetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
@@ -155,20 +198,19 @@ export default function Categories() {
           if (res.ok) {
             await fetchData();
             setIsModalOpen(false);
-            // Success modal
             showModal(
               "success",
               "Success",
-              editingCategory
-                ? `Category "${itemName}" updated successfully!`
-                : `Category "${itemName}" created successfully!`,
+              editingVariety
+                ? `Variety "${itemName}" updated successfully!`
+                : `Variety "${itemName}" created successfully!`,
             );
           } else {
             const err = await res.json();
             showModal(
               "error",
               "Error",
-              err.message || "Failed to save category",
+              err.message || "Failed to save variety",
             );
           }
         } catch (err) {
@@ -181,49 +223,59 @@ export default function Categories() {
     );
   };
 
-  const checkAndConfirmDelete = (cat) => {
-    console.log("Delete clicked for category:", cat);
-    // Check if category has linked varieties
-    const linkedVarieties = varieties.filter((v) => v.category_id === cat.id);
+  const checkAndConfirmDelete = (variety) => {
+    console.log("Delete clicked for variety:", variety);
+    // Check if variety is linked to any products
+    const linkedProducts = getLinkedProducts(variety.id);
 
-    if (linkedVarieties.length > 0) {
+    if (linkedProducts.length > 0) {
+      // Show error modal - cannot delete
+      const productNames = linkedProducts
+        .slice(0, 3)
+        .map((p) => `• ${p.name}`)
+        .join("\n");
+      const moreCount =
+        linkedProducts.length > 3
+          ? `\n... and ${linkedProducts.length - 3} more products`
+          : "";
+
       showModal(
         "error",
-        "Cannot Delete Category",
-        `Category "${cat.name}" has ${linkedVarieties.length} linked variety(s):\n\n${linkedVarieties.map((v) => "• " + v.name).join("\n")}\n\nPlease delete the varieties first or reassign them to another category.`,
+        "Cannot Delete Variety",
+        `"${variety.name}" is linked to ${linkedProducts.length} product(s):\n\n${productNames}${moreCount}\n\nPlease remove these products or change their variety before deleting.`,
         closeModal,
       );
-    } else {
-      // Inline closure captures `cat` directly — avoids async state timing issues
-      showModal(
-        "danger",
-        "Delete Category?",
-        `Are you sure you want to delete "${cat.name}"?\n\nThis action cannot be undone.`,
-        async () => {
-          closeModal();
-          try {
-            const res = await fetch(
-              `${API_ENDPOINTS.categories}/${cat.id}`,
-              { method: "DELETE" },
-            );
-            if (res.ok) {
-              await fetchData();
-              showModal(
-                "success",
-                "Success",
-                `Category "${cat.name}" deleted successfully!`,
-              );
-            } else {
-              const err = await res.json();
-              showModal("error", "Error", err.message || "Failed to delete category");
-            }
-          } catch (err) {
-            showModal("error", "Error", "Network error. Please try again.");
-          }
-        },
-        closeModal,
-      );
+      return;
     }
+
+    // No linked products - show confirmation, inline closure captures `variety` directly
+    showModal(
+      "danger",
+      "Delete Variety?",
+      `Are you sure you want to delete "${variety.name}"?\n\nThis action cannot be undone.`,
+      async () => {
+        closeModal();
+        try {
+          const res = await fetch(`${API_ENDPOINTS.varieties}/${variety.id}`, {
+            method: "DELETE",
+          });
+          if (res.ok) {
+            await fetchData();
+            showModal(
+              "success",
+              "Success",
+              `Variety "${variety.name}" deleted successfully!`,
+            );
+          } else {
+            const err = await res.json();
+            showModal("error", "Error", err.message || "Failed to delete variety");
+          }
+        } catch (err) {
+          showModal("error", "Error", "Network error. Please try again.");
+        }
+      },
+      closeModal,
+    );
   };
 
   const getIcon = (type) => {
@@ -239,32 +291,45 @@ export default function Categories() {
     }
   };
 
+  // Filter varieties based on search and selected category
+  const filteredVarieties = varieties.filter((v) => {
+    const matchesCategory = selectedCategory
+      ? v.category_id === parseInt(selectedCategory)
+      : true;
+    const matchesSearch =
+      v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.description &&
+        v.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesCategory && matchesSearch;
+  });
+
   // Loading overlay - only covers content area
   if (loading) {
     return (
       <div className="relative min-h-[calc(100vh-120px)]">
-        {/* Content placeholder */}
         <div className="space-y-6 opacity-50 pointer-events-none">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-[#800020]">Categories</h1>
+              <h1 className="text-2xl font-bold text-[#800020]">Varieties</h1>
               <p className="text-sm text-gray-500 mt-1">
-                Broad product types (Saree, Suit, Lehenga, etc.)
+                Sub-types within each category
               </p>
             </div>
             <button className="px-6 py-2.5 bg-[#800020] text-white font-bold rounded-lg opacity-50">
-              Add Category
+              Add Variety
             </button>
           </div>
-          <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 h-20"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 h-20"></div>
+            <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 h-20 md:col-span-2"></div>
+          </div>
           <div className="bg-white rounded-xl border border-[#D4AF37]/20 h-96"></div>
         </div>
 
-        {/* Centered loader */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-[#D4AF37]/20 flex flex-col items-center">
             <Loader2 className="w-10 h-10 text-[#800020] animate-spin mb-4" />
-            <p className="text-[#4A3F35] font-medium">Loading categories...</p>
+            <p className="text-[#4A3F35] font-medium">Loading varieties...</p>
           </div>
         </div>
       </div>
@@ -276,9 +341,9 @@ export default function Categories() {
       {/* Header with Search */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#800020]">Categories</h1>
+          <h1 className="text-2xl font-bold text-[#800020]">Varieties</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Broad product types (Saree, Suit, etc.)
+            Sub-types within each category (Katan, Kadhwa, etc.)
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -289,31 +354,52 @@ export default function Categories() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search categories..."
+              placeholder="Search varieties..."
               className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] outline-none text-sm w-full sm:w-64"
             />
           </div>
           <button
             onClick={() => openFormModal()}
-            className="px-6 py-2.5 bg-[#800020] text-white font-bold rounded-lg flex items-center gap-2 hover:bg-[#6b001a] transition-colors whitespace-nowrap"
+            disabled={categories.length === 0}
+            className="px-6 py-2.5 bg-[#800020] text-white font-bold rounded-lg flex items-center gap-2 hover:bg-[#6b001a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" /> Add Category
+            <Plus className="w-4 h-4" /> Add Variety
           </button>
         </div>
       </div>
 
-      {/* Stats Card */}
-      <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-[#800020]/10 rounded-xl">
-            <Folder className="w-6 h-6 text-[#800020]" />
+      {/* Stats & Filter */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-[#800020]/10 rounded-xl">
+              <GitBranch className="w-6 h-6 text-[#800020]" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Total Varieties</p>
+              <p className="text-2xl font-bold text-[#4A3F35]">
+                {varieties.length}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Total Categories</p>
-            <p className="text-2xl font-bold text-[#4A3F35]">
-              {categories.length}
-            </p>
-          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm md:col-span-2">
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            Filter by Category
+          </label>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full mt-1.5 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] outline-none transition-all"
+          >
+            <option value="">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -329,10 +415,13 @@ export default function Categories() {
                 ID
               </th>
               <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                Category
+                Variety
               </th>
               <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                 Slug
+              </th>
+              <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                Category
               </th>
               <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                 Description
@@ -343,19 +432,21 @@ export default function Categories() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {filteredCategories.length === 0 ? (
+            {filteredVarieties.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-4 py-16 text-center">
+                <td colSpan="7" className="px-4 py-16 text-center">
                   <Layers className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">
-                    No categories found. Add your first category!
+                    {categories.length === 0
+                      ? "No categories found. Add categories first!"
+                      : "No varieties found. Add your first variety!"}
                   </p>
                 </td>
               </tr>
             ) : (
-              filteredCategories.map((cat, index) => (
+              filteredVarieties.map((v, index) => (
                 <tr
-                  key={cat.id}
+                  key={v.id}
                   className="hover:bg-gray-50/50 transition-colors"
                 >
                   <td className="px-4 py-4">
@@ -363,24 +454,31 @@ export default function Categories() {
                   </td>
                   <td className="px-4 py-4">
                     <span className="font-mono text-xs text-[#800020] bg-[#800020]/10 px-2 py-1 rounded font-bold">
-                      #{cat.id}
+                      #{v.id}
                     </span>
                   </td>
                   <td className="px-4 py-4">
-                    <span className="font-bold text-[#4A3F35]">{cat.name}</span>
+                    <span className="font-bold text-[#4A3F35]">{v.name}</span>
                   </td>
                   <td className="px-4 py-4">
                     <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      {cat.slug}
+                      {v.slug}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className="px-2.5 py-1 bg-[#800020]/10 text-[#800020] text-xs font-bold rounded-full">
+                      {v.Category?.name ||
+                        categories.find((c) => c.id === v.category_id)?.name ||
+                        "-"}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-sm text-gray-600 max-w-md">
-                    {cat.description || "-"}
+                    {v.description || "-"}
                   </td>
                   <td className="px-4 py-4 text-right">
                     <div className="flex justify-end gap-1">
                       <button
-                        onClick={() => openFormModal(cat)}
+                        onClick={() => openFormModal(v)}
                         className="p-2 text-gray-400 hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 rounded-lg transition-all"
                         title="Edit"
                       >
@@ -389,7 +487,7 @@ export default function Categories() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          checkAndConfirmDelete(cat);
+                          checkAndConfirmDelete(v);
                         }}
                         className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                         title="Delete"
@@ -405,7 +503,44 @@ export default function Categories() {
         </table>
       </div>
 
-      {/* Form Modal - Create/Edit */}
+      {/* No Category Modal - Forces redirect */}
+      {showNoCategoryModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6" />
+                <h2 className="text-lg font-bold">Category Required!</h2>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-gray-600">
+                Varieties are sub-types of Categories. You need to add at least
+                one <strong>Category</strong> first before creating varieties.
+              </p>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+                <strong>Example:</strong>
+                <ul className="mt-1 space-y-1">
+                  <li>• Category: "Banarasi Sarees"</li>
+                  <li>• Varieties: "Katan", "Kadhwa", "Tissue"</li>
+                </ul>
+              </div>
+            </div>
+            <div className="p-6 bg-gray-50 border-t flex justify-end gap-3 rounded-b-2xl">
+              <button
+                onClick={() => navigate("/categories")}
+                className="px-6 py-2.5 bg-[#800020] text-white font-bold rounded-lg flex items-center gap-2 hover:bg-[#6b001a] transition-colors"
+              >
+                Go to Categories
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Form Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -415,18 +550,48 @@ export default function Categories() {
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b bg-gradient-to-r from-[#800020] to-[#a0152d] text-white rounded-t-2xl">
               <h2 className="text-lg font-bold">
-                {editingCategory ? "Edit Category" : "New Category"}
+                {editingVariety ? "Edit Variety" : "New Variety"}
               </h2>
               <p className="text-white/80 text-sm mt-1">
-                {editingCategory
-                  ? "Update category details"
-                  : "Add a new product category"}
+                {editingVariety
+                  ? "Update variety details"
+                  : "Add a new variety to a category"}
               </p>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  Category Name *
+                  Category *
+                </label>
+                <select
+                  value={formData.category_id}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category_id: e.target.value })
+                  }
+                  required
+                  disabled={categories.length === 0}
+                  className="w-full mt-1.5 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] outline-none transition-all bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {categories.length === 0
+                      ? "No categories available"
+                      : "Select a category"}
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                {categories.length === 0 && (
+                  <p className="text-xs text-red-500 mt-1.5">
+                    Please create a category first before adding varieties.
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Variety Name *
                 </label>
                 <input
                   type="text"
@@ -436,7 +601,7 @@ export default function Categories() {
                   }
                   required
                   className="w-full mt-1.5 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] outline-none transition-all"
-                  placeholder="e.g., Banarasi Sarees"
+                  placeholder="e.g., Katan, Kadhwa, Tissue"
                 />
               </div>
               <div>
@@ -450,7 +615,7 @@ export default function Categories() {
                   }
                   rows={3}
                   className="w-full mt-1.5 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] outline-none transition-all resize-none"
-                  placeholder="Describe this category..."
+                  placeholder="Describe this variety..."
                 />
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t mt-6">
@@ -463,11 +628,13 @@ export default function Categories() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting || !formData.name.trim()}
+                  disabled={
+                    submitting || !formData.name.trim() || !formData.category_id
+                  }
                   className="px-5 py-2 bg-[#800020] text-white font-bold rounded-lg flex items-center gap-2 hover:bg-[#6b001a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {editingCategory ? "Update" : "Create"}
+                  {editingVariety ? "Update" : "Create"}
                 </button>
               </div>
             </form>
@@ -487,7 +654,6 @@ export default function Categories() {
             }
           />
           <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
-            {/* Header with dynamic color */}
             <div
               className={`px-6 py-4 border-b rounded-t-2xl ${
                 modal.type === "success"
@@ -505,16 +671,13 @@ export default function Categories() {
               </div>
             </div>
 
-            {/* Body */}
             <div className="p-6">
               <p className="text-gray-600 whitespace-pre-line leading-relaxed">
                 {modal.message}
               </p>
             </div>
 
-            {/* Footer */}
             <div className="p-6 bg-gray-50 border-t flex justify-end gap-3 rounded-b-2xl">
-              {/* Success/Error - Only OK button */}
               {(modal.type === "success" || modal.type === "error") && (
                 <button
                   onClick={closeModal}
@@ -528,7 +691,6 @@ export default function Categories() {
                 </button>
               )}
 
-              {/* Confirm/Warning - Cancel + Confirm */}
               {modal.type === "confirm" && (
                 <>
                   <button
@@ -538,7 +700,13 @@ export default function Categories() {
                     Cancel
                   </button>
                   <button
-                    onClick={modal.onConfirm}
+                    onClick={() => {
+                      console.log(
+                        "Confirm clicked, onConfirm:",
+                        modal.onConfirm,
+                      );
+                      modal.onConfirm && modal.onConfirm();
+                    }}
                     className="px-6 py-2 bg-[#800020] hover:bg-[#6b001a] text-white font-bold rounded-lg transition-colors"
                   >
                     Confirm
@@ -546,7 +714,6 @@ export default function Categories() {
                 </>
               )}
 
-              {/* Danger - Cancel + Delete */}
               {modal.type === "danger" && (
                 <>
                   <button
