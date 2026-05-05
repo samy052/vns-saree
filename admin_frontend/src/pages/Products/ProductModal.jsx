@@ -8,6 +8,11 @@ const ProductModal = ({
   formData,
   onInputChange,
   onColorStockChange,
+  onColorImageUpload,
+  onRemoveSavedColorImage,
+  onRemoveNewColorImage,
+  onCoverImageSelect,
+  newColorImageFiles,
   onSave,
   submitting,
   editingProduct,
@@ -19,6 +24,7 @@ const ProductModal = ({
 }) => {
   const navigate = useNavigate();
   const [colorSearch, setColorSearch] = React.useState("");
+  const [previewImage, setPreviewImage] = React.useState(null);
 
   if (!isOpen) return null;
 
@@ -39,7 +45,6 @@ const ProductModal = ({
 
   const isFormValid = 
     formData.name && 
-    formData.image_url && 
     formData.price && 
     formData.stock_quantity >= 0 && 
     formData.category_id && 
@@ -63,6 +68,11 @@ const ProductModal = ({
   const filteredColors = colors.filter(c => 
     c.name.toLowerCase().includes(colorSearch.toLowerCase())
   );
+  const currentStock = parseInt(formData.stock_quantity, 10) || 0;
+  const currentThreshold =
+    formData.low_stock_threshold === "" || formData.low_stock_threshold === null || formData.low_stock_threshold === undefined
+      ? 0
+      : (parseInt(formData.low_stock_threshold, 10) || 0);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -157,18 +167,6 @@ const ProductModal = ({
                 <div>
                   <label className={labelClasses(!isSelectionComplete)}>Short Tagline</label>
                   <input type="text" name="short_description" value={formData.short_description} onChange={onInputChange} placeholder="Brief highlight for cards" className={inputClasses(!isSelectionComplete)} />
-                </div>
-
-                <div>
-                  <label className={labelClasses(!isSelectionComplete)}>Product Image URL *</label>
-                  <div className="flex gap-2">
-                    <input type="url" name="image_url" value={formData.image_url} onChange={onInputChange} required placeholder="https://..." className={inputClasses(!isSelectionComplete)} />
-                    {formData.image_url && (
-                      <div className="w-10 h-10 rounded-lg border overflow-hidden shrink-0 shadow-sm">
-                        <img src={formData.image_url} alt="P" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 <div className="md:col-span-2">
@@ -287,6 +285,10 @@ const ProductModal = ({
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar p-1">
                     {filteredColors.map((color) => {
                       const qty = formData.color_stocks?.[color.id] || 0;
+                      const colorId = String(color.id);
+                      const savedImages = formData.product_images_by_color?.[colorId] || [];
+                      const localFiles = newColorImageFiles?.[colorId] || [];
+                      const totalImages = savedImages.length + localFiles.length;
                       return (
                         <div key={color.id} className={`p-2.5 rounded-xl border transition-all flex flex-col items-center gap-2 ${qty > 0 ? 'bg-[#800020]/5 border-[#800020]/30 shadow-md ring-1 ring-[#800020]/10' : 'bg-white border-gray-100 opacity-60 hover:opacity-100 shadow-sm'}`}>
                           <div className="w-6 h-6 rounded-full border shadow-sm" style={{ backgroundColor: color.hex_code }} title={color.name} />
@@ -295,10 +297,106 @@ const ProductModal = ({
                             type="number"
                             min="0"
                             placeholder="0"
-                            value={formData.color_stocks?.[String(color.id)] || ""}
-                            onChange={(e) => onColorStockChange(String(color.id), e.target.value)}
+                            value={formData.color_stocks?.[colorId] || ""}
+                            onChange={(e) => onColorStockChange(colorId, e.target.value)}
                             className="w-full text-center text-xs p-1.5 bg-white border border-gray-200 rounded-lg font-bold focus:border-[#800020] outline-none shadow-sm"
                           />
+                          {qty > 0 && (
+                            <div className="w-full space-y-2 mt-1">
+                              <label className="block text-[9px] font-bold uppercase text-gray-500">Images ({totalImages}/6)</label>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={(e) => {
+                                  onColorImageUpload(colorId, e.target.files);
+                                  e.target.value = "";
+                                }}
+                                className="w-full text-[9px] text-gray-500 file:mr-1 file:px-2 file:py-1 file:rounded file:border-0 file:bg-[#800020] file:text-white"
+                              />
+                              {totalImages < 1 && (
+                                <p className="text-[9px] text-red-500 font-bold">At least 1 image required</p>
+                              )}
+                              <div className="grid grid-cols-2 gap-1">
+                                {savedImages.map((url, idx) => (
+                                  <div key={url} className="relative border rounded overflow-hidden">
+                                    <button
+                                      type="button"
+                                      title="Click to preview"
+                                      onClick={() => setPreviewImage({ url, name: `${color.name} image` })}
+                                      className="w-full bg-white cursor-zoom-in"
+                                    >
+                                      <img src={url} alt={`${color.name}`} className="w-full h-14 object-contain bg-white" />
+                                    </button>
+                                    <div className="absolute top-0 left-0 right-0 flex justify-between p-1 bg-black/45">
+                                      <button
+                                        type="button"
+                                        onClick={() => onCoverImageSelect({ type: "existing", colorId, index: idx, url })}
+                                        className={`text-[8px] px-1 rounded ${formData.cover_image_url === url ? "bg-green-500 text-white" : "bg-white/90 text-black"}`}
+                                      >
+                                        Cover
+                                      </button>
+                                      <div className="flex gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => setPreviewImage({ url, name: `${color.name} image` })}
+                                          className="text-[8px] px-1 rounded bg-blue-500 text-white"
+                                        >
+                                          Preview
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => onRemoveSavedColorImage(colorId, url)}
+                                          className="text-[8px] px-1 rounded bg-red-500 text-white"
+                                        >
+                                          X
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                                {localFiles.map((file, idx) => {
+                                  const previewUrl = URL.createObjectURL(file);
+                                  const isSelectedCover = formData.cover_image_selection === `new:${colorId}:${idx}`;
+                                  return (
+                                    <div key={`${file.name}-${idx}`} className="relative border rounded overflow-hidden">
+                                      <button
+                                        type="button"
+                                        title="Click to preview"
+                                        onClick={() => setPreviewImage({ url: previewUrl, name: file.name })}
+                                        className="w-full bg-white cursor-zoom-in"
+                                      >
+                                        <img src={previewUrl} alt={file.name} className="w-full h-14 object-contain bg-white" />
+                                      </button>
+                                      <div className="absolute top-0 right-0 p-1 bg-black/45 flex gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => setPreviewImage({ url: previewUrl, name: file.name })}
+                                          className="text-[8px] px-1 rounded bg-blue-500 text-white"
+                                        >
+                                          Preview
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => onCoverImageSelect({ type: "new", colorId, index: idx })}
+                                          className={`text-[8px] px-1 rounded mr-1 ${isSelectedCover ? "bg-emerald-300 text-black" : "bg-green-500 text-white"}`}
+                                        >
+                                          Cover
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => onRemoveNewColorImage(colorId, idx)}
+                                          className="text-[8px] px-1 rounded bg-red-500 text-white"
+                                        >
+                                          X
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -322,6 +420,11 @@ const ProductModal = ({
                     <label className={labelClasses(!isSelectionComplete)}>Low Stock Alert Threshold</label>
                     <input type="text" name="low_stock_threshold" value={formData.low_stock_threshold} onChange={handleNumberInput} placeholder="5" className={inputClasses(!isSelectionComplete)} />
                     <p className="text-[9px] text-gray-400 mt-2 italic leading-relaxed">The system will alert you when inventory falls below this level.</p>
+                    {currentStock > 0 && currentThreshold > currentStock && (
+                      <p className="text-[10px] text-amber-600 mt-1 font-bold">
+                        Threshold ({currentThreshold}) is higher than current stock ({currentStock}).
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
@@ -462,6 +565,25 @@ const ProductModal = ({
           </div>
         </div>
       </div>
+
+      {previewImage?.url && (
+        <div className="fixed inset-0 z-[120] bg-black/80 flex items-center justify-center p-4" onClick={() => setPreviewImage(null)}>
+          <div className="relative bg-white rounded-xl p-3 max-w-5xl w-full max-h-[92vh]" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="absolute right-2 top-2 p-1.5 bg-black/70 text-white rounded-md"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <img
+              src={previewImage.url}
+              alt={previewImage.name || "Preview"}
+              className="w-full h-[80vh] object-contain bg-white rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

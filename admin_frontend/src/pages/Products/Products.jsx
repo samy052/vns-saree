@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Pencil, Trash2, Search, Filter, ChevronLeft, ChevronRight, Package, AlertCircle, Star, Sparkles } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Pencil, Trash2, Search, Filter, ChevronLeft, ChevronRight, Package, AlertCircle, Star, Sparkles, CheckCircle, AlertTriangle, X } from "lucide-react";
 import { API_ENDPOINTS } from "../../config/api";
 import ProductModal from "./ProductModal";
 import "./Products.css";
@@ -7,7 +7,9 @@ import "./Products.css";
 const INITIAL_FORM_STATE = {
   name: "", sku: "", description: "", short_description: "",
   price: "", old_price: "", cost_price: "", discount_percent: "",
-  image_url: "", stock_quantity: "", low_stock_threshold: 5, track_inventory: true,
+  image_url: "", cover_image_url: "", cover_image_selection: "", stock_quantity: "", low_stock_threshold: 5, track_inventory: true,
+  color_stocks: {},
+  product_images_by_color: {},
   weight: "", length: "6.5", width: "1.1",
   category_id: "", material_id: "", variety_id: "", color_id: "", occasion_id: "",
   is_special_collection: false, is_new_arrival: false, is_available: true,
@@ -27,65 +29,264 @@ export default function Products() {
   const [submitting, setSubmitting] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [newColorImageFiles, setNewColorImageFiles] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState({ category: "", material: "", occasion: "", stockStatus: "", isNewArrival: "", isFeatured: "" });
+  const [filters, setFilters] = useState({
+    category: "",
+    material: "",
+    variety: "",
+    color: "",
+    stockStatus: "",
+    isAvailable: "",
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [pageSize, setPageSize] = useState(10);
+  const [tableReady, setTableReady] = useState(false);
+  const [summary, setSummary] = useState({ totalProducts: 0, outOfStock: 0, lowStock: 0, inStock: 0 });
+  const [paginationMeta, setPaginationMeta] = useState({
+    totalItems: 0,
+    currentPage: 1,
+    totalPages: 1,
+    pageSize: 10,
+    currentPageCount: 0,
+  });
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [modal, setModal] = useState({
+    show: false,
+    type: "info",
+    title: "",
+    message: "",
+    onConfirm: null,
+    onCancel: null,
+  });
+  const showModal = (type, title, message, onConfirm = null, onCancel = null) => {
+    setModal({ show: true, type, title, message, onConfirm, onCancel });
+  };
 
-  useEffect(() => { fetchAllData(); }, []);
+  const closeModal = () => {
+    setModal((prev) => ({ ...prev, show: false }));
+    setTimeout(() => {
+      setModal((prev) =>
+        prev.show
+          ? prev
+          : {
+              show: false,
+              type: "info",
+              title: "",
+              message: "",
+              onConfirm: null,
+              onCancel: null,
+            },
+      );
+    }, 200);
+  };
 
-  const fetchAllData = async () => {
+  useEffect(() => {
+    fetchLookupData();
+    fetchProductSummary();
+  }, []);
+
+  const fetchLookupData = async () => {
     try {
       setLoading(true);
-      const [prodRes, catRes, colRes, matRes, varRes, occRes] = await Promise.all([
-        fetch(API_ENDPOINTS.products), fetch(API_ENDPOINTS.categories),
+      const [catRes, colRes, matRes, varRes, occRes] = await Promise.all([
+        fetch(API_ENDPOINTS.categories),
         fetch(API_ENDPOINTS.colors), fetch(API_ENDPOINTS.materials),
         fetch(API_ENDPOINTS.varieties), fetch(API_ENDPOINTS.occasions),
       ]);
-      const [products, cats, cols, mats, vars, occs] = await Promise.all([
-        prodRes.json(), catRes.json(), colRes.json(),
-        matRes.json(), varRes.json(), occRes.json(),
+      const [cats, cols, mats, vars, occs] = await Promise.all([
+        catRes.json(), colRes.json(), matRes.json(), varRes.json(), occRes.json(),
       ]);
-      setProducts(products); setCategories(cats); setColors(cols);
-      setMaterials(mats); setVarieties(vars); setOccasions(occs);
+      setCategories(Array.isArray(cats) ? cats : []);
+      setColors(Array.isArray(cols) ? cols : []);
+      setMaterials(Array.isArray(mats) ? mats : []);
+      setVarieties(Array.isArray(vars) ? vars : []);
+      setOccasions(Array.isArray(occs) ? occs : []);
     } catch (error) { console.error("Error:", error); }
     finally { setLoading(false); }
   };
 
-  const getFilteredProducts = useCallback(() => {
-    return products.filter((p) => {
-      if (searchTerm) {
-        const s = searchTerm.toLowerCase();
-        if (!p.name?.toLowerCase().includes(s) && !p.sku?.toLowerCase().includes(s)) return false;
-      }
-      if (filters.category && p.category_id !== parseInt(filters.category)) return false;
-      if (filters.material && p.material_id !== parseInt(filters.material)) return false;
-      if (filters.occasion && p.occasion_id !== parseInt(filters.occasion)) return false;
-      if (filters.stockStatus === "in_stock" && p.stock_quantity <= 0) return false;
-      if (filters.stockStatus === "out_of_stock" && p.stock_quantity > 0) return false;
-      if (filters.stockStatus === "low_stock" && (p.stock_quantity > (p.low_stock_threshold || 5) || p.stock_quantity <= 0)) return false;
-      if (filters.isNewArrival && p.is_new_arrival !== (filters.isNewArrival === "true")) return false;
-      if (filters.isSpecialCollection && p.is_special_collection !== (filters.isSpecialCollection === "true")) return false;
-      return true;
-    });
-  }, [products, searchTerm, filters]);
+  const fetchProducts = async (page = currentPage, size = pageSize) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        paginated: "true",
+        page: String(page),
+        pageSize: String(size),
+        search: searchTerm.trim(),
+        category: filters.category || "",
+        material: filters.material || "",
+        variety: filters.variety || "",
+        color: filters.color || "",
+        stockStatus: filters.stockStatus || "",
+        isAvailable: filters.isAvailable || "",
+      });
+      const res = await fetch(`${API_ENDPOINTS.products}?${params.toString()}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to load products");
 
-  const filtered = getFilteredProducts();
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+      setProducts(Array.isArray(data.items) ? data.items : []);
+      setPaginationMeta(data.meta || {
+        totalItems: 0, currentPage: 1, totalPages: 1, pageSize: size, currentPageCount: 0,
+      });
+      setTableReady(true);
+    } catch (error) {
+      console.error("Product fetch failed:", error);
+      setProducts([]);
+      setTableReady(false);
+      showModal("error", "Load failed", "Unable to load products with selected filters.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProductSummary = async () => {
+    try {
+      const res = await fetch(`${API_ENDPOINTS.products}/summary`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed");
+      setSummary({
+        totalProducts: data.totalProducts ?? 0,
+        outOfStock: data.outOfStock ?? 0,
+        lowStock: data.lowStock ?? 0,
+        inStock: data.inStock ?? 0,
+      });
+    } catch (error) {
+      console.error("Product summary fetch failed:", error);
+      setSummary({ totalProducts: 0, outOfStock: 0, lowStock: 0, inStock: 0 });
+    }
+  };
 
   const openModal = (product = null) => {
     if (product) {
       setEditingProduct(product);
-      setFormData({ ...INITIAL_FORM_STATE, ...product, price: product.price?.toString() || "", old_price: product.old_price?.toString() || "" });
+      setFormData({
+        ...INITIAL_FORM_STATE,
+        ...product,
+        price: product.price?.toString() || "",
+        old_price: product.old_price?.toString() || "",
+        color_stocks: product.color_stocks && typeof product.color_stocks === "object" ? product.color_stocks : {},
+        product_images_by_color:
+          product.product_images_by_color && typeof product.product_images_by_color === "object"
+            ? product.product_images_by_color
+            : {},
+        cover_image_url: product.cover_image_url || product.image_url || "",
+        cover_image_selection: "",
+      });
     } else { setEditingProduct(null); setFormData(INITIAL_FORM_STATE); }
+    setNewColorImageFiles({});
     setIsModalOpen(true);
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+  };
+
+  const handleColorStockChange = (colorId, value) => {
+    if (value !== "" && !/^\d+$/.test(value)) return;
+
+    setFormData((prev) => {
+      const nextColorStocks = { ...(prev.color_stocks || {}) };
+
+      if (value === "") {
+        delete nextColorStocks[colorId];
+      } else {
+        nextColorStocks[colorId] = parseInt(value, 10) || 0;
+      }
+
+      const totalStock = Object.values(nextColorStocks).reduce((sum, qty) => sum + (parseInt(qty, 10) || 0), 0);
+
+      return {
+        ...prev,
+        color_stocks: nextColorStocks,
+        stock_quantity: totalStock,
+      };
+    });
+  };
+
+  const handleColorImageUpload = (colorId, files) => {
+    const incomingFiles = Array.from(files || []);
+    if (incomingFiles.length === 0) return;
+
+    setNewColorImageFiles((prev) => {
+      const existingNewFiles = prev[colorId] || [];
+      const existingSavedUrls = formData.product_images_by_color?.[colorId] || [];
+      const existingSignatures = new Set(
+        existingNewFiles.map((file) => `${file.name}-${file.size}-${file.lastModified}`),
+      );
+      const uniqueIncomingFiles = [];
+      let duplicateCount = 0;
+
+      incomingFiles.forEach((file) => {
+        const signature = `${file.name}-${file.size}-${file.lastModified}`;
+        if (!existingSignatures.has(signature)) {
+          existingSignatures.add(signature);
+          uniqueIncomingFiles.push(file);
+        } else {
+          duplicateCount += 1;
+        }
+      });
+
+      const availableSlots = Math.max(0, 6 - existingSavedUrls.length - existingNewFiles.length);
+      const acceptedFiles = uniqueIncomingFiles.slice(0, availableSlots);
+      const overflowCount = uniqueIncomingFiles.length - acceptedFiles.length;
+
+      if (duplicateCount > 0 || overflowCount > 0) {
+        const messages = [];
+        if (duplicateCount > 0) messages.push(`${duplicateCount} duplicate image(s) skipped.`);
+        if (overflowCount > 0) messages.push(`${overflowCount} image(s) skipped because max 6 allowed per color.`);
+        showModal("warning", "Some files were skipped", messages.join(" "));
+      }
+
+      return {
+        ...prev,
+        [colorId]: [...existingNewFiles, ...acceptedFiles],
+      };
+    });
+  };
+
+  const handleRemoveSavedColorImage = (colorId, imageUrl) => {
+    setFormData((prev) => {
+      const current = Array.isArray(prev.product_images_by_color?.[colorId]) ? prev.product_images_by_color[colorId] : [];
+      const updated = current.filter((url) => url !== imageUrl);
+      const nextImagesByColor = { ...(prev.product_images_by_color || {}) };
+      if (updated.length > 0) nextImagesByColor[colorId] = updated;
+      else delete nextImagesByColor[colorId];
+
+      const allUrls = Object.values(nextImagesByColor).flat();
+      const nextCover = prev.cover_image_url === imageUrl ? (allUrls[0] || "") : prev.cover_image_url;
+
+      return {
+        ...prev,
+        product_images_by_color: nextImagesByColor,
+        cover_image_url: nextCover,
+        cover_image_selection: nextCover ? prev.cover_image_selection : "",
+        image_url: nextCover,
+      };
+    });
+  };
+
+  const handleRemoveNewColorImage = (colorId, index) => {
+    setNewColorImageFiles((prev) => {
+      const next = { ...prev };
+      const current = Array.isArray(next[colorId]) ? next[colorId] : [];
+      const updated = current.filter((_, i) => i !== index);
+      if (updated.length > 0) next[colorId] = updated;
+      else delete next[colorId];
+      return next;
+    });
+  };
+
+  const handleCoverImageSelect = ({ type, colorId, index, url }) => {
+    const selection = `${type}:${colorId}:${index}`;
+    setFormData((prev) => ({
+      ...prev,
+      cover_image_url: url || prev.cover_image_url,
+      cover_image_selection: selection,
+      image_url: url || prev.image_url,
+    }));
   };
 
   const generateSKU = () => {
@@ -106,38 +307,172 @@ export default function Products() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const payload = {
+    const selectedColorIds = Object.entries(formData.color_stocks || {})
+      .filter(([, qty]) => parseInt(qty, 10) > 0)
+      .map(([colorId]) => colorId);
+
+    const missingImagesForColors = selectedColorIds.filter((colorId) => {
+      const existingCount = (formData.product_images_by_color?.[colorId] || []).length;
+      const newCount = (newColorImageFiles?.[colorId] || []).length;
+      return existingCount + newCount < 1;
+    });
+
+    if (missingImagesForColors.length > 0) {
+      showModal("warning", "Missing images", "Each selected color must have at least 1 image.");
+      setSubmitting(false);
+      return;
+    }
+
+    const payloadData = {
       ...formData,
       slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
       price: parseFloat(formData.price) || 0, old_price: formData.old_price ? parseFloat(formData.old_price) : null,
       cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
       stock_quantity: parseInt(formData.stock_quantity) || 0,
+      low_stock_threshold:
+        formData.low_stock_threshold === "" || formData.low_stock_threshold === null || formData.low_stock_threshold === undefined
+          ? 0
+          : (parseInt(formData.low_stock_threshold, 10) || 0),
+      color_stocks: formData.color_stocks || {},
+      product_images_by_color: formData.product_images_by_color || {},
+      cover_image_url: formData.cover_image_url || formData.image_url || "",
+      cover_image_selection: formData.cover_image_selection || "",
       category_id: formData.category_id || null, material_id: formData.material_id || null,
       variety_id: formData.variety_id || null, color_id: formData.color_id || null,
       occasion_id: formData.occasion_id || null,
     };
+
+    const formPayload = new FormData();
+    formPayload.append("productData", JSON.stringify(payloadData));
+
+    Object.entries(newColorImageFiles).forEach(([colorId, files]) => {
+      (files || []).forEach((file) => {
+        formPayload.append(`color_${colorId}`, file);
+      });
+    });
+
+    const payload = {
+      url: editingProduct
+        ? `${API_ENDPOINTS.products}/${editingProduct.id}/with-images`
+        : `${API_ENDPOINTS.products}/with-images`,
+      method: editingProduct ? "PUT" : "POST",
+    };
     try {
-      const url = editingProduct ? `${API_ENDPOINTS.products}/${editingProduct.id}` : API_ENDPOINTS.products;
-      const method = editingProduct ? "PUT" : "POST";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if (res.ok) { await fetchAllData(); setIsModalOpen(false); alert(editingProduct ? "Updated!" : "Created!"); }
-      else { const err = await res.json(); alert(`Error: ${err.message}`); }
-    } catch (err) { alert("Network error"); }
+      const res = await fetch(payload.url, { method: payload.method, body: formPayload });
+      if (res.ok) {
+        if (tableReady) {
+          await fetchProducts(1, pageSize);
+          setCurrentPage(1);
+        }
+        setIsModalOpen(false);
+        showModal("success", "Success", editingProduct ? "Product updated successfully." : "Product created successfully.");
+      } else {
+        const err = await res.json();
+        console.error("Product save failed:", err);
+        showModal("error", "Save failed", "Unable to save product right now. Please check inputs and try again.");
+      }
+    } catch (err) {
+      console.error("Product save network error:", err);
+      showModal("error", "Network error", "Please check your connection and try again.");
+    }
     finally { setSubmitting(false); }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this product?")) return;
-    try {
-      const res = await fetch(`${API_ENDPOINTS.products}/${id}`, { method: "DELETE" });
-      if (res.ok) await fetchAllData();
-    } catch (err) { console.error(err); }
+    showModal(
+      "danger",
+      "Delete product?",
+      "Are you sure you want to delete this product? This action cannot be undone.",
+      async () => {
+        closeModal();
+        try {
+          const res = await fetch(`${API_ENDPOINTS.products}/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            if (tableReady) await fetchProducts(currentPage, pageSize);
+            showModal("success", "Deleted", "Product deleted successfully.");
+          } else {
+            const err = await res.json();
+            showModal("error", "Delete failed", err.message || "Unable to delete product.");
+          }
+        } catch (err) {
+          console.error(err);
+          showModal("error", "Network error", "Unable to delete product right now.");
+        }
+      },
+      closeModal,
+    );
+  };
+
+  const getModalIcon = (type) => {
+    if (type === "success") return <CheckCircle className="w-6 h-6 text-green-500" />;
+    if (type === "error") return <AlertCircle className="w-6 h-6 text-red-500" />;
+    if (type === "danger") return <AlertTriangle className="w-6 h-6 text-red-600" />;
+    return <AlertTriangle className="w-6 h-6 text-amber-500" />;
   };
 
   const getStockBadge = (p) => {
     if (p.stock_quantity <= 0) return <span className="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-full">OUT OF STOCK</span>;
     if (p.stock_quantity <= (p.low_stock_threshold || 5)) return <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full flex items-center gap-1"><AlertCircle className="w-3 h-3" />LOW ({p.stock_quantity})</span>;
     return <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full">IN STOCK ({p.stock_quantity})</span>;
+  };
+
+  const applyFilters = async () => {
+    setCurrentPage(1);
+    await fetchProducts(1, pageSize);
+  };
+
+  const handlePageChange = async (nextPage) => {
+    setCurrentPage(nextPage);
+    await fetchProducts(nextPage, pageSize);
+  };
+
+  const handlePageSizeChange = async (nextSize) => {
+    const parsed = parseInt(nextSize, 10) || 10;
+    setPageSize(parsed);
+    setCurrentPage(1);
+    await fetchProducts(1, parsed);
+  };
+
+  const updateAvailability = async (product, nextAvailable) => {
+    try {
+      const payload = {
+        ...product,
+        is_available: nextAvailable,
+        // Avoid sending nested include objects (Category/Color/Occasion etc.) to backend.
+        Category: undefined,
+        Color: undefined,
+        Material: undefined,
+        Variety: undefined,
+        Occasion: undefined,
+      };
+
+      const res = await fetch(`${API_ENDPOINTS.products}/${product.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.message || "Failed");
+      }
+      await fetchProducts(currentPage, pageSize);
+    } catch (error) {
+      console.error("Availability update failed:", error);
+      showModal("error", "Update failed", "Could not update active status.");
+    }
+  };
+
+  const requestAvailabilityChange = (product) => {
+    const nextAvailable = !product.is_available;
+    const title = "Confirm";
+    const message = nextAvailable
+      ? "Are you sure you want to set this product as Active?"
+      : "Are you sure you want to set this product as Inactive?";
+
+    showModal("warning", title, message, async () => {
+      closeModal();
+      await updateAvailability(product, nextAvailable);
+    }, closeModal);
   };
 
   return (
@@ -149,59 +484,76 @@ export default function Products() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm"><div className="flex items-center gap-3"><div className="p-2 bg-[#800020]/10 rounded-lg"><Package className="w-5 h-5 text-[#800020]" /></div><div><p className="text-[10px] text-gray-500 uppercase font-bold">Total</p><p className="text-xl font-bold text-[#4A3F35]">{products.length}</p></div></div></div>
-        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm"><div className="flex items-center gap-3"><div className="p-2 bg-green-50 rounded-lg"><Sparkles className="w-5 h-5 text-green-600" /></div><div><p className="text-[10px] text-gray-500 uppercase font-bold">New</p><p className="text-xl font-bold text-[#4A3F35]">{products.filter(p => p.is_new_arrival).length}</p></div></div></div>
-        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm"><div className="flex items-center gap-3"><div className="p-2 bg-amber-50 rounded-lg"><Star className="w-5 h-5 text-amber-600" /></div><div><p className="text-[10px] text-gray-500 uppercase font-bold">Special Collection</p><p className="text-xl font-bold text-[#4A3F35]">{products.filter(p => p.is_special_collection).length}</p></div></div></div>
-        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm"><div className="flex items-center gap-3"><div className="p-2 bg-red-50 rounded-lg"><AlertCircle className="w-5 h-5 text-red-600" /></div><div><p className="text-[10px] text-gray-500 uppercase font-bold">Low Stock</p><p className="text-xl font-bold text-[#4A3F35]">{products.filter(p => p.stock_quantity > 0 && p.stock_quantity <= (p.low_stock_threshold || 5)).length}</p></div></div></div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm"><div className="flex items-center gap-3"><div className="p-2 bg-[#800020]/10 rounded-lg"><Package className="w-5 h-5 text-[#800020]" /></div><div><p className="text-[10px] text-gray-500 uppercase font-bold">Total Products</p><p className="text-xl font-bold text-[#4A3F35]">{summary.totalProducts}</p></div></div></div>
+        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm"><div className="flex items-center gap-3"><div className="p-2 bg-green-50 rounded-lg"><Sparkles className="w-5 h-5 text-green-600" /></div><div><p className="text-[10px] text-gray-500 uppercase font-bold">In Stock</p><p className="text-xl font-bold text-[#4A3F35]">{summary.inStock}</p></div></div></div>
+        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm"><div className="flex items-center gap-3"><div className="p-2 bg-amber-50 rounded-lg"><Star className="w-5 h-5 text-amber-600" /></div><div><p className="text-[10px] text-gray-500 uppercase font-bold">Low Stock</p><p className="text-xl font-bold text-[#4A3F35]">{summary.lowStock}</p></div></div></div>
+        <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm"><div className="flex items-center gap-3"><div className="p-2 bg-red-50 rounded-lg"><AlertCircle className="w-5 h-5 text-red-600" /></div><div><p className="text-[10px] text-gray-500 uppercase font-bold">Out Of Stock</p><p className="text-xl font-bold text-[#4A3F35]">{summary.outOfStock}</p></div></div></div>
       </div>
 
       <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm space-y-4">
         <div className="flex gap-4">
           <div className="flex-1 relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search by name or SKU..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#800020]" /></div>
           <button onClick={() => setShowFilters(!showFilters)} className={`px-4 py-2 border rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${showFilters ? "bg-[#800020] text-white border-[#800020]" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}><Filter className="w-4 h-4" /> Filters</button>
+          <button onClick={applyFilters} className="px-4 py-2 rounded-lg bg-[#800020] text-white text-sm font-semibold">Apply</button>
         </div>
         {showFilters && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-4 border-t border-gray-100">
             <select value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Categories</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
             <select value={filters.material} onChange={(e) => setFilters({ ...filters, material: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Materials</option>{materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select>
-            <select value={filters.occasion} onChange={(e) => setFilters({ ...filters, occasion: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Occasions</option>{occasions.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}</select>
+            <select value={filters.variety} onChange={(e) => setFilters({ ...filters, variety: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Varieties</option>{varieties.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}</select>
+            <select value={filters.color} onChange={(e) => setFilters({ ...filters, color: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Colors</option>{colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
             <select value={filters.stockStatus} onChange={(e) => setFilters({ ...filters, stockStatus: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">Stock Status</option><option value="in_stock">In Stock</option><option value="low_stock">Low Stock</option><option value="out_of_stock">Out</option></select>
-            <select value={filters.isNewArrival} onChange={(e) => setFilters({ ...filters, isNewArrival: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">New Arrival?</option><option value="true">Yes</option><option value="false">No</option></select>
-            <select value={filters.isFeatured} onChange={(e) => setFilters({ ...filters, isFeatured: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">Featured?</option><option value="true">Yes</option><option value="false">No</option></select>
+            <select value={filters.isAvailable} onChange={(e) => setFilters({ ...filters, isAvailable: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">Active / Inactive</option><option value="true">Active</option><option value="false">Inactive</option></select>
           </div>
         )}
       </div>
 
       <div className="bg-white rounded-xl border border-[#D4AF37]/20 shadow-sm overflow-hidden">
-        {loading ? (
+        {!tableReady && !loading ? (
+          <div className="p-10 text-center text-gray-500 text-sm">Apply filters to load product table.</div>
+        ) : (
+        loading ? (
           <div className="p-12 text-center"><div className="w-12 h-12 border-4 border-[#D4AF37]/20 border-t-[#800020] rounded-full animate-spin mx-auto mb-4"></div><p className="text-gray-500">Loading...</p></div>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-[#FAF8F6]"><tr>
+                  <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">#</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Product</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">SKU</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Category</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Occasion</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Price</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Stock</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Status</th>
                   <th className="px-4 py-3 text-right text-[10px] font-bold text-gray-500 uppercase">Actions</th>
                 </tr></thead>
                 <tbody className="divide-y divide-gray-100">
-                  {paginated.length === 0 ? (
-                    <tr><td colSpan="8" className="px-4 py-12 text-center"><Package className="w-12 h-12 text-gray-300 mx-auto mb-3" /><p className="text-gray-500">No products found</p></td></tr>
-                  ) : paginated.map(p => (
+                  {products.length === 0 ? (
+                    <tr><td colSpan="7" className="px-4 py-12 text-center"><Package className="w-12 h-12 text-gray-300 mx-auto mb-3" /><p className="text-gray-500">No products found</p></td></tr>
+                  ) : products.map((p, idx) => (
                     <tr key={p.id} className="hover:bg-gray-50/50">
-                      <td className="px-4 py-3"><div className="flex items-center gap-3"><img src={p.image_url} alt={p.name} className="w-12 h-12 object-cover rounded-lg" /><div><p className="font-medium text-[#4A3F35] text-sm">{p.name}</p><div className="flex gap-1 mt-1">{p.is_new_arrival && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[9px] font-bold rounded">NEW</span>}{p.is_special_collection && <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">SPECIAL COLLECTION</span>}</div></div></div></td>
+                      <td className="px-4 py-3 text-sm font-semibold">{(paginationMeta.currentPage - 1) * paginationMeta.pageSize + idx + 1}</td>
+                      <td className="px-4 py-3"><div className="flex items-center gap-3"><button type="button" onClick={() => setImagePreviewUrl(p.cover_image_url || p.image_url)}><img src={p.cover_image_url || p.image_url} alt={p.name} className="w-12 h-12 object-cover rounded-lg" /></button><div><p className="font-medium text-[#4A3F35] text-sm">{p.name}</p><div className="flex gap-1 mt-1">{p.is_new_arrival && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[9px] font-bold rounded">NEW</span>}{p.is_special_collection && <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">SPECIAL COLLECTION</span>}</div></div></div></td>
                       <td className="px-4 py-3"><span className="font-mono text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">{p.sku || "-"}</span></td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{p.Category?.name || "-"}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{p.Occasion?.name || "-"}</td>
                       <td className="px-4 py-3"><span className="font-bold text-[#800020]">₹{parseFloat(p.price).toLocaleString()}</span>{p.old_price && <span className="text-xs text-gray-400 line-through block">₹{parseFloat(p.old_price).toLocaleString()}</span>}</td>
                       <td className="px-4 py-3">{getStockBadge(p)}</td>
-                      <td className="px-4 py-3"><span className={`px-2 py-1 text-[10px] font-bold rounded-full ${p.is_available ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>{p.is_available ? "Active" : "Inactive"}</span></td>
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() => requestAvailabilityChange(p)}
+                          className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors ${
+                            p.is_available ? "bg-green-100" : "bg-gray-100"
+                          }`}
+                          title={p.is_available ? "Active (click to deactivate)" : "Inactive (click to activate)"}
+                        >
+                          <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                              p.is_available ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </td>
                       <td className="px-4 py-3 text-right"><div className="flex justify-end gap-2"><button onClick={() => openModal(p)} className="p-1.5 text-gray-400 hover:text-[#D4AF37] hover:bg-amber-50 rounded"><Pencil className="w-4 h-4" /></button><button onClick={() => handleDelete(p.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button></div></td>
                     </tr>
                   ))}
@@ -209,20 +561,88 @@ export default function Products() {
               </table>
             </div>
             <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-              <p className="text-sm text-gray-500">Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length}</p>
-              <div className="flex gap-2">
-                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border border-gray-200 rounded-lg disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <button key={page} onClick={() => setCurrentPage(page)} className={`px-3 py-2 rounded-lg text-sm font-medium ${currentPage === page ? "bg-[#800020] text-white" : "border border-gray-200"}`}>{page}</button>
-                ))}
-                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 border border-gray-200 rounded-lg disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
+              <p className="text-sm text-gray-500">Total {paginationMeta.totalItems} | Page {paginationMeta.currentPage}/{paginationMeta.totalPages} | Current page rows {paginationMeta.currentPageCount}</p>
+              <div className="flex gap-2 items-center">
+                <select value={pageSize} onChange={(e) => handlePageSizeChange(e.target.value)} className="px-2 py-2 border border-gray-200 rounded-lg text-sm">
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                </select>
+                <button onClick={() => handlePageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="p-2 border border-gray-200 rounded-lg disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
+                <button onClick={() => handlePageChange(Math.min(paginationMeta.totalPages, currentPage + 1))} disabled={currentPage === paginationMeta.totalPages} className="p-2 border border-gray-200 rounded-lg disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
               </div>
             </div>
           </>
+        )
         )}
       </div>
 
-      <ProductModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} formData={formData} onInputChange={handleInputChange} onSave={handleSave} onGenerateSKU={generateSKU} onCalculateDiscount={calculateDiscount} submitting={submitting} editingProduct={editingProduct} categories={categories} materials={materials} varieties={varieties} colors={colors} occasions={occasions} />
+      <ProductModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        formData={formData}
+        onInputChange={handleInputChange}
+        onColorStockChange={handleColorStockChange}
+        onColorImageUpload={handleColorImageUpload}
+        onRemoveSavedColorImage={handleRemoveSavedColorImage}
+        onRemoveNewColorImage={handleRemoveNewColorImage}
+        onCoverImageSelect={handleCoverImageSelect}
+        newColorImageFiles={newColorImageFiles}
+        onSave={handleSave}
+        onGenerateSKU={generateSKU}
+        onCalculateDiscount={calculateDiscount}
+        submitting={submitting}
+        editingProduct={editingProduct}
+        categories={categories}
+        materials={materials}
+        varieties={varieties}
+        colors={colors}
+        occasions={occasions}
+      />
+
+      {modal.show && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={closeModal}></div>
+          <div className="relative z-10 bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100">
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {getModalIcon(modal.type)}
+                <h3 className="text-base font-bold text-gray-800">{modal.title}</h3>
+              </div>
+              <button type="button" onClick={closeModal} className="p-1 rounded text-gray-400 hover:text-gray-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-5">
+              <p className="text-sm text-gray-600 whitespace-pre-line">{modal.message}</p>
+            </div>
+            <div className="px-5 pb-5 flex justify-end gap-2">
+              {modal.onCancel && (
+                <button type="button" onClick={modal.onCancel} className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600">
+                  Cancel
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={modal.onConfirm || closeModal}
+                className={`px-4 py-2 rounded-lg text-white ${
+                  modal.type === "danger" ? "bg-red-600" : "bg-[#800020]"
+                }`}
+              >
+                {modal.onConfirm ? "Confirm" : "OK"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {imagePreviewUrl && (
+        <div className="fixed inset-0 z-[140] bg-black/80 flex items-center justify-center p-4" onClick={() => setImagePreviewUrl("")}>
+          <div className="bg-white rounded-xl p-3 max-w-5xl w-full max-h-[92vh]" onClick={(e) => e.stopPropagation()}>
+            <img src={imagePreviewUrl} alt="Preview" className="w-full h-[80vh] object-contain" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

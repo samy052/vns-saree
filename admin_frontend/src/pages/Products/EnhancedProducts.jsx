@@ -97,6 +97,16 @@ export default function EnhancedProducts() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [messageModal, setMessageModal] = useState({
+    show: false,
+    type: "info",
+    title: "",
+    message: "",
+  });
+
+  const showMessageModal = (type, title, message) => {
+    setMessageModal({ show: true, type, title, message });
+  };
 
   // Fetch Data
   useEffect(() => {
@@ -208,7 +218,7 @@ export default function EnhancedProducts() {
   const openModal = (product = null) => {
     // Validation: Check if categories exist
     if (!product && categories.length === 0) {
-      alert("No Categories found! Please add a category first.");
+      showMessageModal("warning", "Category required", "No categories found! Please add a category first.");
       navigate("/categories");
       return;
     }
@@ -371,18 +381,14 @@ export default function EnhancedProducts() {
       if (response.ok) {
         await fetchAllData();
         closeModal();
-        alert(
-          editingProduct
-            ? "Product updated successfully!"
-            : "Product created successfully!"
-        );
+        showMessageModal("success", "Success", editingProduct ? "Product updated successfully!" : "Product created successfully!");
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        showMessageModal("error", "Save failed", error.message || "Something went wrong");
       }
     } catch (error) {
       console.error("Save error:", error);
-      alert("Network error while saving.");
+      showMessageModal("error", "Network error", "Network error while saving.");
     } finally {
       setSubmitting(false);
     }
@@ -842,6 +848,28 @@ export default function EnhancedProducts() {
         colors={colors}
         occasions={occasions}
       />
+
+      {messageModal.show && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setMessageModal((prev) => ({ ...prev, show: false }))}
+          ></div>
+          <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+            <h3 className="text-lg font-bold text-[#4A3F35]">{messageModal.title}</h3>
+            <p className="text-sm text-gray-600 mt-2 whitespace-pre-line">{messageModal.message}</p>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setMessageModal((prev) => ({ ...prev, show: false }))}
+                className="px-4 py-2 rounded-lg bg-[#800020] text-white font-semibold"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
