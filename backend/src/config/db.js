@@ -1,28 +1,35 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config({ path: __dirname + '/../.env' });
+const { Sequelize } = require("sequelize");
+require("dotenv").config(); // Load from CWD by default
+
+if (!process.env.DATABASE_URL) {
+  console.error("CRITICAL ERROR: DATABASE_URL is not defined in environment variables.");
+}
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
+  dialect: "postgres",
   logging: false,
   dialectOptions: {
-    ssl: {
+    ssl: process.env.DATABASE_URL.includes("supabase.co") || process.env.DB_SSL === 'true' ? {
       require: true,
-      rejectUnauthorized: false
-    }
+      rejectUnauthorized: false,
+    } : false,
   },
   define: {
-    schema: 'vns_saree',
-    timestamps: false // The SQL didn't show timestamps, but we can add them later if needed
-  }
+    schema: "vns_saree",
+    timestamps: false,
+  },
 });
 
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    await sequelize.sync(); // This will create tables if they don't exist
-    console.log('PostgreSQL connected and synced successfully.');
+    console.log("PostgreSQL connected successfully.");
+    
+    // Schema has been updated manually. sync() will create tables if they don't exist.
+    await sequelize.sync(); 
+    console.log("Database schema synchronized.");
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error("Unable to connect to the database:", error);
     process.exit(1);
   }
 };

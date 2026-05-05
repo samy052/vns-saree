@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
-const Color = sequelize.define('Color', {
+const Occasion = sequelize.define('Occasion', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -11,10 +11,6 @@ const Color = sequelize.define('Color', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  hex_code: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
   slug: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -23,9 +19,13 @@ const Color = sequelize.define('Color', {
   description: {
     type: DataTypes.TEXT,
     allowNull: true
+  },
+  icon: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
-  tableName: 'colors'
+  tableName: 'occasions'
 });
 
-module.exports = Color;
+module.exports = Occasion;

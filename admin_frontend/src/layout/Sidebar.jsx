@@ -1,26 +1,74 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, Users, ShoppingBag, Layers, Ruler, Palette, FileBadge, 
-  TicketPercent, Sparkles, Box, PackageCheck, MessageSquareText, BarChart3, 
-  CreditCard, LogOut 
-} from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  ShoppingBag,
+  Layers,
+  GitBranch,
+  Ruler,
+  Palette,
+  FileBadge,
+  TicketPercent,
+  Sparkles,
+  Box,
+  PackageCheck,
+  MessageSquareText,
+  BarChart3,
+  CreditCard,
+  LogOut,
+} from "lucide-react";
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'users', label: 'User Management', icon: Users },
-  { id: 'products', label: 'Products', icon: ShoppingBag },
-  { id: 'categories', label: 'Categories', icon: Layers },
-  { id: 'sizes', label: 'Sizes & Master Data', icon: Ruler },
-  { id: 'colors', label: 'Colors Palette', icon: Palette },
-  { id: 'fabrics', label: 'Fabrics', icon: FileBadge },
-  { id: 'coupons', label: 'Coupons', icon: TicketPercent },
-  { id: 'occasions', label: 'Occasions', icon: Sparkles },
-  { id: 'orders', label: 'Orders', icon: Box },
-  { id: 'inventory', label: 'Inventory', icon: PackageCheck },
-  { id: 'reviews', label: 'Reviews', icon: MessageSquareText, badge: 4 },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'payments', label: 'Payments', icon: CreditCard },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  {
+    id: "categories",
+    label: "Categories",
+    subtext: "(Saree, Suit, Lehenga)",
+    icon: Layers,
+  },
+  {
+    id: "varieties",
+    label: "Varieties",
+    subtext: "(Katan, Kadhwa, etc.)",
+    icon: GitBranch,
+  },
+  {
+    id: "fabrics",
+    label: "Fabrics / Materials",
+    subtext: "(Silk, Georgette, etc.)",
+    icon: FileBadge,
+  },
+  {
+    id: "occasions",
+    label: "Occasions",
+    subtext: "(Wedding, Festival, etc.)",
+    icon: Sparkles,
+  },
+  {
+    id: "colors",
+    label: "Colors Palette",
+    subtext: "(Red, Blue, Gold, etc.)",
+    icon: Palette,
+  },
+  {
+    id: "coupons",
+    label: "Coupons",
+    subtext: "(Offers & Discounts)",
+    icon: TicketPercent,
+  },
+  {
+    id: "products",
+    label: "Products",
+    subtext: "(Saree, Suit, Catalog)",
+    icon: ShoppingBag,
+  },
+  { id: "users", label: "User Management", icon: Users },
+  { id: "orders", label: "Orders", icon: Box },
+  { id: "inventory", label: "Inventory", icon: PackageCheck },
+  { id: "reviews", label: "Reviews", icon: MessageSquareText, badge: 4 },
+  { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "payments", label: "Payments", icon: CreditCard },
 ];
 
 export default function Sidebar({ currentSection }) {
@@ -28,8 +76,12 @@ export default function Sidebar({ currentSection }) {
     <aside className="w-64 bg-[#FAF8F6] border-r border-[#D4AF37]/20 flex flex-col z-50 transition-all duration-300">
       <div className="p-6 mb-2 border-b border-[#D4AF37]/10">
         <div className="flex flex-col">
-          <span className="brand-font text-2xl font-bold tracking-tighter text-[#800020]">Banaras Kala</span>
-          <span className="text-[9px] tracking-[0.3em] uppercase text-[#4A3F35]/60 font-bold">Admin Console</span>
+          <span className="brand-font text-2xl font-bold tracking-tighter text-[#800020]">
+            Banaras Kala
+          </span>
+          <span className="text-[9px] tracking-[0.3em] uppercase text-[#4A3F35]/60 font-bold">
+            Admin Console
+          </span>
         </div>
       </div>
 
@@ -42,11 +94,18 @@ export default function Sidebar({ currentSection }) {
               key={item.id}
               to={`/${item.id}`}
               className={`w-full sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-semibold ${
-                isActive ? 'active' : 'text-gray-600 hover:bg-gray-50'
+                isActive ? "active" : "text-gray-600 hover:bg-gray-50"
               }`}
             >
               <Icon className="w-5 h-5" />
-              {item.label}
+              <div className="flex flex-col">
+                <span>{item.label}</span>
+                {item.subtext && (
+                  <span className="text-[9px] text-gray-400 font-normal">
+                    {item.subtext}
+                  </span>
+                )}
+              </div>
               {item.badge && (
                 <span className="ml-auto bg-[#800020] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   {item.badge}
@@ -58,7 +117,10 @@ export default function Sidebar({ currentSection }) {
       </nav>
 
       <div className="p-4 border-t border-[#D4AF37]/10">
-        <Link to="/login" className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-[#800020]/20 text-[#800020] rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#800020] hover:text-white transition-all">
+        <Link
+          to="/login"
+          className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-[#800020]/20 text-[#800020] rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#800020] hover:text-white transition-all"
+        >
           <LogOut className="w-4 h-4" />
           Logout
         </Link>

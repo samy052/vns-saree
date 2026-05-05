@@ -1,22 +1,28 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './layout/Layout';
-import Dashboard from './pages/Dashboard/Dashboard';
-import Users from './pages/Users/Users';
-import Products from './pages/Products/Products';
-import Categories from './pages/Categories/Categories';
-import Sizes from './pages/Sizes/Sizes';
-import Colors from './pages/Colors/Colors';
-import Fabrics from './pages/Fabrics/Fabrics';
-import Coupons from './pages/Coupons/Coupons';
-import Occasions from './pages/Occasions/Occasions';
-import Orders from './pages/Orders/Orders';
-import Inventory from './pages/Inventory/Inventory';
-import Reviews from './pages/Reviews/Reviews';
-import Analytics from './pages/Analytics/Analytics';
-import Payments from './pages/Payments/Payments';
-import Login from './pages/Auth/Login';
-import Profile from './pages/Profile/Profile';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Layout from "./layout/Layout";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import Users from "./pages/Users/Users";
+import Products from "./pages/Products/Products";
+import Categories from "./pages/Categories/Categories";
+import Varieties from "./pages/Varieties/Varieties";
+import Sizes from "./pages/Sizes/Sizes";
+import Colors from "./pages/Colors/Colors";
+import Fabrics from "./pages/Fabrics/Fabrics";
+import EnhancedCoupons from "./pages/Coupons/EnhancedCoupons";
+import Occasions from "./pages/Occasions/Occasions";
+import Orders from "./pages/Orders/Orders";
+import Inventory from "./pages/Inventory/Inventory";
+import Reviews from "./pages/Reviews/Reviews";
+import Analytics from "./pages/Analytics/Analytics";
+import Payments from "./pages/Payments/Payments";
+import Login from "./pages/Auth/Login";
+import Profile from "./pages/Profile/Profile";
 
 export default function App() {
   return (
@@ -30,10 +36,11 @@ export default function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/products" element={<Products />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/varieties" element={<Varieties />} />
           <Route path="/sizes" element={<Sizes />} />
           <Route path="/colors" element={<Colors />} />
           <Route path="/fabrics" element={<Fabrics />} />
-          <Route path="/coupons" element={<Coupons />} />
+          <Route path="/coupons" element={<EnhancedCoupons />} />
           <Route path="/occasions" element={<Occasions />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/inventory" element={<Inventory />} />
