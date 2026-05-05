@@ -85,6 +85,16 @@ const Product = sequelize.define(
       defaultValue: {},
       comment: "Color-wise stock: { color_id: quantity }",
     },
+    product_images_by_color: {
+      type: DataTypes.JSONB,
+      defaultValue: {},
+      comment: "Color-wise image URLs: { color_id: [url1, url2] }",
+    },
+    cover_image_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: "Primary cover image URL chosen from uploaded images",
+    },
 
     // Physical Attributes
     weight: {
