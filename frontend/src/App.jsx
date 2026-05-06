@@ -7,30 +7,75 @@ import Cart from "./pages/Cart/Cart";
 import Checkout from "./pages/Checkout/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation/OrderConfirmation";
 import Auth from "./pages/Auth/Auth";
-import Dashboard from "./pages/Dashboard/Dashboard";
 import About from "./pages/About/About";
+import Testimonials from "./pages/Testimonials/Testimonials";
+import Wishlist from "./pages/Wishlist/Wishlist";
 import Layout from "./layout/Layout";
+import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import "./App.css";
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/collection" element={<Collection />} />
-            <Route path="/product/:slug" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order-confirmation" element={<OrderConfirmation />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Auth />} />
-          </Route>
-        </Routes>
-      </div>
-    </Router>
+    <AuthProvider>
+      <NotificationProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <Router>
+              <ScrollToTop />
+              <div className="App">
+                <Routes>
+                  <Route element={<Layout />}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/collection" element={<Collection />} />
+                    <Route path="/product/:slug" element={<ProductDetail />} />
+                    <Route
+                      path="/cart"
+                      element={
+                        <ProtectedRoute>
+                          <Cart />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/checkout"
+                      element={
+                        <ProtectedRoute>
+                          <Checkout />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/wishlist"
+                      element={
+                        <ProtectedRoute>
+                          <Wishlist />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/order-confirmation"
+                      element={
+                        <ProtectedRoute>
+                          <OrderConfirmation />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/testimonials" element={<Testimonials />} />
+                    <Route path="/login" element={<Auth />} />
+                  </Route>
+                </Routes>
+              </div>
+            </Router>
+          </CartProvider>
+        </WishlistProvider>
+      </NotificationProvider>
+    </AuthProvider>
   );
 }
 

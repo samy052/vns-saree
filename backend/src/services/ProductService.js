@@ -4,6 +4,7 @@ const Color = require('../models/Color');
 const Material = require('../models/Material');
 const Variety = require('../models/Variety');
 const Occasion = require("../models/Occasion");
+const ProductImage = require("../models/ProductImage");
 const { Op } = require("sequelize");
 
 const toIntOrNull = (value) => {
@@ -27,31 +28,60 @@ const normalizeJsonObject = (value) =>
   value && typeof value === "object" && !Array.isArray(value) ? value : {};
 
 const sanitizeProductPayload = (data = {}) => {
+  const selling_price = toFloatOrNull(data.selling_price || data.price) ?? 0;
+  const mrp_price = toFloatOrNull(data.mrp_price || data.old_price);
+  const cost_price = toFloatOrNull(data.cost_price);
+
+  // Calculate Discount Percent
+  let discount_percent = null;
+  if (mrp_price && selling_price < mrp_price) {
+    discount_percent = Math.round(((mrp_price - selling_price) / mrp_price) * 100);
+  }
+
+  // Calculate Profit Amount and Profit Percent
+  const profit_amount = cost_price !== null ? (selling_price - cost_price) : null;
+  let profit_percent = null;
+  if (cost_price && cost_price > 0) {
+    profit_percent = Math.round(((selling_price - cost_price) / cost_price) * 100);
+  }
+
   const sanitized = {
     ...data,
-    sku: data.sku && String(data.sku).trim() ? String(data.sku).trim().toUpperCase() : undefined,
-    price: toFloatOrNull(data.price) ?? 0,
-    old_price: toFloatOrNull(data.old_price),
-    cost_price: toFloatOrNull(data.cost_price),
+    selling_price,
+    mrp_price,
+    cost_price,
+    profit_amount,
+    profit_percent,
+    discount_percent: discount_percent ?? toIntOrNull(data.discount_percent),
     weight: toFloatOrNull(data.weight),
     length: toFloatOrNull(data.length),
     width: toFloatOrNull(data.width),
     stock_quantity: toIntOrZero(data.stock_quantity),
     low_stock_threshold: toIntOrZero(data.low_stock_threshold),
-    discount_percent: toIntOrNull(data.discount_percent),
     category_id: toIntOrNull(data.category_id),
     material_id: toIntOrNull(data.material_id),
     variety_id: toIntOrNull(data.variety_id),
-    color_id: toIntOrNull(data.color_id),
     occasion_id: toIntOrNull(data.occasion_id),
-    color_stocks: normalizeJsonObject(data.color_stocks),
-    product_images_by_color: normalizeJsonObject(data.product_images_by_color),
+    color_stocks: typeof data.color_stocks === "object" ? data.color_stocks : {},
+    images: Array.isArray(data.images) ? data.images : [],
   };
 
-  delete sanitized.cover_image_selection; // UI helper field, never persisted
+  // Automatic SKU generation if not present
+  if (!sanitized.sku || String(sanitized.sku).trim() === "") {
+    const namePrefix = sanitized.name ? String(sanitized.name).substring(0, 3).toUpperCase() : "PROD";
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(100 + Math.random() * 900);
+    sanitized.sku = `${namePrefix}-${timestamp}-${random}`;
+  }
 
-  // Prevent unintentionally writing undefined SKU during updates.
-  if (sanitized.sku === undefined) delete sanitized.sku;
+  // Final field cleanup
+  delete sanitized.price;
+  delete sanitized.old_price;
+  // delete sanitized.color_stocks; // DO NOT DELETE THIS ANYMORE
+  delete sanitized.cover_image_selection;
+  delete sanitized.product_images_by_color;
+  delete sanitized.cover_image_url;
+  delete sanitized.image_url;
 
   return sanitized;
 };
@@ -70,6 +100,10 @@ class ProductService {
       pageSize = 10,
       paginated = false,
       search = "",
+      minPrice,
+      maxPrice,
+      sortBy = "newest",
+      specialCollection,
     } = filters;
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -77,25 +111,104 @@ class ProductService {
     const offset = (pageNum - 1) * limit;
 
     const queryOptions = {
-      include: [Category, Color, Material, Variety, Occasion],
+      include: [
+        Category, 
+        Material, 
+        Variety, 
+        Occasion,
+        { model: ProductImage, as: 'productImages' }
+      ],
       where: {},
-      order: [["id", "DESC"]],
+      order: [],
     };
 
-    if (category) queryOptions.where.category_id = category;
-    if (material) queryOptions.where.material_id = material;
-    if (variety) queryOptions.where.variety_id = variety;
-    if (occasion) queryOptions.where.occasion_id = occasion;
+    // Sorting Logic
+    if (sortBy === "price_asc") {
+      queryOptions.order.push(["selling_price", "ASC"]);
+    } else if (sortBy === "price_desc") {
+      queryOptions.order.push(["selling_price", "DESC"]);
+    } else if (sortBy === "special") {
+      // Prioritize special collection, then newest
+      queryOptions.order.push(["is_special_collection", "DESC"]);
+      queryOptions.order.push(["id", "DESC"]);
+    } else {
+      // default: newest
+      queryOptions.order.push(["id", "DESC"]);
+    }
+
+    // Array filtering helper
+    const parseCommaSeparated = (val) => {
+      if (!val) return null;
+      const arr = String(val).split(",").map((v) => parseInt(v.trim(), 10)).filter((v) => !isNaN(v));
+      return arr.length > 0 ? arr : null;
+    };
+
+    const categories = parseCommaSeparated(category);
+    if (categories) queryOptions.where.category_id = { [Op.in]: categories };
+
+    const materials = parseCommaSeparated(material);
+    if (materials) queryOptions.where.material_id = { [Op.in]: materials };
+
+    const varieties = parseCommaSeparated(variety);
+    if (varieties) queryOptions.where.variety_id = { [Op.in]: varieties };
+
+    const occasions = parseCommaSeparated(occasion);
+    if (occasions) queryOptions.where.occasion_id = { [Op.in]: occasions };
+
+    // Price Filtering
+    if (minPrice || maxPrice) {
+      const priceFilter = {};
+      let hasPrice = false;
+      if (minPrice && !isNaN(parseInt(minPrice))) {
+        priceFilter[Op.gte] = parseInt(minPrice);
+        hasPrice = true;
+      }
+      if (maxPrice && !isNaN(parseInt(maxPrice))) {
+        priceFilter[Op.lte] = parseInt(maxPrice);
+        hasPrice = true;
+      }
+      if (hasPrice) {
+        queryOptions.where.selling_price = priceFilter;
+      }
+    }
+
     if (isAvailable === "true" || isAvailable === "false") {
       queryOptions.where.is_available = isAvailable === "true";
     }
 
+    if (specialCollection === "true" || specialCollection === "false") {
+      queryOptions.where.is_special_collection = specialCollection === "true";
+    }
+
     if (search && String(search).trim()) {
       const text = String(search).trim();
-      queryOptions.where[Op.or] = [
-        { name: { [Op.iLike]: `%${text}%` } },
-        { sku: { [Op.iLike]: `%${text}%` } },
-      ];
+      const words = text.split(/\s+/).filter(w => w.length >= 1);
+
+      const { literal } = require('sequelize');
+
+      const buildWordConditions = (word) => {
+        const escaped = word.replace(/'/g, "''");
+        return [
+          // Standard partial match (fast, catches substrings)
+          { name: { [Op.iLike]: `%${word}%` } },
+          { short_description: { [Op.iLike]: `%${word}%` } },
+          { description: { [Op.iLike]: `%${word}%` } },
+          { '$Material.name$': { [Op.iLike]: `%${word}%` } },
+          { '$Category.name$': { [Op.iLike]: `%${word}%` } },
+          { '$Variety.name$': { [Op.iLike]: `%${word}%` } },
+          { '$Occasion.name$': { [Op.iLike]: `%${word}%` } },
+          // pg_trgm fuzzy match on product name (handles typos like "banarsi" → "Banarasi")
+          literal(`similarity("Product"."name", '${escaped}') > 0.1`),
+          literal(`similarity("Product"."short_description", '${escaped}') > 0.1`),
+        ];
+      };
+
+      const allConditions = words.flatMap(buildWordConditions);
+      // Also match on the full phrase
+      buildWordConditions(text).forEach(c => allConditions.push(c));
+
+      queryOptions.where[Op.or] = allConditions;
+      queryOptions.subQuery = false;
     }
 
     if (stockStatus === "in_stock") {
@@ -108,10 +221,16 @@ class ProductService {
       };
     }
 
-    const requiresColorFilter = Boolean(color);
+    const targetColors = parseCommaSeparated(color);
     const allRows = await Product.findAll(queryOptions);
-    const filteredRows = requiresColorFilter
-      ? allRows.filter((p) => (parseInt(p.color_stocks?.[String(color)], 10) || 0) > 0)
+    
+    // Filter by color JSONB (if any colors selected)
+    const filteredRows = targetColors 
+      ? allRows.filter((p) => {
+          if (!p.color_stocks) return false;
+          // Product matches if it has stock > 0 for ANY of the selected colors
+          return targetColors.some(cId => (parseInt(p.color_stocks[String(cId)], 10) || 0) > 0);
+        })
       : allRows;
 
     if (!paginated || paginated === "false") {
@@ -173,23 +292,31 @@ class ProductService {
 
   async getProductById(id) {
     return await Product.findByPk(id, {
-      include: [Category, Color, Material, Variety, Occasion]
+      include: [
+        Category, 
+        Material, 
+        Variety, 
+        Occasion,
+        { model: ProductImage, as: 'productImages' }
+      ]
     });
   }
 
   async getProductBySlug(slug) {
     return await Product.findOne({
       where: { slug },
-      include: [Category, Color, Material, Variety, Occasion]
+      include: [
+        Category, 
+        Material, 
+        Variety, 
+        Occasion,
+        { model: ProductImage, as: 'productImages' }
+      ]
     });
   }
 
   async createProduct(data) {
     const cleaned = sanitizeProductPayload(data);
-    if (!cleaned.sku) {
-      const prefix = cleaned.name ? String(cleaned.name).substring(0, 3).toUpperCase() : "SKU";
-      cleaned.sku = `${prefix}-${Date.now().toString().slice(-8)}-${Math.floor(100 + Math.random() * 900)}`;
-    }
     return await Product.create(cleaned);
   }
 

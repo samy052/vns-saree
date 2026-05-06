@@ -13,9 +13,12 @@ const CouponRoutes = require("./routes/CouponRoutes");
 const ProductRoutes = require("./routes/ProductRoutes");
 const OrderRoutes = require("./routes/OrderRoutes");
 const RazorpayRoutes = require("./routes/RazorpayRoutes");
+const AuthRoutes = require("./routes/AuthRoutes");
+const CartRoutes = require("./routes/CartRoutes");
+const WishlistRoutes = require("./routes/WishlistRoutes");
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5003;
 
 // Middleware
 app.use(cors());
@@ -31,6 +34,9 @@ app.use("/api/coupons", CouponRoutes);
 app.use("/api/products", ProductRoutes);
 app.use("/api/orders", OrderRoutes);
 app.use("/api/razorpay", RazorpayRoutes);
+app.use("/api/auth", AuthRoutes);
+app.use("/api/cart", CartRoutes);
+app.use("/api/wishlist", WishlistRoutes);
 
 app.get("/", (req, res) => {
   res.send("VNS Saree API is running...");

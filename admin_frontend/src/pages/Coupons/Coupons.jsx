@@ -15,7 +15,7 @@ export default function Coupons() {
 
   const fetchCoupons = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/coupons');
+      const response = await fetch('http://localhost:5003/api/coupons');
       const data = await response.json();
       setCoupons(data);
       setLoading(false);

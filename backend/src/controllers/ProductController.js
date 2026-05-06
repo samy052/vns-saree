@@ -24,95 +24,91 @@ const buildProductPayloadWithImages = async (req) => {
   }
 
   const productData = typeof rawProductData === "string" ? JSON.parse(rawProductData) : rawProductData;
-  const existingImagesByColor =
-    productData.product_images_by_color && typeof productData.product_images_by_color === "object"
-      ? productData.product_images_by_color
-      : {};
-
-  const uploadedImagesByColor = {};
+  
+  // Existing images from the client (already in the DB or already uploaded)
+  const existingImages = Array.isArray(productData.images) ? productData.images : [];
+  
+  const newImages = [];
   const files = Array.isArray(req.files) ? req.files : [];
 
   for (const file of files) {
     const match = /^color_(\d+)$/.exec(file.fieldname || "");
     if (!match) continue;
 
-    const colorId = match[1];
-    if (!uploadedImagesByColor[colorId]) uploadedImagesByColor[colorId] = [];
-    if (uploadedImagesByColor[colorId].length >= 6) {
-      throw new Error(`Color ${colorId} supports maximum 6 images`);
-    }
-
+    const colorId = parseInt(match[1], 10);
     const uploadResult = await uploadBufferToCloudinary(file.buffer);
-    uploadedImagesByColor[colorId].push(uploadResult.secure_url);
+    newImages.push({
+      color_id: colorId,
+      url: uploadResult.secure_url,
+      is_cover: false // Default to false, will be set later
+    });
   }
 
-  const mergedImagesByColor = {};
-  const allImageUrls = [];
-
-  const allColorKeys = new Set([
-    ...Object.keys(existingImagesByColor),
-    ...Object.keys(uploadedImagesByColor),
-  ]);
-
-  allColorKeys.forEach((colorKey) => {
-    const existingList = Array.isArray(existingImagesByColor[colorKey]) ? existingImagesByColor[colorKey] : [];
-    const uploadedList = Array.isArray(uploadedImagesByColor[colorKey]) ? uploadedImagesByColor[colorKey] : [];
-    const merged = [...existingList, ...uploadedList].filter(Boolean);
-    if (merged.length > 0) {
-      if (merged.length > 6) {
-        throw new Error(`Color ${colorKey} supports maximum 6 images`);
-      }
-      mergedImagesByColor[colorKey] = merged;
-      allImageUrls.push(...merged);
-    }
-  });
+  // Combined existing and new images
+  let finalImages = [...existingImages, ...newImages];
 
   const selectedColorIds = Object.entries(productData.color_stocks || {})
     .filter(([, qty]) => parseInt(qty, 10) > 0)
-    .map(([colorId]) => colorId);
+    .map(([colorId]) => parseInt(colorId, 10));
 
+  // Validation: Check if each selected color has at least one image
   for (const colorId of selectedColorIds) {
-    const colorImages = mergedImagesByColor[colorId] || [];
-    if (colorImages.length < 1) {
+    const hasImage = finalImages.some(img => img.color_id === colorId);
+    if (!hasImage) {
       throw new Error(`Color ${colorId} must have at least 1 image`);
     }
   }
 
-  if (allImageUrls.length < 1) {
+  if (finalImages.length < 1) {
     throw new Error("At least one product image is required");
   }
 
-  const requestedCover = productData.cover_image_url;
-  const coverSelection = productData.cover_image_selection;
-  let coverImageUrl = "";
+  // Handle cover image selection
+  const coverSelection = productData.cover_image_selection; // e.g., "existing:1:0" or "new:1:0"
+  let coverSet = false;
 
-  if (typeof coverSelection === "string") {
-    const [source, colorId, indexRaw] = coverSelection.split(":");
+  if (typeof coverSelection === "string" && coverSelection.includes(":")) {
+    const [source, colorIdStr, indexRaw] = coverSelection.split(":");
+    const colorId = parseInt(colorIdStr, 10);
     const index = parseInt(indexRaw, 10);
-    if (Number.isInteger(index) && index >= 0) {
-      if (source === "existing") {
-        const existingList = Array.isArray(existingImagesByColor[colorId]) ? existingImagesByColor[colorId] : [];
-        coverImageUrl = existingList[index] || "";
-      } else if (source === "new") {
-        const uploadedList = Array.isArray(uploadedImagesByColor[colorId]) ? uploadedImagesByColor[colorId] : [];
-        coverImageUrl = uploadedList[index] || "";
+
+    if (source === "existing") {
+      // Find the image in existingImages by color and index
+      const colorImages = existingImages.filter(img => img.color_id === colorId);
+      const targetImage = colorImages[index];
+      if (targetImage) {
+        // Reset all covers
+        finalImages.forEach(img => img.is_cover = false);
+        // Find this specific image in finalImages and set as cover
+        const imgInFinal = finalImages.find(img => img.url === targetImage.url);
+        if (imgInFinal) {
+          imgInFinal.is_cover = true;
+          coverSet = true;
+        }
+      }
+    } else if (source === "new") {
+      const colorNewImages = newImages.filter(img => img.color_id === colorId);
+      const targetImage = colorNewImages[index];
+      if (targetImage) {
+        finalImages.forEach(img => img.is_cover = false);
+        targetImage.is_cover = true;
+        coverSet = true;
       }
     }
   }
 
-  if (!coverImageUrl && requestedCover && allImageUrls.includes(requestedCover)) {
-    coverImageUrl = requestedCover;
-  }
-
-  if (!coverImageUrl) {
-    coverImageUrl = allImageUrls[0];
+  // If cover was not set explicitly, or selection was invalid, pick the first one
+  if (!coverSet) {
+    // If there was an existing cover, try to keep it
+    const existingCover = finalImages.find(img => img.is_cover);
+    if (!existingCover) {
+      finalImages[0].is_cover = true;
+    }
   }
 
   return {
     ...productData,
-    product_images_by_color: mergedImagesByColor,
-    cover_image_url: coverImageUrl,
-    image_url: coverImageUrl, // Backward compatibility with legacy image field
+    images: finalImages,
   };
 };
 

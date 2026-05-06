@@ -20,6 +20,7 @@
     background: linear-gradient(90deg, #D4AF37 0%, #F5E1A4 50%, #D4AF37 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: shimmer 3s linear infinite;
 }
@@ -47,11 +48,11 @@
 }
 
 .zoom-image {
-    transition: transform 0.3s ease-out;
+    transition: transform 0.2s ease-out;
 }
 
 .zoom-container:hover .zoom-image {
-    transform: scale(1.5);
+    transform: scale(1.08);
 }
 
 /* Custom Accordion transition */

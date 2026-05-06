@@ -45,14 +45,14 @@ const ProductModal = ({
 
   const isFormValid = 
     formData.name && 
-    formData.price && 
-    formData.stock_quantity >= 0 && 
+    formData.selling_price && 
+    formData.stock_quantity !== "" && 
     formData.category_id && 
     formData.variety_id && 
     formData.material_id;
 
   // Profit Calculation
-  const sellingPrice = parseFloat(formData.price) || 0;
+  const sellingPrice = parseFloat(formData.selling_price) || 0;
   const buyingPrice = parseFloat(formData.cost_price) || 0;
   const profitAmount = sellingPrice - buyingPrice;
   const profitPercent = buyingPrice > 0 ? Math.round((profitAmount / buyingPrice) * 100) : 0;
@@ -165,8 +165,8 @@ const ProductModal = ({
                 </div>
                 
                 <div>
-                  <label className={labelClasses(!isSelectionComplete)}>Short Tagline</label>
-                  <input type="text" name="short_description" value={formData.short_description} onChange={onInputChange} placeholder="Brief highlight for cards" className={inputClasses(!isSelectionComplete)} />
+                  <label className={labelClasses(!isSelectionComplete)}>Short Tagline (Max 500 chars)</label>
+                  <input type="text" name="short_description" value={formData.short_description} onChange={onInputChange} maxLength={500} placeholder="Brief highlight for cards" className={inputClasses(!isSelectionComplete)} />
                 </div>
 
                 <div className="md:col-span-2">
@@ -187,7 +187,7 @@ const ProductModal = ({
                 <div>
                   <label className={labelClasses(!isSelectionComplete)}>Selling Price (₹) *</label>
                   <div className="relative group">
-                    <input type="text" name="price" value={formData.price} onChange={handleNumberInput} required placeholder="0.00" className={inputClasses(!isSelectionComplete)} />
+                    <input type="text" name="selling_price" value={formData.selling_price} onChange={handleNumberInput} required placeholder="0.00" className={inputClasses(!isSelectionComplete)} />
                     <div className="absolute left-0 -top-12 scale-0 group-hover:scale-100 transition-all bg-gray-800 text-white text-[10px] p-2 rounded shadow-lg z-[60] w-48 pointer-events-none">
                       The final price at which the product is sold to customers.
                     </div>
@@ -197,12 +197,12 @@ const ProductModal = ({
                 <div>
                   <label className={labelClasses(!isSelectionComplete)}>MRP Price (₹)</label>
                   <div className="relative group">
-                    <input type="text" name="old_price" value={formData.old_price} onChange={handleNumberInput} placeholder="0.00" className={`${inputClasses(!isSelectionComplete)} ${formData.old_price && parseFloat(formData.old_price) <= parseFloat(formData.price) ? 'border-red-400 focus:border-red-500' : ''}`} />
+                    <input type="text" name="mrp_price" value={formData.mrp_price} onChange={handleNumberInput} placeholder="0.00" className={`${inputClasses(!isSelectionComplete)} ${formData.mrp_price && parseFloat(formData.mrp_price) < parseFloat(formData.selling_price) ? 'border-red-400 focus:border-red-500' : ''}`} />
                     <div className="absolute left-0 -top-12 scale-0 group-hover:scale-100 transition-all bg-gray-800 text-white text-[10px] p-2 rounded shadow-lg z-[60] w-48 pointer-events-none">
-                      Maximum Retail Price. This should be higher than the Selling Price for discounts.
+                      Maximum Retail Price. This should be equal to or higher than the Selling Price.
                     </div>
-                    {formData.old_price && parseFloat(formData.old_price) <= parseFloat(formData.price) && (
-                      <p className="text-[9px] text-red-500 mt-1 font-bold">MRP must be higher than Selling Price!</p>
+                    {formData.mrp_price && parseFloat(formData.mrp_price) < parseFloat(formData.selling_price) && (
+                      <p className="text-[9px] text-red-500 mt-1 font-bold">MRP cannot be less than Selling Price!</p>
                     )}
                   </div>
                 </div>
@@ -214,8 +214,8 @@ const ProductModal = ({
                       type="text" 
                       value={
                         (() => {
-                          const s = parseFloat(formData.price);
-                          const m = parseFloat(formData.old_price);
+                          const s = parseFloat(formData.selling_price);
+                          const m = parseFloat(formData.mrp_price);
                           if (m > s && m > 0) return Math.round(((m - s) / m) * 100);
                           return 0;
                         })()
@@ -263,13 +263,13 @@ const ProductModal = ({
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative">
               <div className="flex items-center gap-3 mb-6 text-orange-600">
                 <Package className="w-4 h-4" />
-                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 4: Inventory & Color Variants</h3>
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 4: Image Management by Color</h3>
               </div>
 
               <div className="space-y-6">
                 <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-inner">
                   <div className="flex justify-between items-center mb-4">
-                    <label className="text-[10px] font-black text-gray-400 uppercase">Stock per Color Variant</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase">Upload Images for Available Colors</label>
                     <div className="relative w-48">
                       <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
                       <input 
@@ -285,79 +285,73 @@ const ProductModal = ({
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar p-1">
                     {filteredColors.map((color) => {
                       const qty = formData.color_stocks?.[color.id] || 0;
-                      const colorId = String(color.id);
-                      const savedImages = formData.product_images_by_color?.[colorId] || [];
-                      const localFiles = newColorImageFiles?.[colorId] || [];
+                      const colorIdNum = parseInt(color.id, 10);
+                      const colorIdStr = String(color.id);
+                      
+                      const savedImages = (formData.images || []).filter(img => img.color_id === colorIdNum);
+                      const localFiles = newColorImageFiles?.[colorIdStr] || [];
                       const totalImages = savedImages.length + localFiles.length;
+
                       return (
                         <div key={color.id} className={`p-2.5 rounded-xl border transition-all flex flex-col items-center gap-2 ${qty > 0 ? 'bg-[#800020]/5 border-[#800020]/30 shadow-md ring-1 ring-[#800020]/10' : 'bg-white border-gray-100 opacity-60 hover:opacity-100 shadow-sm'}`}>
                           <div className="w-6 h-6 rounded-full border shadow-sm" style={{ backgroundColor: color.hex_code }} title={color.name} />
                           <span className="text-[9px] font-black text-gray-600 truncate w-full text-center uppercase tracking-tighter">{color.name}</span>
+                          
                           <input
                             type="number"
                             min="0"
-                            placeholder="0"
-                            value={formData.color_stocks?.[colorId] || ""}
-                            onChange={(e) => onColorStockChange(colorId, e.target.value)}
+                            placeholder="Stock"
+                            value={formData.color_stocks?.[colorIdStr] || ""}
+                            onChange={(e) => onColorStockChange(colorIdStr, e.target.value)}
                             className="w-full text-center text-xs p-1.5 bg-white border border-gray-200 rounded-lg font-bold focus:border-[#800020] outline-none shadow-sm"
                           />
+
                           {qty > 0 && (
-                            <div className="w-full space-y-2 mt-1">
-                              <label className="block text-[9px] font-bold uppercase text-gray-500">Images ({totalImages}/6)</label>
+                            <div className="w-full space-y-2 mt-1 animate-in zoom-in-95 duration-200">
+                              <label className="block text-[9px] font-bold uppercase text-gray-500 text-center">Images ({totalImages}/6)</label>
                               <input
                                 type="file"
                                 accept="image/*"
                                 multiple
                                 onChange={(e) => {
-                                  onColorImageUpload(colorId, e.target.files);
+                                  onColorImageUpload(colorIdStr, e.target.files);
                                   e.target.value = "";
                                 }}
-                                className="w-full text-[9px] text-gray-500 file:mr-1 file:px-2 file:py-1 file:rounded file:border-0 file:bg-[#800020] file:text-white"
+                                className="w-full text-[9px] text-gray-500 file:mr-0 file:px-2 file:py-1 file:rounded file:border-0 file:bg-[#800020] file:text-white file:cursor-pointer"
                               />
-                              {totalImages < 1 && (
-                                <p className="text-[9px] text-red-500 font-bold">At least 1 image required</p>
-                              )}
+                              
                               <div className="grid grid-cols-2 gap-1">
-                                {savedImages.map((url, idx) => (
-                                  <div key={url} className="relative border rounded overflow-hidden">
+                                {savedImages.map((img, idx) => (
+                                  <div key={img.url} className="relative border rounded overflow-hidden">
                                     <button
                                       type="button"
                                       title="Click to preview"
-                                      onClick={() => setPreviewImage({ url, name: `${color.name} image` })}
+                                      onClick={() => setPreviewImage({ url: img.url, name: `${color.name} image` })}
                                       className="w-full bg-white cursor-zoom-in"
                                     >
-                                      <img src={url} alt={`${color.name}`} className="w-full h-14 object-contain bg-white" />
+                                      <img src={img.url} alt={`${color.name}`} className="w-full h-10 object-contain bg-white" />
                                     </button>
-                                    <div className="absolute top-0 left-0 right-0 flex justify-between p-1 bg-black/45">
+                                    <div className="absolute top-0 left-0 right-0 flex justify-between p-0.5 bg-black/45">
                                       <button
                                         type="button"
-                                        onClick={() => onCoverImageSelect({ type: "existing", colorId, index: idx, url })}
-                                        className={`text-[8px] px-1 rounded ${formData.cover_image_url === url ? "bg-green-500 text-white" : "bg-white/90 text-black"}`}
+                                        onClick={() => onCoverImageSelect({ type: "existing", colorId: colorIdNum, index: idx, url: img.url })}
+                                        className={`text-[7px] px-1 rounded ${img.is_cover || formData.cover_image_selection === `existing:${colorIdNum}:${idx}` ? "bg-green-500 text-white" : "bg-white/90 text-black"}`}
                                       >
-                                        Cover
+                                        Cov
                                       </button>
-                                      <div className="flex gap-1">
-                                        <button
-                                          type="button"
-                                          onClick={() => setPreviewImage({ url, name: `${color.name} image` })}
-                                          className="text-[8px] px-1 rounded bg-blue-500 text-white"
-                                        >
-                                          Preview
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => onRemoveSavedColorImage(colorId, url)}
-                                          className="text-[8px] px-1 rounded bg-red-500 text-white"
-                                        >
-                                          X
-                                        </button>
-                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => onRemoveSavedColorImage(colorIdNum, img.url)}
+                                        className="text-[7px] px-1 rounded bg-red-500 text-white"
+                                      >
+                                        X
+                                      </button>
                                     </div>
                                   </div>
                                 ))}
                                 {localFiles.map((file, idx) => {
                                   const previewUrl = URL.createObjectURL(file);
-                                  const isSelectedCover = formData.cover_image_selection === `new:${colorId}:${idx}`;
+                                  const isSelectedCover = formData.cover_image_selection === `new:${colorIdStr}:${idx}`;
                                   return (
                                     <div key={`${file.name}-${idx}`} className="relative border rounded overflow-hidden">
                                       <button
@@ -366,27 +360,20 @@ const ProductModal = ({
                                         onClick={() => setPreviewImage({ url: previewUrl, name: file.name })}
                                         className="w-full bg-white cursor-zoom-in"
                                       >
-                                        <img src={previewUrl} alt={file.name} className="w-full h-14 object-contain bg-white" />
+                                        <img src={previewUrl} alt={file.name} className="w-full h-10 object-contain bg-white" />
                                       </button>
-                                      <div className="absolute top-0 right-0 p-1 bg-black/45 flex gap-1">
+                                      <div className="absolute top-0 right-0 p-0.5 bg-black/45 flex gap-0.5">
                                         <button
                                           type="button"
-                                          onClick={() => setPreviewImage({ url: previewUrl, name: file.name })}
-                                          className="text-[8px] px-1 rounded bg-blue-500 text-white"
+                                          onClick={() => onCoverImageSelect({ type: "new", colorId: colorIdStr, index: idx })}
+                                          className={`text-[7px] px-1 rounded ${isSelectedCover ? "bg-emerald-300 text-black" : "bg-green-50 text-black"}`}
                                         >
-                                          Preview
+                                          C
                                         </button>
                                         <button
                                           type="button"
-                                          onClick={() => onCoverImageSelect({ type: "new", colorId, index: idx })}
-                                          className={`text-[8px] px-1 rounded mr-1 ${isSelectedCover ? "bg-emerald-300 text-black" : "bg-green-500 text-white"}`}
-                                        >
-                                          Cover
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => onRemoveNewColorImage(colorId, idx)}
-                                          className="text-[8px] px-1 rounded bg-red-500 text-white"
+                                          onClick={() => onRemoveNewColorImage(colorIdStr, idx)}
+                                          className="text-[7px] px-1 rounded bg-red-500 text-white"
                                         >
                                           X
                                         </button>
@@ -412,8 +399,14 @@ const ProductModal = ({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
                    <div className="p-4 bg-gradient-to-br from-[#800020] to-[#a0152d] rounded-2xl text-white flex flex-col items-center justify-center shadow-lg">
                       <p className="text-[10px] uppercase font-bold opacity-80 mb-1">Total Available Stock</p>
-                      <p className="text-3xl font-black">{formData.stock_quantity || 0}</p>
-                      <p className="text-[9px] uppercase font-medium opacity-60 mt-1">Total Pieces</p>
+                      <input 
+                        type="text" 
+                        name="stock_quantity"
+                        value={formData.stock_quantity}
+                        onChange={handleNumberInput}
+                        className="w-20 bg-white/20 border-none text-center text-2xl font-black text-white focus:outline-none rounded-lg"
+                      />
+                      <p className="text-[9px] uppercase font-medium opacity-60 mt-1">Global Stock Count</p>
                    </div>
                    
                    <div>
