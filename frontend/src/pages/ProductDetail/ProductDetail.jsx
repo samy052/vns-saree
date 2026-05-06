@@ -215,7 +215,7 @@ const ProductDetail = () => {
 
   return (
     <div className="relative min-h-screen bg-[#F5F1E8]" ref={rootRef}>
-      <main className="max-w-6xl mx-auto px-4 lg:px-8 py-6">
+      <main className="max-w-6xl mx-auto px-4 lg:px-12 py-6">
         <nav className="flex text-[10px] uppercase tracking-widest text-[#3D2817]/60 mb-6" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li><Link to="/" className="hover:text-[#800020]">Home</Link></li>

@@ -128,7 +128,7 @@ const Checkout = () => {
   return (
     <div className="relative min-h-screen flex flex-col bg-[#F5F1E8]" ref={rootRef}>
       <main className="flex-grow py-12 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        <div className="w-full px-4 lg:px-12">
           <div className="flex items-center justify-center mb-16 space-x-4 md:space-x-12 animate-slide-up">
             <div className="flex items-center space-x-3">
               <span className="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-sm border border-green-200"><iconify-icon icon="lucide:check" /></span>

@@ -103,7 +103,7 @@ const Testimonials = () => {
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#D4AF37]/15 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-64 h-64 bg-[#800020]/10 rounded-full blur-3xl"></div>
 
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 relative z-10">
+        <div className="w-full px-4 lg:px-12 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-[#800020] mb-4 brand-font uppercase tracking-widest reveal">
               Our Artists At Work

@@ -57,6 +57,7 @@ const INITIAL_FORM_STATE = {
   is_special_collection: false,
   is_new_arrival: false,
   is_available: true,
+  store_front_visibility: false,
 
   // Additional Info
   blouse_piece: true,
@@ -238,6 +239,7 @@ export default function EnhancedProducts() {
         variety_id: product.variety_id?.toString() || "",
         material_id: product.material_id?.toString() || "",
         occasion_id: product.occasion_id?.toString() || "",
+        store_front_visibility: !!product.store_front_visibility,
       });
     } else {
       setEditingProduct(null);
@@ -359,6 +361,7 @@ export default function EnhancedProducts() {
         material_id: parseInt(formData.material_id) || null,
         variety_id: parseInt(formData.variety_id) || null,
         occasion_id: parseInt(formData.occasion_id) || null,
+        store_front_visibility: !!formData.store_front_visibility,
         // color_id is no longer used for primary classification in multi-color mode
       };
 

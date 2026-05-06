@@ -37,6 +37,10 @@ const Product = sequelize.define(
       allowNull: true,
       unique: true,
     },
+    store_front_visibility: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
 
     // Pricing & Financials
     selling_price: {

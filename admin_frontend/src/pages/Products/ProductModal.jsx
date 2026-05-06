@@ -471,13 +471,13 @@ const ProductModal = ({
                 </div>
               </div>
 
-              <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
-                 <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 hover:border-[#800020]/30 transition-all shadow-sm group">
+              <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 hover:border-[#800020]/30 transition-all shadow-sm group">
                     <div>
-                      <p className="text-xs font-black text-gray-700 uppercase tracking-tighter">Storefront Visibility</p>
-                      <p className="text-[9px] text-gray-400 font-bold uppercase">Show to customers</p>
+                      <p className="text-xs font-black text-gray-700 uppercase tracking-tighter">Hero Visibility</p>
+                      <p className="text-[9px] text-gray-400 font-bold uppercase">Show in Hero Carousel</p>
                     </div>
-                    <input type="checkbox" name="is_available" checked={formData.is_available} onChange={onInputChange} className="w-6 h-6 text-[#800020] rounded-lg cursor-pointer transition-transform group-hover:scale-110" />
+                    <input type="checkbox" name="store_front_visibility" checked={formData.store_front_visibility} onChange={onInputChange} className="w-6 h-6 text-[#800020] rounded-lg cursor-pointer transition-transform group-hover:scale-110" />
                  </div>
                  <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 hover:border-[#800020]/30 transition-all shadow-sm group">
                     <div>
@@ -492,6 +492,13 @@ const ProductModal = ({
                       <p className="text-[9px] text-gray-400 font-bold uppercase">Latest collection</p>
                     </div>
                     <input type="checkbox" name="is_new_arrival" checked={formData.is_new_arrival} onChange={onInputChange} className="w-6 h-6 text-[#800020] rounded-lg cursor-pointer transition-transform group-hover:scale-110" />
+                 </div>
+                 <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 hover:border-[#800020]/30 transition-all shadow-sm group">
+                    <div>
+                      <p className="text-xs font-black text-gray-700 uppercase tracking-tighter">Product Status</p>
+                      <p className="text-[9px] text-gray-400 font-bold uppercase">Active / Inactive</p>
+                    </div>
+                    <input type="checkbox" name="is_available" checked={formData.is_available} onChange={onInputChange} className="w-6 h-6 text-[#800020] rounded-lg cursor-pointer transition-transform group-hover:scale-110" />
                  </div>
               </div>
             </div>

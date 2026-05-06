@@ -104,6 +104,7 @@ class ProductService {
       maxPrice,
       sortBy = "newest",
       specialCollection,
+      storeFrontVisibility,
     } = filters;
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -178,6 +179,10 @@ class ProductService {
 
     if (specialCollection === "true" || specialCollection === "false") {
       queryOptions.where.is_special_collection = specialCollection === "true";
+    }
+
+    if (storeFrontVisibility === "true" || storeFrontVisibility === "false") {
+      queryOptions.where.store_front_visibility = storeFrontVisibility === "true";
     }
 
     if (search && String(search).trim()) {

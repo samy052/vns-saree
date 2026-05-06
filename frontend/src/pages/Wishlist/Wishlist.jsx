@@ -8,7 +8,7 @@ const Wishlist = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
+      <main className="w-full px-4 lg:px-12 py-12">
         <div className="mb-10 text-center">
           <h1 className="brand-font text-4xl lg:text-5xl font-bold uppercase tracking-widest text-[#800020]">
             Wishlist

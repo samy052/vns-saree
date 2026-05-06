@@ -1,34 +1,42 @@
 .brand-font {
-    font-family: 'Cinzel', serif;
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 800;
 }
 
 .gold-shimmer {
-    background: linear-gradient(90deg, #D4AF37 0%, #F5E1A4 50%, #D4AF37 100%);
+    background: linear-gradient(90deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: shimmer 3s linear infinite;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
 }
 
 /* Logo Animations */
 .maroon-shimmer {
-    background: linear-gradient(90deg, #800020 0%, #D81B43 20%, #800020 40%, #800020 100%);
+    background: linear-gradient(135deg, #800020 0%, #FF4500 50%, #800020 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: shimmer 4s linear infinite;
+    animation: shimmer 3s ease-in-out infinite;
     transition: all 0.5s ease;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 .group:hover .maroon-shimmer {
-    background: linear-gradient(90deg, #D4AF37 0%, #F5E1A4 20%, #D4AF37 40%, #D4AF37 100%);
+    background: linear-gradient(90deg, #FFD700 0%, #FFA500 20%, #FFD700 40%, #FFD700 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -36,8 +44,18 @@
 }
 
 @keyframes tracking-breathe {
-    0%, 100% { letter-spacing: 0.5em; opacity: 0.8; }
-    50% { letter-spacing: 0.65em; opacity: 1; text-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
+
+    0%,
+    100% {
+        letter-spacing: 0.2em;
+        opacity: 0.8;
+    }
+
+    50% {
+        letter-spacing: 0.35em;
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(255, 165, 0, 0.4);
+    }
 }
 
 .animate-tracking-breathe {
@@ -50,6 +68,7 @@
     border-bottom: 1px solid rgba(212, 175, 55, 0.28);
     box-shadow: 0 4px 24px rgba(128, 0, 32, 0.10);
     position: sticky;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 .site-header::after {
@@ -66,8 +85,13 @@
 }
 
 @keyframes header-glow {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 200% 50%;
+    }
 }
 
 /* Marquee Animation for Top Bar */
@@ -82,11 +106,17 @@
     white-space: nowrap;
     padding-right: 50px;
     text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    font-family: 'Poppins', sans-serif !important;
 }
 
 @keyframes marquee-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 /* Enhanced header border animation */
@@ -103,8 +133,13 @@ header::before {
 }
 
 @keyframes top-border-shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 .header-actions {
@@ -129,6 +164,7 @@ header::before {
     padding: 0;
     cursor: pointer;
     transition: color 0.2s ease;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 .header-action-item::after {
@@ -190,6 +226,7 @@ header::before {
     font-size: 1rem;
     font-weight: 800;
     margin: 0 0 0.35rem;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 .profile-phone {
@@ -221,6 +258,7 @@ header::before {
     cursor: pointer;
     text-align: left;
     transition: color 0.18s ease;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 .profile-panel-group a:hover,
@@ -240,6 +278,7 @@ header::before {
     padding: 0.65rem 1rem;
     text-transform: uppercase;
     transition: background-color 0.2s ease, color 0.2s ease;
+    font-family: 'Poppins', sans-serif !important;
 }
 
 .profile-login-btn:hover {
@@ -263,6 +302,7 @@ header::before {
     justify-content: center;
     padding: 0 0.25rem;
     box-shadow: 0 3px 8px rgba(128, 0, 32, 0.25);
+    font-family: 'Poppins', sans-serif !important;
 }
 
 @media (max-width: 640px) {

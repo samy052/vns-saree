@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import logo from "../assets/logosaree.png";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -51,7 +52,7 @@ const Header = ({ activeItem }) => {
   return (
     <>
       {/* Top Notification Bar with Marquee */}
-      <div className="bg-gradient-to-r from-[#800020] via-[#B8860B] to-[#800020] text-[#FFD700] text-[11px] py-3 px-4 text-center tracking-[0.15em] uppercase font-bold overflow-hidden relative">
+      <div className="bg-gradient-to-r from-[#800020] via-[#B8860B] to-[#800020] text-[#FFD700] text-[11px] py-3 px-4 lg:px-12 text-center tracking-[0.15em] uppercase font-bold overflow-hidden relative">
         <div className="marquee-wrapper">
           <span className="marquee-content">
             Premium Banarasi Sarees at Best Prices | Free Shipping | Pure Silk |
@@ -65,7 +66,7 @@ const Header = ({ activeItem }) => {
       </div>
 
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b-2 border-[#D4AF37]/40 shadow-[0_4px_30px_rgba(128,0,32,0.15)] transition-all duration-500 relative">
-        <nav className="max-w-7xl mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
+        <nav className="w-full px-4 lg:px-12 h-20 flex items-center justify-between">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link
@@ -73,18 +74,19 @@ const Header = ({ activeItem }) => {
               id="nav-logo-link"
               className="flex items-center gap-2 group"
             >
-              <div className="w-10 h-10 bg-[#800020] rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
-                <iconify-icon
-                  icon="lucide:gem"
-                  className="text-xl text-[#D4AF37]"
-                ></iconify-icon>
+              <div className="w-20 h-20 flex items-center justify-center group-hover:scale-105 transition-all duration-300 overflow-hidden">
+                <img
+                  src={logo}
+                  alt="VNS Saree Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="brand-font text-xl lg:text-2xl font-bold tracking-tighter maroon-shimmer">
                   Banarasi
                 </span>
-                <span className="text-[8px] lg:text-[9px] uppercase tracking-[0.2em] -mt-0.5 font-bold gold-shimmer animate-tracking-breathe">
-                  Kala
+                <span className="text-[20px] lg:text-[20px] uppercase tracking-[0.2em] -mt-0.5 font-bold gold-shimmer animate-tracking-breathe">
+                  KALA
                 </span>
               </div>
             </Link>
@@ -135,17 +137,15 @@ const Header = ({ activeItem }) => {
             {/* Search Form */}
             <form
               onSubmit={handleSearch}
-              className={`hidden md:flex items-center rounded-full border-2 transition-all duration-300 overflow-hidden ${
-                searchFocused
-                  ? "border-[#800020] bg-white shadow-lg shadow-[#800020]/10 w-72"
-                  : "border-[#D4AF37]/40 bg-white w-56"
-              }`}
+              className={`hidden md:flex items-center rounded-full border-2 transition-all duration-300 overflow-hidden ${searchFocused
+                ? "border-[#800020] bg-white shadow-lg shadow-[#800020]/10 w-72"
+                : "border-[#D4AF37]/40 bg-white w-56"
+                }`}
             >
               <button
                 type="submit"
-                className={`pl-4 pr-2 flex items-center justify-center transition-colors ${
-                  searchFocused ? "text-[#800020]" : "text-gray-400"
-                }`}
+                className={`pl-4 pr-2 flex items-center justify-center transition-colors ${searchFocused ? "text-[#800020]" : "text-gray-400"
+                  }`}
               >
                 <iconify-icon
                   icon="lucide:search"

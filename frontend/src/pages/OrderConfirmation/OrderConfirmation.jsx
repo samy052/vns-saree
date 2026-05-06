@@ -21,7 +21,7 @@ const OrderConfirmation = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F1E8]" ref={rootRef}>
       <main className="flex-grow py-12 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        <div className="w-full px-4 lg:px-12">
           {/* Success Hero */}
           <div className="text-center mb-16 reveal-up">
             <div className="flex justify-center mb-8">

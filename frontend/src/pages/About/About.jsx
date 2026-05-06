@@ -105,7 +105,7 @@ const About = () => {
 
         {/* Brand Story */}
         <section className="py-24 bg-white overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="w-full px-4 lg:px-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
               <div className="reveal">
                 <h2 className="text-4xl md:text-5xl font-bold text-[#800020] mb-8 leading-tight brand-font">
@@ -166,7 +166,7 @@ const About = () => {
 
         {/* Craftsmanship Process */}
         <section className="py-24 bg-[#F5F1E8]">
-          <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="w-full px-4 lg:px-12">
             <div className="text-center mb-20 reveal">
               <h2 className="text-4xl font-bold text-[#3D2817] mb-4 brand-font uppercase tracking-widest">
                 The Alchemy of Silk
@@ -242,7 +242,7 @@ const About = () => {
 
         {/* Our Artists */}
         <section className="py-24 bg-[#3D2817] text-white overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="w-full px-4 lg:px-12">
             <div className="flex flex-col lg:flex-row items-end justify-between mb-20 gap-8">
               <div className="max-w-2xl reveal">
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 brand-font tracking-wider uppercase">
@@ -349,7 +349,7 @@ const About = () => {
 
         {/* Ethical Sourcing */}
         <section className="py-24 bg-white">
-          <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="w-full px-4 lg:px-12">
             <div className="bg-[#800020] rounded-[2rem] p-12 lg:p-20 text-white flex flex-col lg:flex-row items-center gap-12 reveal border border-[#D4AF37]/20 shadow-2xl">
               <div className="lg:w-1/2">
                 <span className="text-[#D4AF37] font-bold text-[10px] uppercase tracking-[0.3em] mb-4 block">
@@ -428,7 +428,7 @@ const About = () => {
 
         {/* Certifications Trust Bar */}
         <section className="py-12 bg-[#F5F1E8] border-y border-[#D4AF37]/20">
-          <div className="max-w-7xl mx-auto px-4 lg:px-8">
+          <div className="w-full px-4 lg:px-12">
             <div className="flex flex-wrap justify-center md:justify-around items-center gap-12 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
               <img
                 src="https://silkmarkindia.com/assets/images/silkmark_logo.png"

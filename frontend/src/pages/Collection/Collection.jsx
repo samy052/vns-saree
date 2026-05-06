@@ -204,7 +204,7 @@ const Collection = () => {
       className="relative min-h-screen overflow-x-hidden bg-[#F5F1E8]"
       onClick={() => setActiveDropdown(null)}
     >
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+      <main className="w-full px-4 lg:px-12 py-8">
         <nav className="flex text-[10px] uppercase tracking-widest text-gray-500 mb-6">
           <Link to="/" className="hover:text-[#800020]">
             Home

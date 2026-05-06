@@ -47,7 +47,7 @@ const Cart = () => {
   return (
     <div className="min-h-screen bg-[#F5F1E8] flex flex-col">
       <main className="flex-grow py-12 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8">
+        <div className="w-full px-4 lg:px-12">
           <div className="mb-12 text-center animate-slide-up">
             <h1 className="text-4xl lg:text-5xl font-bold text-[#800020] mb-4 uppercase brand-font tracking-widest">
               Shopping Bag

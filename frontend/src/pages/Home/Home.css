@@ -45,8 +45,8 @@ h1, h2, h3, .brand-font {
 
 /* Animations */
 @keyframes float {
-    0%, 100% { transform: translateY(0px) rotateY(15deg); }
-    50% { transform: translateY(-20px) rotateY(25deg); }
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
 }
 
 .animate-float {
@@ -665,3 +665,33 @@ h1, h2, h3, .brand-font {
     background: var(--gold);
     color: #1A120B;
 }
+
+/* Hero Swiper Custom Effect */
+.hero-swiper-coverflow .swiper-slide {
+    opacity: 0.4;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: blur(2px) grayscale(20%);
+}
+
+.hero-swiper-coverflow .swiper-wrapper {
+    align-items: center;
+    display: flex;
+}
+
+.hero-swiper-coverflow .swiper-slide-active {
+    opacity: 1 !important;
+    filter: blur(0) grayscale(0);
+    z-index: 20 !important;
+}
+
+.hero-swiper-coverflow .swiper-slide-prev,
+.hero-swiper-coverflow .swiper-slide-next {
+    opacity: 0.6;
+    filter: blur(1px);
+    z-index: 10 !important;
+}
+
+.hero-swiper-coverflow .swiper-pagination-bullet {
+    background: var(--gold) !important;
+}
+
