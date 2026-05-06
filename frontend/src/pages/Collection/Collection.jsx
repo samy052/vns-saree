@@ -1,207 +1,497 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import './Collection.css';
+import React, { useState, useEffect } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { useWishlist } from "../../context/WishlistContext";
+import { useNotification } from "../../context/NotificationContext";
+import { API_ENDPOINTS } from "../../config/api";
+import "./Collection.css";
+
+const SECTION_SIZE = 20; // products shown per pagination page
+const BATCH_SIZE = 4; // products loaded per scroll trigger
+const BATCHES_PER_SECTION = SECTION_SIZE / BATCH_SIZE; // = 5
 
 const Collection = () => {
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { showNotification } = useNotification();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [colors, setColors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const [batchIndex, setBatchIndex] = useState(1);
+  const [sectionPage, setSectionPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [sectionFullyLoaded, setSectionFullyLoaded] = useState(false);
+
+  const [filters, setFilters] = useState({
+    category: [],
+    material: [],
+    color: [],
+    minPrice: 0,
+    maxPrice: 200000,
+    sortBy: "newest",
+    search: searchParams.get("search") || "",
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const urlSearch = searchParams.get("search") || "";
+    setFilters((prev) => ({ ...prev, search: urlSearch }));
+  }, [searchParams]);
+
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const totalPaginationPages = Math.ceil(totalItems / SECTION_SIZE);
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
       try {
-        const [prodRes, catRes] = await Promise.all([
-          fetch('http://localhost:5001/api/products'),
-          fetch('http://localhost:5001/api/categories')
+        const [catRes, matRes, colRes] = await Promise.all([
+          fetch(API_ENDPOINTS.categories),
+          fetch(API_ENDPOINTS.materials),
+          fetch(API_ENDPOINTS.colors),
         ]);
-        const [prodData, catData] = await Promise.all([prodRes.json(), catRes.json()]);
-        setProducts(prodData);
+        const [catData, matData, colData] = await Promise.all([
+          catRes.json(),
+          matRes.json(),
+          colRes.json(),
+        ]);
         setCategories(catData);
-        setLoading(false);
+        setMaterials(matData);
+        setColors(colData);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoading(false);
+        console.error("Error fetching metadata:", error);
       }
     };
-    fetchData();
+    fetchMetadata();
   }, []);
 
+  const fetchBatch = async (sPage, bIndex, isLoadMore = false) => {
+    if (isLoadMore) setLoadingMore(true);
+    else setLoading(true);
+
+    try {
+      const apiPage = (sPage - 1) * BATCHES_PER_SECTION + bIndex;
+      const params = new URLSearchParams();
+      params.append("paginated", "true");
+      params.append("page", apiPage);
+      params.append("pageSize", BATCH_SIZE);
+      if (filters.category.length)
+        params.append("category", filters.category.join(","));
+      if (filters.material.length)
+        params.append("material", filters.material.join(","));
+      if (filters.color.length) params.append("color", filters.color.join(","));
+      if (filters.minPrice > 0) params.append("minPrice", filters.minPrice);
+      if (filters.maxPrice < 200000)
+        params.append("maxPrice", filters.maxPrice);
+      if (filters.sortBy) params.append("sortBy", filters.sortBy);
+      if (filters.search && filters.search.trim())
+        params.append("search", filters.search.trim());
+
+      const res = await fetch(`${API_ENDPOINTS.products}?${params.toString()}`);
+      const data = await res.json();
+
+      const newItems = data.items || [];
+      const total = data.meta?.totalItems ?? 0;
+      setTotalItems(total);
+
+      if (isLoadMore) {
+        setProducts((prev) => [...prev, ...newItems]);
+      } else {
+        setProducts(newItems);
+      }
+
+      const loadedSoFar = (bIndex - 1) * BATCH_SIZE + newItems.length;
+      const sectionLimit = Math.min(
+        SECTION_SIZE,
+        total - (sPage - 1) * SECTION_SIZE,
+      );
+      const done =
+        bIndex >= BATCHES_PER_SECTION ||
+        loadedSoFar >= sectionLimit ||
+        newItems.length < BATCH_SIZE;
+      setSectionFullyLoaded(done);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    setSectionPage(1);
+    setBatchIndex(1);
+    setSectionFullyLoaded(false);
+    const timeoutId = setTimeout(() => {
+      fetchBatch(1, 1, false);
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [filters]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loading || loadingMore || sectionFullyLoaded) return;
+      if (
+        window.innerHeight + document.documentElement.scrollTop + 800 >=
+        document.documentElement.offsetHeight
+      ) {
+        const nextBatch = batchIndex + 1;
+        setBatchIndex(nextBatch);
+        fetchBatch(sectionPage, nextBatch, true);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loading, loadingMore, sectionFullyLoaded, batchIndex, sectionPage]);
+
+  const handlePaginationClick = (pageNum) => {
+    if (pageNum === sectionPage) return;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSectionPage(pageNum);
+    setBatchIndex(1);
+    setSectionFullyLoaded(false);
+    setProducts([]);
+    setTimeout(() => fetchBatch(pageNum, 1, false), 400);
+  };
+
+  const handleCheckboxChange = (type, id) => {
+    setFilters((prev) => {
+      const current = prev[type];
+      const updated = current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id];
+      return { ...prev, [type]: updated };
+    });
+  };
+
+  const handlePriceChange = (e) =>
+    setFilters((prev) => ({ ...prev, maxPrice: e.target.value }));
+  const handleSortChange = (e) =>
+    setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
+
+  const getCoverImage = (product) => {
+    const allImages = [
+      ...(product.images || []),
+      ...(product.productImages || []),
+    ];
+    if (allImages.length === 0) return product.image_url || "";
+    const cover =
+      allImages.find((img) => img.is_cover || img.is_primary) || allImages[0];
+    return cover.url;
+  };
+
+  const toggleDropdown = (dropdown) =>
+    setActiveDropdown((prev) => (prev === dropdown ? null : dropdown));
+
+  const handleWishlist = async (e, product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      showNotification("Please login first", "info");
+      navigate("/login");
+      return;
+    }
+    await toggleWishlist(product);
+  };
+
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#F5F1E8]">
-
-
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
-        {/* Breadcrumbs */}
-        <nav className="flex text-xs uppercase tracking-widest text-gray-500 mb-8">
-          <Link to="/" id="breadcrumb-home" className="hover:text-[#800020]">Home</Link>
+    <div
+      className="relative min-h-screen overflow-x-hidden bg-[#F5F1E8]"
+      onClick={() => setActiveDropdown(null)}
+    >
+      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        <nav className="flex text-[10px] uppercase tracking-widest text-gray-500 mb-6">
+          <Link to="/" className="hover:text-[#800020]">
+            Home
+          </Link>
           <span className="mx-2">/</span>
           <span className="text-[#800020] font-bold">Collections</span>
         </nav>
 
-        {/* Page Header */}
-        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#D4AF37]/20 pb-8">
+        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#D4AF37]/20 pb-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-[#3D2817] mb-2 uppercase brand-font tracking-widest">Our Masterpieces</h1>
-            <p className="serif-text italic text-gray-600 text-lg">Exploring the intersection of timeless silk and modern grace.</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-[#3D2817] mb-1 uppercase brand-font tracking-widest">
+              Our Products
+            </h1>
+            <p className="text-gray-600 text-base">
+              Beautiful sarees for every occasion.
+            </p>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-xs uppercase tracking-widest font-bold text-gray-400">Sort By:</span>
-            <select className="bg-white border border-[#D4AF37]/30 rounded-full px-6 py-2 text-sm focus:outline-none focus:border-[#800020] appearance-none cursor-pointer">
-              <option>Newest Arrivals</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-              <option>Popularity</option>
+            <span className="text-xs uppercase tracking-widest font-bold text-gray-400">
+              Sort By:
+            </span>
+            <select
+              value={filters.sortBy}
+              onChange={handleSortChange}
+              className="bg-white border border-[#D4AF37]/30 rounded-full px-6 py-2 text-sm font-bold focus:outline-none focus:border-[#800020] appearance-none cursor-pointer"
+            >
+              <option value="newest">Newest Arrivals</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
             </select>
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Sidebar Filters */}
-          <aside className="w-full lg:w-64 flex-shrink-0 space-y-10">
-            {/* Collection Type */}
-            <div>
-              <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#800020] mb-6 border-b border-[#D4AF37]/30 pb-2">Category</h4>
-              <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3 mb-8 sticky top-4 z-40 bg-[#F5F1E8]/95 backdrop-blur-md p-3 rounded-xl shadow-sm border border-[#D4AF37]/20">
+          <span className="text-xs uppercase tracking-widest font-bold text-[#800020] mr-2">
+            Filters:
+          </span>
+
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => toggleDropdown("category")}
+              className={`px-4 py-1.5 border rounded-full text-xs font-bold uppercase tracking-wider transition-all ${filters.category.length > 0 ? "bg-[#800020] text-white" : "bg-white text-gray-700 border-[#D4AF37]/30"}`}
+            >
+              Category ▾
+            </button>
+            {activeDropdown === "category" && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white shadow-2xl rounded-lg p-4 z-50 border border-[#D4AF37]/20 max-h-64 overflow-y-auto">
                 {categories.map((cat) => (
-                  <label key={cat.id} className="flex items-center group cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 text-[#800020] focus:ring-[#800020] rounded-sm" />
-                    <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020] transition-colors">{cat.name}</span>
+                  <label
+                    key={cat.id}
+                    className="flex items-center mb-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={filters.category.includes(cat.id)}
+                      onChange={() => handleCheckboxChange("category", cat.id)}
+                      className="w-4 h-4 text-[#800020]"
+                    />
+                    <span className="ml-3 text-sm">{cat.name}</span>
                   </label>
                 ))}
               </div>
-            </div>
+            )}
+          </div>
 
-            {/* Price Range */}
-            <div>
-              <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#800020] mb-6 border-b border-[#D4AF37]/30 pb-2">Price Range</h4>
-              <div className="space-y-4">
-                <input type="range" className="w-full accent-[#800020]" min="5000" max="200000" />
-                <div className="flex justify-between text-xs font-bold text-gray-500 tracking-wider">
-                  <span>₹5,000</span>
-                  <span>₹2,00,000+</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Fabric */}
-            <div>
-              <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#800020] mb-6 border-b border-[#D4AF37]/30 pb-2">Fabric</h4>
-              <div className="space-y-4">
-                <label className="flex items-center group cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 rounded-sm" />
-                  <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020]">Pure Katan Silk</span>
-                </label>
-                <label className="flex items-center group cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 rounded-sm" />
-                  <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020]">Organza Zari</span>
-                </label>
-                <label className="flex items-center group cursor-pointer">
-                  <input type="checkbox" className="w-4 h-4 border-[#D4AF37]/50 rounded-sm" />
-                  <span className="ml-3 text-sm text-gray-700 group-hover:text-[#800020]">Tussar Banarasi</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Color Filter */}
-            <div>
-              <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-[#800020] mb-6 border-b border-[#D4AF37]/30 pb-2">Color</h4>
-              <div className="flex flex-wrap gap-3">
-                <button className="w-8 h-8 rounded-full bg-[#800020] ring-2 ring-offset-2 ring-transparent hover:ring-[#D4AF37] transition-all"></button>
-                <button className="w-8 h-8 rounded-full bg-[#D4AF37] ring-2 ring-offset-2 ring-transparent hover:ring-[#800020] transition-all"></button>
-                <button className="w-8 h-8 rounded-full bg-[#3D2817] ring-2 ring-offset-2 ring-transparent hover:ring-[#D4AF37] transition-all"></button>
-                <button className="w-8 h-8 rounded-full bg-[#2E4A3E] ring-2 ring-offset-2 ring-transparent hover:ring-[#D4AF37] transition-all"></button>
-                <button className="w-8 h-8 rounded-full bg-[#E5E7EB] ring-2 ring-offset-2 ring-transparent hover:ring-[#800020] transition-all"></button>
-              </div>
-            </div>
-
-            <button className="w-full py-4 bg-[#800020] text-[#D4AF37] font-bold text-xs uppercase tracking-widest hover:bg-[#3D2817] transition-colors rounded-sm shadow-lg">
-              Apply Filters
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => toggleDropdown("material")}
+              className={`px-6 py-2 border rounded-full text-sm font-bold uppercase tracking-wider transition-all ${filters.material.length > 0 ? "bg-[#800020] text-white" : "bg-white text-gray-700 border-[#D4AF37]/30"}`}
+            >
+              Fabric ▾
             </button>
-          </aside>
+            {activeDropdown === "material" && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white shadow-2xl rounded-lg p-4 z-50 border border-[#D4AF37]/20 max-h-64 overflow-y-auto">
+                {materials.map((mat) => (
+                  <label
+                    key={mat.id}
+                    className="flex items-center mb-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={filters.material.includes(mat.id)}
+                      onChange={() => handleCheckboxChange("material", mat.id)}
+                      className="w-4 h-4 text-[#800020]"
+                    />
+                    <span className="ml-3 text-sm">{mat.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Product Grid */}
-          <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {loading ? (
-                <div className="col-span-full text-center py-20">
-                  <p className="serif-text italic text-gray-500">Unveiling masterpieces...</p>
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => toggleDropdown("color")}
+              className={`px-6 py-2 border rounded-full text-sm font-bold uppercase tracking-wider transition-all ${filters.color.length > 0 ? "bg-[#800020] text-white" : "bg-white text-gray-700 border-[#D4AF37]/30"}`}
+            >
+              Color ▾
+            </button>
+            {activeDropdown === "color" && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white shadow-2xl rounded-lg p-4 z-50 border border-[#D4AF37]/20 max-h-64 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-2">
+                  {colors.map((col) => (
+                    <label
+                      key={col.id}
+                      className="flex items-center mb-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.color.includes(col.id)}
+                        onChange={() => handleCheckboxChange("color", col.id)}
+                        className="w-4 h-4 text-[#800020]"
+                      />
+                      <div
+                        className="w-4 h-4 rounded-full ml-2 border border-gray-200"
+                        style={{ backgroundColor: col.hex_code }}
+                      ></div>
+                      <span className="ml-2 text-xs">{col.name}</span>
+                    </label>
+                  ))}
                 </div>
-              ) : products.length === 0 ? (
-                <div className="col-span-full text-center py-20">
-                  <p className="serif-text italic text-gray-500">No pieces found in this collection.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="relative flex items-center bg-white border border-[#D4AF37]/30 rounded-full px-4 py-1.5 gap-3">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              Max Price: ₹{Number(filters.maxPrice).toLocaleString()}
+            </span>
+            <input
+              type="range"
+              min="0"
+              max="200000"
+              step="5000"
+              value={filters.maxPrice}
+              onChange={handlePriceChange}
+              className="w-32 accent-[#800020]"
+            />
+          </div>
+
+          {(filters.category.length > 0 ||
+            filters.material.length > 0 ||
+            filters.color.length > 0) && (
+            <button
+              onClick={() =>
+                setFilters({
+                  category: [],
+                  material: [],
+                  color: [],
+                  minPrice: 0,
+                  maxPrice: 200000,
+                  sortBy: "newest",
+                  search: "",
+                })
+              }
+              className="text-[10px] font-bold uppercase tracking-widest text-[#800020] hover:underline underline-offset-4"
+            >
+              Reset All
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {loading ? (
+            // Skeleton Loading Cards
+            <>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="relative overflow-hidden rounded-xl aspect-[3/4] mb-4 bg-gradient-to-r from-[#f0e6d8] via-[#e8dcc8] to-[#f0e6d8] shimmer-bg"></div>
+                  <div className="h-5 bg-gradient-to-r from-[#f0e6d8] via-[#e8dcc8] to-[#f0e6d8] shimmer-bg rounded mb-2 w-3/4 mx-auto"></div>
+                  <div className="h-3 bg-gradient-to-r from-[#f0e6d8] via-[#e8dcc8] to-[#f0e6d8] shimmer-bg rounded mb-3 w-1/2 mx-auto"></div>
+                  <div className="h-8 bg-gradient-to-r from-[#f0e6d8] via-[#e8dcc8] to-[#f0e6d8] shimmer-bg rounded w-1/3 mx-auto"></div>
                 </div>
-              ) : (
-                products.map((product) => (
-                  <div key={product.id} className="saree-card-3d">
-                    <div className="saree-card-inner group">
-                      <Link to={`/product/${product.slug}`} className="block relative overflow-hidden aspect-[3/4] rounded-xl shadow-lg border border-[#D4AF37]/20">
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                        <div className="absolute top-4 right-4 z-10">
-                          <button className="w-10 h-10 rounded-full bg-white/90 text-[#800020] flex items-center justify-center shadow-md hover:bg-[#800020] hover:text-white transition-colors">
-                            <iconify-icon icon="lucide:heart"></iconify-icon>
-                          </button>
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                          <div className="flex items-center text-[#D4AF37] text-xs space-x-1 mb-1">
-                            <iconify-icon icon="mdi:star"></iconify-icon>
-                            <iconify-icon icon="mdi:star"></iconify-icon>
-                            <iconify-icon icon="mdi:star"></iconify-icon>
-                            <iconify-icon icon="mdi:star"></iconify-icon>
-                            <iconify-icon icon="mdi:star"></iconify-icon>
-                            <span className="ml-1 text-white opacity-80">(24)</span>
-                          </div>
-                        </div>
-                      </Link>
-                      <div className="mt-4 text-center px-2">
-                        <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider">{product.name}</h3>
-                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 font-semibold">
-                          {product.Material?.name || 'Pure Silk'} • {product.Variety?.name || 'Handloom'}
-                        </p>
-                        <div className="flex items-center justify-center space-x-4 mb-4">
-                          <span className="text-xl font-bold text-[#3D2817]">₹{Number(product.price).toLocaleString('en-IN')}</span>
-                        </div>
-                        <button className="w-full py-3 border border-[#800020] text-[#800020] font-bold text-xs uppercase tracking-widest hover:bg-[#800020] hover:text-[#D4AF37] transition-all">
-                          Add to Cart
-                        </button>
+              ))}
+            </>
+          ) : products.length === 0 ? (
+            <div className="col-span-full text-center py-20">
+              <p className="text-gray-600 text-lg">No products found.</p>
+            </div>
+          ) : (
+            products.map((product) => (
+              <div key={product.id} className="saree-card-3d h-full">
+                <div className="saree-card-inner group flex flex-col h-full bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-[#D4AF37]/10 overflow-hidden">
+                  <Link
+                    to={`/product/${product.slug}`}
+                    className="block relative overflow-hidden aspect-[3/4]"
+                  >
+                    <img
+                      src={getCoverImage(product)}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    {/* Badges */}
+                    <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                      {product.is_new_arrival && (
+                        <span className="bg-[#800020] text-[#D4AF37] text-[10px] font-bold px-2 py-1 rounded-sm animate-pulse uppercase tracking-tighter">
+                          New Arrival
+                        </span>
+                      )}
+                    </div>
+                    <div className="absolute top-4 right-4 z-10">
+                      <button
+                        className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all ${isInWishlist(product.id) ? "bg-[#800020] text-white" : "bg-white/90 text-[#800020] hover:bg-[#800020] hover:text-white"}`}
+                        onClick={(e) => handleWishlist(e, product)}
+                      >
+                        <iconify-icon
+                          icon={
+                            isInWishlist(product.id)
+                              ? "mdi:heart"
+                              : "lucide:heart"
+                          }
+                        ></iconify-icon>
+                      </button>
+                    </div>
+                  </Link>
+                  <div className="p-5 text-center flex flex-col flex-grow">
+                    <h3 className="text-lg font-bold text-[#800020] mb-1 uppercase brand-font tracking-wider truncate">
+                      {product.name}
+                    </h3>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-2 font-bold">
+                      {product.Material?.name || "Pure Silk"}
+                    </p>
+                    <p className="text-xs text-gray-600 mb-3 line-clamp-1">
+                      {product.short_description || ""}
+                    </p>
+                    <div className="mt-auto">
+                      <div className="flex items-center justify-center space-x-3 mb-4">
+                        <span className="text-xl font-black text-[#3D2817]">
+                          ₹
+                          {Number(product.selling_price).toLocaleString(
+                            "en-IN",
+                          )}
+                        </span>
+                        {Number(product.mrp_price || product.mrp) >
+                          Number(product.selling_price) && (
+                          <span className="text-sm text-gray-400 line-through">
+                            ₹
+                            {Number(
+                              product.mrp_price || product.mrp,
+                            ).toLocaleString("en-IN")}
+                          </span>
+                        )}
                       </div>
+                      <Link
+                        to={`/product/${product.slug}`}
+                        className="block w-full py-3 bg-gray-50 border border-[#800020]/20 text-[#800020] font-bold text-xs uppercase tracking-[0.2em] group-hover:bg-[#800020] group-hover:text-[#D4AF37] transition-all rounded-sm"
+                      >
+                        View Details
+                      </Link>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
-            {/* Pagination */}
-            <div className="mt-20 flex justify-center items-center space-x-4">
-              <button className="w-10 h-10 rounded-full border border-[#D4AF37]/30 flex items-center justify-center text-gray-400 hover:border-[#800020] hover:text-[#800020] transition-colors">
-                <iconify-icon icon="lucide:chevron-left"></iconify-icon>
-              </button>
-              <button className="w-10 h-10 rounded-full bg-[#800020] text-[#D4AF37] flex items-center justify-center font-bold">1</button>
-              <button className="w-10 h-10 rounded-full border border-[#D4AF37]/30 flex items-center justify-center hover:border-[#800020] hover:text-[#800020] transition-colors">2</button>
-              <button className="w-10 h-10 rounded-full border border-[#D4AF37]/30 flex items-center justify-center hover:border-[#800020] hover:text-[#800020] transition-colors">3</button>
-              <span className="text-gray-400 mx-2">...</span>
-              <button className="w-10 h-10 rounded-full border border-[#D4AF37]/30 flex items-center justify-center hover:border-[#800020] hover:text-[#800020] transition-colors">12</button>
-              <button className="w-10 h-10 rounded-full border border-[#D4AF37]/30 flex items-center justify-center text-gray-600 hover:border-[#800020] hover:text-[#800020] transition-colors">
-                <iconify-icon icon="lucide:chevron-right"></iconify-icon>
-              </button>
+        {totalPaginationPages > 1 && (
+          <div className="mt-20 flex justify-center items-center space-x-4">
+            <button
+              disabled={sectionPage === 1}
+              onClick={() => handlePaginationClick(sectionPage - 1)}
+              className="w-12 h-12 rounded-full border border-[#D4AF37]/30 flex items-center justify-center text-[#800020] hover:bg-[#800020] hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#800020]"
+            >
+              <iconify-icon icon="lucide:arrow-left"></iconify-icon>
+            </button>
+            <div className="flex items-center space-x-2">
+              {[...Array(totalPaginationPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => handlePaginationClick(i + 1)}
+                  className={`w-10 h-10 rounded-full text-xs font-bold transition-all ${sectionPage === i + 1 ? "bg-[#800020] text-[#D4AF37] shadow-lg" : "text-gray-400 hover:text-[#800020]"}`}
+                >
+                  {i + 1}
+                </button>
+              ))}
             </div>
+            <button
+              disabled={sectionPage === totalPaginationPages}
+              onClick={() => handlePaginationClick(sectionPage + 1)}
+              className="w-12 h-12 rounded-full border border-[#D4AF37]/30 flex items-center justify-center text-[#800020] hover:bg-[#800020] hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#800020]"
+            >
+              <iconify-icon icon="lucide:arrow-right"></iconify-icon>
+            </button>
           </div>
-        </div>
+        )}
       </main>
-
-      {/* Newsletter Section */}
-      <section className="py-20 bg-[#3D2817] text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <img src="https://images.unsplash.com/photo-1549416878-b9ca35c2d47b?auto=format&fit=crop&q=80" className="w-full h-full object-contain grayscale" alt="pattern" />
-        </div>
-        <div className="max-w-xl mx-auto text-center px-4 relative z-10">
-          <h2 className="text-3xl font-bold mb-4 uppercase tracking-[0.2em] text-[#D4AF37] brand-font">Don't Miss a Weave</h2>
-          <p className="serif-text italic text-lg opacity-80 mb-8">Subscribe to our Inner Circle for exclusive access to vintage drops and weaver stories.</p>
-          <form className="flex flex-col md:flex-row gap-4" onSubmit={(e) => e.preventDefault()}>
-            <input type="email" placeholder="Your email address" className="flex-1 bg-white/10 border border-[#D4AF37]/30 px-6 py-4 text-sm focus:outline-none focus:border-[#D4AF37] rounded-sm" />
-            <button className="bg-[#D4AF37] text-[#800020] font-bold px-8 py-4 uppercase text-xs tracking-widest hover:bg-white transition-colors rounded-sm shadow-lg">Subscribe</button>
-          </form>
-        </div>
-      </section>
     </div>
   );
 };

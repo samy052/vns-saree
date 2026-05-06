@@ -6,20 +6,26 @@
     font-family: 'Playfair Display', serif;
 }
 
-/* 3D Entry Animation */
+/* Entry Animation */
 @keyframes cardEntry {
     0% {
         opacity: 0;
-        transform: perspective(1000px) rotateY(-15deg) translateY(50px);
+        transform: translateY(28px);
     }
     100% {
         opacity: 1;
-        transform: perspective(1000px) rotateY(0deg) translateY(0);
+        transform: translateY(0);
     }
 }
 
 .animate-card-3d {
-    animation: cardEntry 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: cardEntry 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.auth-card {
+    border: 1px solid rgba(212, 175, 55, 0.32);
+    border-radius: 8px;
+    box-shadow: 0 24px 70px rgba(61, 40, 23, 0.18);
 }
 
 @keyframes fadeIn {
@@ -38,8 +44,25 @@
 
 .premium-input:focus {
     background-color: #fdfcf9;
-    transform: translateX(5px);
-    box-shadow: -5px 5px 20px rgba(128, 0, 32, 0.05);
+    box-shadow: 0 0 0 4px rgba(128, 0, 32, 0.07);
+}
+
+.auth-submit {
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-submit::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.18) 45%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.65s ease;
+}
+
+.auth-submit:hover::after {
+    transform: translateX(120%);
 }
 
 /* Password Strength Bars */
@@ -82,4 +105,14 @@
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6zM36 4V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     opacity: 0.5;
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.animate-shake {
+    animation: shake 0.3s ease-in-out infinite;
+    animation-iteration-count: 2;
 }

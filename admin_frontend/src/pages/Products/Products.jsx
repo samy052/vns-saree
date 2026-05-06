@@ -6,15 +6,13 @@ import "./Products.css";
 
 const INITIAL_FORM_STATE = {
   name: "", sku: "", description: "", short_description: "",
-  price: "", old_price: "", cost_price: "", discount_percent: "",
-  image_url: "", cover_image_url: "", cover_image_selection: "", stock_quantity: "", low_stock_threshold: 5, track_inventory: true,
+  selling_price: "", mrp_price: "", cost_price: "", discount_percent: "", profit_amount: "", profit_percent: "",
+  images: [], cover_image_selection: "", stock_quantity: 0, low_stock_threshold: 5, track_inventory: true,
   color_stocks: {},
-  product_images_by_color: {},
   weight: "", length: "6.5", width: "1.1",
-  category_id: "", material_id: "", variety_id: "", color_id: "", occasion_id: "",
+  category_id: "", material_id: "", variety_id: "", occasion_id: "",
   is_special_collection: false, is_new_arrival: false, is_available: true,
-  weave_type: "Handloom", zari_type: "", blouse_piece: true,
-  meta_title: "", meta_description: "",
+  blouse_piece: true,
 };
 
 export default function Products() {
@@ -164,14 +162,10 @@ export default function Products() {
       setFormData({
         ...INITIAL_FORM_STATE,
         ...product,
-        price: product.price?.toString() || "",
-        old_price: product.old_price?.toString() || "",
+        selling_price: product.selling_price?.toString() || product.price?.toString() || "",
+        mrp_price: product.mrp_price?.toString() || product.old_price?.toString() || "",
         color_stocks: product.color_stocks && typeof product.color_stocks === "object" ? product.color_stocks : {},
-        product_images_by_color:
-          product.product_images_by_color && typeof product.product_images_by_color === "object"
-            ? product.product_images_by_color
-            : {},
-        cover_image_url: product.cover_image_url || product.image_url || "",
+        images: Array.isArray(product.images) ? product.images : [],
         cover_image_selection: "",
       });
     } else { setEditingProduct(null); setFormData(INITIAL_FORM_STATE); }
@@ -212,7 +206,8 @@ export default function Products() {
 
     setNewColorImageFiles((prev) => {
       const existingNewFiles = prev[colorId] || [];
-      const existingSavedUrls = formData.product_images_by_color?.[colorId] || [];
+      const existingSavedImages = (formData.images || []).filter(img => img.color_id === parseInt(colorId, 10));
+      
       const existingSignatures = new Set(
         existingNewFiles.map((file) => `${file.name}-${file.size}-${file.lastModified}`),
       );
@@ -229,7 +224,7 @@ export default function Products() {
         }
       });
 
-      const availableSlots = Math.max(0, 6 - existingSavedUrls.length - existingNewFiles.length);
+      const availableSlots = Math.max(0, 6 - existingSavedImages.length - existingNewFiles.length);
       const acceptedFiles = uniqueIncomingFiles.slice(0, availableSlots);
       const overflowCount = uniqueIncomingFiles.length - acceptedFiles.length;
 
@@ -249,21 +244,18 @@ export default function Products() {
 
   const handleRemoveSavedColorImage = (colorId, imageUrl) => {
     setFormData((prev) => {
-      const current = Array.isArray(prev.product_images_by_color?.[colorId]) ? prev.product_images_by_color[colorId] : [];
-      const updated = current.filter((url) => url !== imageUrl);
-      const nextImagesByColor = { ...(prev.product_images_by_color || {}) };
-      if (updated.length > 0) nextImagesByColor[colorId] = updated;
-      else delete nextImagesByColor[colorId];
-
-      const allUrls = Object.values(nextImagesByColor).flat();
-      const nextCover = prev.cover_image_url === imageUrl ? (allUrls[0] || "") : prev.cover_image_url;
+      const updatedImages = (prev.images || []).filter((img) => img.url !== imageUrl);
+      
+      // If the removed image was the cover, pick a new one
+      const wasCover = (prev.images || []).find(img => img.url === imageUrl)?.is_cover;
+      if (wasCover && updatedImages.length > 0) {
+        updatedImages[0].is_cover = true;
+      }
 
       return {
         ...prev,
-        product_images_by_color: nextImagesByColor,
-        cover_image_url: nextCover,
-        cover_image_selection: nextCover ? prev.cover_image_selection : "",
-        image_url: nextCover,
+        images: updatedImages,
+        cover_image_selection: wasCover && updatedImages.length > 0 ? "existing:" + updatedImages[0].color_id + ":0" : prev.cover_image_selection,
       };
     });
   };
@@ -283,24 +275,28 @@ export default function Products() {
     const selection = `${type}:${colorId}:${index}`;
     setFormData((prev) => ({
       ...prev,
-      cover_image_url: url || prev.cover_image_url,
       cover_image_selection: selection,
-      image_url: url || prev.image_url,
     }));
   };
 
-  const generateSKU = () => {
-    if (!formData.name) return;
-    const prefix = formData.name.substring(0, 3).toUpperCase();
-    const random = Math.floor(1000 + Math.random() * 9000);
-    setFormData((prev) => ({ ...prev, sku: `${prefix}-${random}` }));
-  };
+
 
   const calculateDiscount = () => {
-    const price = parseFloat(formData.price);
-    const old = parseFloat(formData.old_price);
+    const price = parseFloat(formData.selling_price);
+    const old = parseFloat(formData.mrp_price);
+    const cost = parseFloat(formData.cost_price);
+    
+    let updates = {};
     if (old > price) {
-      setFormData((prev) => ({ ...prev, discount_percent: Math.round(((old - price) / old) * 100) }));
+      updates.discount_percent = Math.round(((old - price) / old) * 100);
+    }
+    if (price && cost) {
+      updates.profit_amount = price - cost;
+      updates.profit_percent = Math.round(((price - cost) / cost) * 100);
+    }
+    
+    if (Object.keys(updates).length > 0) {
+      setFormData(prev => ({ ...prev, ...updates }));
     }
   };
 
@@ -309,10 +305,10 @@ export default function Products() {
     setSubmitting(true);
     const selectedColorIds = Object.entries(formData.color_stocks || {})
       .filter(([, qty]) => parseInt(qty, 10) > 0)
-      .map(([colorId]) => colorId);
+      .map(([colorId]) => parseInt(colorId, 10));
 
     const missingImagesForColors = selectedColorIds.filter((colorId) => {
-      const existingCount = (formData.product_images_by_color?.[colorId] || []).length;
+      const existingCount = (formData.images || []).filter(img => img.color_id === colorId).length;
       const newCount = (newColorImageFiles?.[colorId] || []).length;
       return existingCount + newCount < 1;
     });
@@ -326,19 +322,16 @@ export default function Products() {
     const payloadData = {
       ...formData,
       slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
-      price: parseFloat(formData.price) || 0, old_price: formData.old_price ? parseFloat(formData.old_price) : null,
+      selling_price: parseFloat(formData.selling_price) || 0, 
+      mrp_price: formData.mrp_price ? parseFloat(formData.mrp_price) : null,
       cost_price: formData.cost_price ? parseFloat(formData.cost_price) : null,
       stock_quantity: parseInt(formData.stock_quantity) || 0,
-      low_stock_threshold:
-        formData.low_stock_threshold === "" || formData.low_stock_threshold === null || formData.low_stock_threshold === undefined
-          ? 0
-          : (parseInt(formData.low_stock_threshold, 10) || 0),
+      low_stock_threshold: parseInt(formData.low_stock_threshold) || 0,
       color_stocks: formData.color_stocks || {},
-      product_images_by_color: formData.product_images_by_color || {},
-      cover_image_url: formData.cover_image_url || formData.image_url || "",
+      images: formData.images || [],
       cover_image_selection: formData.cover_image_selection || "",
       category_id: formData.category_id || null, material_id: formData.material_id || null,
-      variety_id: formData.variety_id || null, color_id: formData.color_id || null,
+      variety_id: formData.variety_id || null, 
       occasion_id: formData.occasion_id || null,
     };
 
@@ -493,7 +486,7 @@ export default function Products() {
 
       <div className="bg-white p-4 rounded-xl border border-[#D4AF37]/20 shadow-sm space-y-4">
         <div className="flex gap-4">
-          <div className="flex-1 relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search by name or SKU..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#800020]" /></div>
+          <div className="flex-1 relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input type="text" placeholder="Search by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#800020]" /></div>
           <button onClick={() => setShowFilters(!showFilters)} className={`px-4 py-2 border rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${showFilters ? "bg-[#800020] text-white border-[#800020]" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}><Filter className="w-4 h-4" /> Filters</button>
           <button onClick={applyFilters} className="px-4 py-2 rounded-lg bg-[#800020] text-white text-sm font-semibold">Apply</button>
         </div>
@@ -522,7 +515,6 @@ export default function Products() {
                 <thead className="bg-[#FAF8F6]"><tr>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">#</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Product</th>
-                  <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">SKU</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Price</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Stock</th>
                   <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase">Status</th>
@@ -534,9 +526,22 @@ export default function Products() {
                   ) : products.map((p, idx) => (
                     <tr key={p.id} className="hover:bg-gray-50/50">
                       <td className="px-4 py-3 text-sm font-semibold">{(paginationMeta.currentPage - 1) * paginationMeta.pageSize + idx + 1}</td>
-                      <td className="px-4 py-3"><div className="flex items-center gap-3"><button type="button" onClick={() => setImagePreviewUrl(p.cover_image_url || p.image_url)}><img src={p.cover_image_url || p.image_url} alt={p.name} className="w-12 h-12 object-cover rounded-lg" /></button><div><p className="font-medium text-[#4A3F35] text-sm">{p.name}</p><div className="flex gap-1 mt-1">{p.is_new_arrival && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[9px] font-bold rounded">NEW</span>}{p.is_special_collection && <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">SPECIAL COLLECTION</span>}</div></div></div></td>
-                      <td className="px-4 py-3"><span className="font-mono text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">{p.sku || "-"}</span></td>
-                      <td className="px-4 py-3"><span className="font-bold text-[#800020]">₹{parseFloat(p.price).toLocaleString()}</span>{p.old_price && <span className="text-xs text-gray-400 line-through block">₹{parseFloat(p.old_price).toLocaleString()}</span>}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <button type="button" onClick={() => setImagePreviewUrl(p.images?.find(img => img.is_cover)?.url || p.images?.[0]?.url)}>
+                            <img src={p.images?.find(img => img.is_cover)?.url || p.images?.[0]?.url} alt={p.name} className="w-12 h-12 object-cover rounded-lg" />
+                          </button>
+                          <div>
+                            <p className="font-medium text-[#4A3F35] text-sm">{p.name}</p>
+                            <p className="text-[10px] text-gray-400 font-mono">{p.sku}</p>
+                            <div className="flex gap-1 mt-1">
+                              {p.is_new_arrival && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[9px] font-bold rounded">NEW</span>}
+                              {p.is_special_collection && <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">SPECIAL COLLECTION</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3"><span className="font-bold text-[#800020]">₹{parseFloat(p.selling_price).toLocaleString()}</span>{p.mrp_price && <span className="text-xs text-gray-400 line-through block">₹{parseFloat(p.mrp_price).toLocaleString()}</span>}</td>
                       <td className="px-4 py-3">{getStockBadge(p)}</td>
                       <td className="px-4 py-3">
                         <button
@@ -589,7 +594,6 @@ export default function Products() {
         onCoverImageSelect={handleCoverImageSelect}
         newColorImageFiles={newColorImageFiles}
         onSave={handleSave}
-        onGenerateSKU={generateSKU}
         onCalculateDiscount={calculateDiscount}
         submitting={submitting}
         editingProduct={editingProduct}

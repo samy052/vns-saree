@@ -24,7 +24,7 @@ const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log("PostgreSQL connected successfully.");
-    
+
     // Schema has been updated manually. sync() will create tables if they don't exist.
     await sequelize.sync(); 
     console.log("Database schema synchronized.");
@@ -37,6 +37,10 @@ const connectDB = async () => {
     await sequelize.query(`
       ALTER TABLE "vns_saree"."products"
       ADD COLUMN IF NOT EXISTS "cover_image_url" VARCHAR(255)
+    `);
+    await sequelize.query(`
+      ALTER TABLE "vns_saree"."carts"
+      ADD COLUMN IF NOT EXISTS "colorId" INTEGER REFERENCES "vns_saree"."colors"("id")
     `);
   } catch (error) {
     console.error("Unable to connect to the database:", error);

@@ -36,7 +36,7 @@ const ProductImage = sequelize.define('ProductImage', {
   tableName: 'product_images'
 });
 
-Product.hasMany(ProductImage, { foreignKey: 'product_id', as: 'images' });
+Product.hasMany(ProductImage, { foreignKey: 'product_id', as: 'productImages' });
 ProductImage.belongsTo(Product, { foreignKey: 'product_id' });
 
 module.exports = ProductImage;
