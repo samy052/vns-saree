@@ -16,6 +16,7 @@ const RazorpayRoutes = require("./routes/RazorpayRoutes");
 const AuthRoutes = require("./routes/AuthRoutes");
 const CartRoutes = require("./routes/CartRoutes");
 const WishlistRoutes = require("./routes/WishlistRoutes");
+const FeedbackRoutes = require("./routes/FeedbackRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5003;
@@ -37,6 +38,7 @@ app.use("/api/razorpay", RazorpayRoutes);
 app.use("/api/auth", AuthRoutes);
 app.use("/api/cart", CartRoutes);
 app.use("/api/wishlist", WishlistRoutes);
+app.use("/api/feedback", FeedbackRoutes);
 
 app.get("/", (req, res) => {
   res.send("VNS Saree API is running...");

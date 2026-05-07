@@ -11,6 +11,8 @@ import Auth from "./pages/Auth/Auth";
 import About from "./pages/About/About";
 import Testimonials from "./pages/Testimonials/Testimonials";
 import Wishlist from "./pages/Wishlist/Wishlist";
+import Contact from "./pages/Contact/Contact";
+import Feedback from "./pages/Feedback/Feedback";
 import Layout from "./layout/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -83,6 +85,22 @@ function App() {
                       }
                     />
                     <Route path="/about" element={<About />} />
+                    <Route
+                      path="/contact"
+                      element={
+                        <ProtectedRoute>
+                          <Contact />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/feedback"
+                      element={
+                        <ProtectedRoute>
+                          <Feedback />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="/testimonials" element={<Testimonials />} />
                     <Route path="/login" element={<Auth />} />
                   </Route>

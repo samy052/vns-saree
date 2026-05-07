@@ -11,6 +11,8 @@ export const API_ENDPOINTS = {
   occasions: `${API_BASE_URL}/api/occasions`,
   orders: `${API_BASE_URL}/api/orders`,
   coupons: `${API_BASE_URL}/api/coupons`,
+  feedback: `${API_BASE_URL}/api/feedback`,
+  auth: `${API_BASE_URL}/api/auth`,
 };
 
 export default API_ENDPOINTS;

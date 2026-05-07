@@ -122,6 +122,24 @@ const Header = ({ activeItem }) => {
               ></span>
             </Link>
             <Link
+              to="/contact"
+              className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "contact" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
+            >
+              Contact
+              <span
+                className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "contact" ? "w-full" : "w-0 group-hover:w-full"}`}
+              ></span>
+            </Link>
+            <Link
+              to="/feedback"
+              className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "feedback" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
+            >
+              Feedback
+              <span
+                className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "feedback" ? "w-full" : "w-0 group-hover:w-full"}`}
+              ></span>
+            </Link>
+            <Link
               to="/testimonials"
               className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "blogs" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
             >
@@ -228,7 +246,13 @@ const Header = ({ activeItem }) => {
                             >
                               Wishlist
                             </button>
-                            <Link to="/about" onClick={closeProfile}>
+                            <button
+                              type="button"
+                              onClick={() => goProtected("/feedback")}
+                            >
+                              Feedback
+                            </button>
+                            <Link to="/contact" onClick={closeProfile}>
                               Contact Us
                             </Link>
                           </div>
