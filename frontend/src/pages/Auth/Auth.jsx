@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { API_ENDPOINTS } from "../../config/api";
 import "./Auth.css";
 
 const Auth = () => {
@@ -10,7 +11,7 @@ const Auth = () => {
   const location = useLocation();
 
   const [loginData, setLoginData] = useState({
-    phone: "",
+    email: "",
     password: "",
     keepLoggedIn: false,
   });
@@ -22,7 +23,14 @@ const Auth = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [forgotPasswordData, setForgotPasswordData] = useState({
+    email: "",
+    otp: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   useEffect(() => {
     if (user) {
@@ -68,7 +76,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      await login(loginData.phone, loginData.password, loginData.keepLoggedIn);
+      await login(loginData.email, loginData.password, loginData.keepLoggedIn);
     } catch (err) {
       setError(err);
     } finally {
@@ -80,7 +88,7 @@ const Auth = () => {
     e.preventDefault();
     setError("");
 
-    if (!signupData.name || !signupData.phone || !signupData.password) {
+    if (!signupData.name || !signupData.phone || !signupData.email || !signupData.password) {
       setError("Please fill all required fields");
       return;
     }
@@ -90,6 +98,97 @@ const Auth = () => {
       await signup(signupData);
     } catch (err) {
       setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_ENDPOINTS.auth}/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotPasswordData.email, role: "customer" }),
+      });
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error("Server error. Please try again later.");
+      }
+      if (!res.ok) throw new Error(data.message || "Request failed");
+      setSuccess("OTP sent to your email.");
+      setActiveTab("verifyOTP");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_ENDPOINTS.auth}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: forgotPasswordData.email, 
+          otp: forgotPasswordData.otp,
+          role: "customer" 
+        }),
+      });
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error("Server error. Please try again later.");
+      }
+      if (!res.ok) throw new Error(data.message || "Verification failed");
+      setSuccess("OTP verified. Set your new password.");
+      setActiveTab("resetPassword");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (forgotPasswordData.newPassword !== forgotPasswordData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_ENDPOINTS.auth}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: forgotPasswordData.email, 
+          otp: forgotPasswordData.otp,
+          newPassword: forgotPasswordData.newPassword,
+          role: "customer"
+        }),
+      });
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error("Server error. Please try again later.");
+      }
+      if (!res.ok) throw new Error(data.message || "Reset failed");
+      setSuccess("Password reset successfully. You can now login.");
+      setActiveTab("login");
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -169,23 +268,29 @@ const Auth = () => {
               </div>
             )}
 
+            {success && (
+              <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-700 text-sm font-semibold">
+                {success}
+              </div>
+            )}
+
             {activeTab === "login" && (
               <div className="form-content animate-fade-in">
                 <form className="space-y-5" onSubmit={onLogin}>
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                      Phone Number
+                      Email Address
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2817]/70 flex items-center">
-                        <iconify-icon icon="lucide:phone"></iconify-icon>
+                        <iconify-icon icon="lucide:mail"></iconify-icon>
                       </span>
                       <input
-                        type="text"
-                        name="phone"
+                        type="email"
+                        name="email"
                         required
-                        placeholder="Enter your phone number"
-                        value={loginData.phone}
+                        placeholder="Enter your email address"
+                        value={loginData.email}
                         onChange={handleLoginChange}
                         className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-11 py-3.5 outline-none focus:border-[#800020] text-sm"
                       />
@@ -197,12 +302,17 @@ const Auth = () => {
                       <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
                         Password
                       </label>
-                      <a
-                        href="#"
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab("forgotPassword");
+                          setError("");
+                          setSuccess("");
+                        }}
                         className="text-[10px] font-bold text-[#800020] hover:underline uppercase tracking-[0.12em]"
                       >
                         Forgot?
-                      </a>
+                      </button>
                     </div>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2817]/70 flex items-center">
@@ -248,6 +358,108 @@ const Auth = () => {
               </div>
             )}
 
+            {activeTab === "forgotPassword" && (
+              <div className="form-content animate-fade-in">
+                <form className="space-y-5" onSubmit={handleForgotPassword}>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
+                      Enter Registered Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="email@example.com"
+                      value={forgotPasswordData.email}
+                      onChange={(e) => setForgotPasswordData({...forgotPasswordData, email: e.target.value})}
+                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="auth-submit w-full py-4 rounded-xl text-[#D4AF37] bg-[#800020] font-bold text-xs uppercase tracking-[0.2em] shadow-lg transform transition-all active:scale-[0.98] hover:bg-[#3D2817] disabled:opacity-50"
+                  >
+                    {loading ? "Sending..." : "Send Reset OTP"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("login")}
+                    className="w-full text-center text-xs font-bold text-[#3D2817]/60 uppercase tracking-widest mt-2 hover:text-[#800020]"
+                  >
+                    Back to Login
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {activeTab === "verifyOTP" && (
+              <div className="form-content animate-fade-in">
+                <form className="space-y-5" onSubmit={handleVerifyOTP}>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
+                      Enter 6-Digit OTP
+                    </label>
+                    <input
+                      type="text"
+                      maxLength="6"
+                      required
+                      placeholder="123456"
+                      value={forgotPasswordData.otp}
+                      onChange={(e) => setForgotPasswordData({...forgotPasswordData, otp: e.target.value})}
+                      className="premium-input w-full text-center tracking-[1em] font-bold bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-lg"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="auth-submit w-full py-4 rounded-xl text-[#D4AF37] bg-[#800020] font-bold text-xs uppercase tracking-[0.2em] shadow-lg transform transition-all active:scale-[0.98] hover:bg-[#3D2817] disabled:opacity-50"
+                  >
+                    {loading ? "Verifying..." : "Verify OTP"}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {activeTab === "resetPassword" && (
+              <div className="form-content animate-fade-in">
+                <form className="space-y-5" onSubmit={handleResetPassword}>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={forgotPasswordData.newPassword}
+                      onChange={(e) => setForgotPasswordData({...forgotPasswordData, newPassword: e.target.value})}
+                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      value={forgotPasswordData.confirmPassword}
+                      onChange={(e) => setForgotPasswordData({...forgotPasswordData, confirmPassword: e.target.value})}
+                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="auth-submit w-full py-4 rounded-xl text-[#D4AF37] bg-[#800020] font-bold text-xs uppercase tracking-[0.2em] shadow-lg transform transition-all active:scale-[0.98] hover:bg-[#3D2817] disabled:opacity-50"
+                  >
+                    {loading ? "Resetting..." : "Reset Password"}
+                  </button>
+                </form>
+              </div>
+            )}
+
             {activeTab === "signup" && (
               <div className="form-content animate-fade-in">
                 <form className="space-y-5" onSubmit={onSignup}>
@@ -283,11 +495,12 @@ const Auth = () => {
                     </div>
                     <div className="space-y-2">
                       <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                        Email Optional
+                        Email Address *
                       </label>
                       <input
                         type="email"
                         name="email"
+                        required
                         placeholder="ananya@example.com"
                         value={signupData.email}
                         onChange={handleSignupChange}

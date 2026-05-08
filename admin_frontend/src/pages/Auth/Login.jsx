@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Phone, AlertCircle } from 'lucide-react';
+import { Lock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
+  const [activeMode, setActiveMode] = useState('login'); // 'login', 'forgot', 'verify', 'reset'
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,21 +21,17 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch(`${API_ENDPOINTS.auth}/login`, {
+      const response = await fetch(`${API_ENDPOINTS.auth}/admin-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password })
+        body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        if (data.customer?.role !== 'admin' && data.user?.role !== 'admin') {
-          setError('Access denied. You do not have admin privileges.');
-          return;
-        }
         localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('admin_user', JSON.stringify(data.customer || data.user));
+        localStorage.setItem('admin_user', JSON.stringify(data.admin || data.user));
         navigate('/dashboard');
       } else {
         setError(data.message || 'Login failed');
@@ -38,6 +39,73 @@ export default function Login() {
     } catch (err) {
       console.error('Login error:', err);
       setError('Failed to connect to the server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_ENDPOINTS.auth}/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, role: "admin" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setSuccess("OTP sent to your email.");
+      setActiveMode("verify");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_ENDPOINTS.auth}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, role: "admin" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setSuccess("OTP verified. Set new password.");
+      setActiveMode("reset");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_ENDPOINTS.auth}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, newPassword, role: "admin" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setSuccess("Password reset successful. Please login.");
+      setActiveMode("login");
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -61,49 +129,152 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest pl-1">Phone Number</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Phone className="h-5 w-5 text-gray-400" />
+        {success && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-center gap-3 text-green-600 text-xs font-bold">
+            <CheckCircle2 className="w-4 h-4" /> {success}
+          </div>
+        )}
+
+        {activeMode === 'login' && (
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest pl-1">Email Address</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-[#FAF8F6] border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none text-[#4A3F35] transition-all shadow-sm"
+                  placeholder="admin@banaraskala.com"
+                />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center pr-1">
+                <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest pl-1">Password</label>
+                <button
+                  type="button"
+                  onClick={() => setActiveMode('forgot')}
+                  className="text-[10px] font-bold text-[#800020] hover:underline uppercase tracking-widest"
+                >
+                  Forgot?
+                </button>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-[#FAF8F6] border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none text-[#4A3F35] transition-all shadow-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full bg-[#800020] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#6b001a]'}`}
+            >
+              {loading ? 'Authenticating...' : 'Secure Login'}
+            </button>
+          </form>
+        )}
+
+        {activeMode === 'forgot' && (
+          <form onSubmit={handleForgotPassword} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest pl-1">Admin Email</label>
               <input
-                type="tel"
+                type="email"
                 required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-[#FAF8F6] border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none text-[#4A3F35] transition-all shadow-sm"
-                placeholder="Phone Number"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-[#FAF8F6] border border-[#D4AF37]/20 rounded-xl py-3 px-4 text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
+                placeholder="Enter your registered email"
               />
             </div>
-          </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#800020] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest"
+            >
+              {loading ? 'Sending...' : 'Send Reset OTP'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMode('login')}
+              className="w-full text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest"
+            >
+              Back to Login
+            </button>
+          </form>
+        )}
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest pl-1">Password</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
-              </div>
+        {activeMode === 'verify' && (
+          <form onSubmit={handleVerifyOTP} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest pl-1">Enter OTP</label>
+              <input
+                type="text"
+                maxLength="6"
+                required
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full bg-[#FAF8F6] border border-[#D4AF37]/20 rounded-xl py-3 px-4 text-center text-lg font-bold tracking-[0.5em] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
+                placeholder="000000"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#800020] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest"
+            >
+              {loading ? 'Verifying...' : 'Verify OTP'}
+            </button>
+          </form>
+        )}
+
+        {activeMode === 'reset' && (
+          <form onSubmit={handleResetPassword} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest pl-1">New Password</label>
               <input
                 type="password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#FAF8F6] border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none text-[#4A3F35] transition-all shadow-sm"
-                placeholder="••••••••"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full bg-[#FAF8F6] border border-[#D4AF37]/20 rounded-xl py-3 px-4 text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
               />
             </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full bg-[#800020] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#6b001a]'}`}
-          >
-            {loading ? 'Authenticating...' : 'Secure Login'}
-          </button>
-        </form>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase text-gray-500 tracking-widest pl-1">Confirm Password</label>
+              <input
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full bg-[#FAF8F6] border border-[#D4AF37]/20 rounded-xl py-3 px-4 text-sm focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#800020] text-white py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest"
+            >
+              {loading ? 'Resetting...' : 'Update Password'}
+            </button>
+          </form>
+        )}
 
         <div className="mt-8 text-center border-t border-[#D4AF37]/10 pt-6">
           <p className="text-[10px] text-gray-400 font-medium tracking-wider">© {new Date().getFullYear()} Banaras Kala. Secure Admin Portal.</p>

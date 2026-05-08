@@ -146,9 +146,13 @@ export default function Categories() {
             ? `${API_ENDPOINTS.categories}/${editingCategory.id}`
             : API_ENDPOINTS.categories;
           const method = editingCategory ? "PUT" : "POST";
+          const token = localStorage.getItem("accessToken");
           const res = await fetch(url, {
             method,
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(payload),
           });
 
@@ -202,9 +206,15 @@ export default function Categories() {
         async () => {
           closeModal();
           try {
+            const token = localStorage.getItem("accessToken");
             const res = await fetch(
               `${API_ENDPOINTS.categories}/${cat.id}`,
-              { method: "DELETE" },
+              { 
+                method: "DELETE",
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              },
             );
             if (res.ok) {
               await fetchData();

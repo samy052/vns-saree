@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   categories: `${API_BASE_URL}/api/categories`,
   colors: `${API_BASE_URL}/api/colors`,
   materials: `${API_BASE_URL}/api/materials`,
+  occasions: `${API_BASE_URL}/api/occasions`,
   varieties: `${API_BASE_URL}/api/varieties`,
   orders: `${API_BASE_URL}/api/orders`,
   coupons: `${API_BASE_URL}/api/coupons`,

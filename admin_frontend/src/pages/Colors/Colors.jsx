@@ -162,9 +162,13 @@ export default function Colors() {
           
           console.log(`Sending ${method} request to ${url}`, payload);
           
+          const token = localStorage.getItem("accessToken");
           const res = await fetch(url, {
             method,
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(payload),
           });
 
@@ -226,8 +230,12 @@ export default function Colors() {
       async () => {
         closeModal();
         try {
+          const token = localStorage.getItem("accessToken");
           const res = await fetch(`${API_ENDPOINTS.colors}/${color.id}`, {
             method: "DELETE",
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           });
           if (res.ok) {
             await fetchData();

@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/db");
 
-const Customer = sequelize.define(
-  "Customer",
+const Admin = sequelize.define(
+  "Admin",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -23,16 +23,12 @@ const Customer = sequelize.define(
     },
     phone: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       unique: true,
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    role: {
-      type: DataTypes.ENUM("user", "admin"),
-      defaultValue: "user",
     },
     refresh_token: {
       type: DataTypes.TEXT,
@@ -48,9 +44,9 @@ const Customer = sequelize.define(
     },
   },
   {
-    tableName: "customers",
+    tableName: "admins",
     timestamps: true,
   },
 );
 
-module.exports = Customer;
+module.exports = Admin;

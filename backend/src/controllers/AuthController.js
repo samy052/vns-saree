@@ -12,8 +12,18 @@ class AuthController {
 
   async login(req, res) {
     try {
-      const { phone, password } = req.body;
-      const result = await AuthService.login(phone, password);
+      const { email, password } = req.body;
+      const result = await AuthService.login(email, password);
+      res.json(result);
+    } catch (error) {
+      res.status(401).json({ message: error.message });
+    }
+  }
+
+  async adminLogin(req, res) {
+    try {
+      const { email, password } = req.body;
+      const result = await AuthService.adminLogin(email, password);
       res.json(result);
     } catch (error) {
       res.status(401).json({ message: error.message });
@@ -27,6 +37,36 @@ class AuthController {
       res.json(result);
     } catch (error) {
       res.status(401).json({ message: error.message });
+    }
+  }
+
+  async forgotPassword(req, res) {
+    try {
+      const { email, role } = req.body;
+      const result = await AuthService.forgotPassword(email, role);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+  async verifyOTP(req, res) {
+    try {
+      const { email, otp, role } = req.body;
+      const result = await AuthService.verifyOTP(email, otp, role);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+  async resetPassword(req, res) {
+    try {
+      const { email, otp, newPassword, role } = req.body;
+      const result = await AuthService.resetPassword(email, otp, newPassword, role);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
     }
   }
 

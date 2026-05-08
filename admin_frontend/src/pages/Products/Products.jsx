@@ -141,7 +141,12 @@ export default function Products() {
 
   const fetchProductSummary = async () => {
     try {
-      const res = await fetch(`${API_ENDPOINTS.products}/summary`);
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_ENDPOINTS.products}/summary`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed");
       setSummary({
@@ -351,7 +356,14 @@ export default function Products() {
       method: editingProduct ? "PUT" : "POST",
     };
     try {
-      const res = await fetch(payload.url, { method: payload.method, body: formPayload });
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(payload.url, { 
+        method: payload.method, 
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formPayload 
+      });
       if (res.ok) {
         if (tableReady) {
           await fetchProducts(1, pageSize);
@@ -379,7 +391,13 @@ export default function Products() {
       async () => {
         closeModal();
         try {
-          const res = await fetch(`${API_ENDPOINTS.products}/${id}`, { method: "DELETE" });
+          const token = localStorage.getItem("accessToken");
+          const res = await fetch(`${API_ENDPOINTS.products}/${id}`, { 
+            method: "DELETE",
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
           if (res.ok) {
             if (tableReady) await fetchProducts(currentPage, pageSize);
             showModal("success", "Deleted", "Product deleted successfully.");
@@ -439,9 +457,13 @@ export default function Products() {
         Occasion: undefined,
       };
 
+      const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_ENDPOINTS.products}/${product.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {

@@ -26,9 +26,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (phone, password, keepLoggedIn) => {
+  const login = async (email, password, keepLoggedIn) => {
     try {
-      const response = await axios.post(`${API_ENDPOINTS.auth}/login`, { phone, password });
+      const response = await axios.post(`${API_ENDPOINTS.auth}/login`, { email, password });
       const customer = response.data.customer || response.data.user;
       const { accessToken, refreshToken } = response.data;
 

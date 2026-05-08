@@ -189,9 +189,13 @@ export default function Varieties() {
             ? `${API_ENDPOINTS.varieties}/${editingVariety.id}`
             : API_ENDPOINTS.varieties;
           const method = editingVariety ? "PUT" : "POST";
+          const token = localStorage.getItem("accessToken");
           const res = await fetch(url, {
             method,
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(payload),
           });
 
@@ -256,8 +260,12 @@ export default function Varieties() {
       async () => {
         closeModal();
         try {
+          const token = localStorage.getItem("accessToken");
           const res = await fetch(`${API_ENDPOINTS.varieties}/${variety.id}`, {
             method: "DELETE",
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           });
           if (res.ok) {
             await fetchData();
