@@ -484,7 +484,7 @@ const ProductModal = ({
                       <p className="text-xs font-black text-gray-700 uppercase tracking-tighter">Special Collection</p>
                       <p className="text-[9px] text-gray-400 font-bold uppercase">Featured section</p>
                     </div>
-                    <input type="checkbox" name="is_special_collection" checked={formData.is_special_collection} onChange={onInputChange} className="w-6 h-6 text-[#800020] rounded-lg cursor-pointer transition-transform group-hover:scale-110" />
+                    <input type="checkbox" name="special_collection" checked={formData.special_collection} onChange={onInputChange} className="w-6 h-6 text-[#800020] rounded-lg cursor-pointer transition-transform group-hover:scale-110" />
                  </div>
                  <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 hover:border-[#800020]/30 transition-all shadow-sm group">
                     <div>

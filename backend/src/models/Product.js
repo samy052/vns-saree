@@ -135,6 +135,10 @@ const Product = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    special_collection: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     is_new_arrival: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

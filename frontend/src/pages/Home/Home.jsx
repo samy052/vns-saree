@@ -90,6 +90,11 @@ const Home = () => {
       });
   }, []);
 
+  const calculateDiscount = (mrp, selling) => {
+    if (!mrp || !selling || Number(mrp) <= Number(selling)) return 0;
+    return Math.round(((Number(mrp) - Number(selling)) / Number(mrp)) * 100);
+  };
+
   const getCoverImage = (product) => {
     const allImages = [
       ...(product.images || []),
@@ -283,9 +288,11 @@ const Home = () => {
                             />
 
                             {/* Discount Badge */}
-                            <div className="absolute top-4 right-4 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#800020] text-xs lg:text-sm font-bold px-3 py-2 rounded-lg shadow-lg animate-bounce z-20">
-                              {saree.discount_percent ? `${saree.discount_percent}% OFF` : "20% OFF"}
-                            </div>
+                            {(saree.discount_percent || calculateDiscount(saree.mrp_price || saree.mrp, saree.selling_price)) > 0 && (
+                              <div className="absolute top-4 right-4 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#800020] text-xs lg:text-sm font-bold px-3 py-2 rounded-lg shadow-lg animate-bounce z-20">
+                                {saree.discount_percent || calculateDiscount(saree.mrp_price || saree.mrp, saree.selling_price)}% OFF
+                              </div>
+                            )}
 
                             {/* Elegant Text Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-t from-[#2D1B0E]/95 via-[#3D2817]/20 to-transparent flex items-end p-6 lg:p-8 opacity-100">
@@ -300,9 +307,23 @@ const Home = () => {
                                 <h3 className="text-xl lg:text-3xl font-bold brand-font text-center text-[#D4AF37] drop-shadow-lg truncate">
                                   {saree.name}
                                 </h3>
-                                <p className="text-center text-white/80 text-sm lg:text-lg mt-2">
-                                  ₹{Number(saree.selling_price || (typeof saree.price === 'string' ? saree.price.replace(/[^0-9]/g, '') : saree.price)).toLocaleString("en-IN")}
-                                </p>
+                                <div className="flex flex-col items-center mt-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-white text-lg lg:text-2xl font-bold">
+                                      ₹{Number(saree.selling_price || (typeof saree.price === 'string' ? saree.price.replace(/[^0-9]/g, '') : saree.price)).toLocaleString("en-IN")}
+                                    </span>
+                                    {Number(saree.mrp_price || saree.mrp) > Number(saree.selling_price) && (
+                                      <span className="text-white/60 text-sm line-through">
+                                        ₹{Number(saree.mrp_price || saree.mrp).toLocaleString("en-IN")}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {Number(saree.mrp_price || saree.mrp) > Number(saree.selling_price) && (
+                                    <span className="text-[10px] lg:text-xs font-bold text-[#D4AF37] border border-[#D4AF37] px-2 py-0.5 rounded mt-1">
+                                      {calculateDiscount(saree.mrp_price || saree.mrp, saree.selling_price)}% OFF
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -404,10 +425,22 @@ const Home = () => {
                             <h3 className="brand-font text-2xl text-[#800020] mb-2 truncate">
                               {product.name}
                             </h3>
-                            <div className="flex items-center justify-center gap-3">
-                              <span className="text-xl font-black text-[#800020]">
-                                ₹{Number(product.selling_price || product.price).toLocaleString("en-IN")}
-                              </span>
+                            <div className="flex flex-col items-center justify-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <span className="text-xl font-black text-[#800020]">
+                                  ₹{Number(product.selling_price).toLocaleString("en-IN")}
+                                </span>
+                                {Number(product.mrp_price || product.mrp) > Number(product.selling_price) && (
+                                  <span className="text-sm text-gray-500 line-through opacity-70">
+                                    ₹{Number(product.mrp_price || product.mrp).toLocaleString("en-IN")}
+                                  </span>
+                                )}
+                              </div>
+                              {Number(product.mrp_price || product.mrp) > Number(product.selling_price) && (
+                                <span className="text-xs font-bold text-[#D4AF37] bg-[#800020] px-2 py-0.5 rounded mt-1">
+                                  {calculateDiscount(product.mrp_price || product.mrp, product.selling_price)}% OFF
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>

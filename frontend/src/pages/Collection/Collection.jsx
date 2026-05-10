@@ -19,14 +19,17 @@ const Collection = () => {
   const [occasions, setOccasions] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [colors, setColors] = useState([]);
+  const [varieties, setVarieties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [filters, setFilters] = useState({
+    variety: [],
     occasion: [],
     material: [],
     color: [],
+    specialCollection: false,
     minPrice: 0,
     maxPrice: 200000,
     sortBy: "newest",
@@ -40,23 +43,26 @@ const Collection = () => {
 
   const totalPaginationPages = Math.ceil(totalItems / PAGE_SIZE);
 
-  // Fetch Metadata (Categories, Materials, Colors)
+  // Fetch Metadata (Categories, Materials, Colors, Varieties)
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const [occRes, matRes, colRes] = await Promise.all([
+        const [occRes, matRes, colRes, varRes] = await Promise.all([
           fetch(API_ENDPOINTS.occasions),
           fetch(API_ENDPOINTS.materials),
           fetch(API_ENDPOINTS.colors),
+          fetch(API_ENDPOINTS.varieties),
         ]);
-        const [occData, matData, colData] = await Promise.all([
+        const [occData, matData, colData, varData] = await Promise.all([
           occRes.json(),
           matRes.json(),
           colRes.json(),
+          varRes.json(),
         ]);
         setOccasions(occData);
         setMaterials(matData);
         setColors(colData);
+        setVarieties(varData);
       } catch (error) {
         console.error("Error fetching metadata:", error);
       }
@@ -73,9 +79,11 @@ const Collection = () => {
       params.append("page", page);
       params.append("pageSize", PAGE_SIZE);
       
+      if (filters.variety.length) params.append("variety", filters.variety.join(","));
       if (filters.occasion.length) params.append("occasion", filters.occasion.join(","));
       if (filters.material.length) params.append("material", filters.material.join(","));
       if (filters.color.length) params.append("color", filters.color.join(","));
+      if (filters.specialCollection) params.append("specialCollection", "true");
       if (filters.minPrice > 0) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice < 200000) params.append("maxPrice", filters.maxPrice);
       if (filters.sortBy) params.append("sortBy", filters.sortBy);
@@ -120,15 +128,19 @@ const Collection = () => {
     setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
 
   const calculateDiscount = (mrp, selling) => {
-    if (!mrp || !selling || mrp <= selling) return 0;
-    return Math.round(((mrp - selling) / mrp) * 100);
+    const m = Number(mrp);
+    const s = Number(selling);
+    if (!m || !s || m <= s) return 0;
+    return Math.round(((m - s) / m) * 100);
   };
 
   const clearAllFilters = () => {
     setFilters({
+      variety: [],
       occasion: [],
       material: [],
       color: [],
+      specialCollection: false,
       minPrice: 0,
       maxPrice: 200000,
       sortBy: "newest",
@@ -141,10 +153,15 @@ const Collection = () => {
       ...(product.images || []),
       ...(product.productImages || []),
     ];
-    if (allImages.length === 0) return product.image_url || "";
-    const cover =
-      allImages.find((img) => img.is_cover || img.is_primary) || allImages[0];
-    return cover.url;
+    
+    if (allImages.length === 0) {
+      return product.image_url || "https://via.placeholder.com/400x600?text=VNS+Saree";
+    }
+
+    const cover = allImages.find((img) => img && (img.is_cover || img.is_primary)) || allImages[0];
+    
+    if (typeof cover === 'string') return cover;
+    return cover?.url || "https://via.placeholder.com/400x600?text=VNS+Saree";
   };
 
   const handleWishlist = async (e, product) => {
@@ -180,17 +197,33 @@ const Collection = () => {
         <aside className="filters-sidebar">
           <div className="sidebar-header">
             <h2>FILTERS</h2>
-            {(filters.occasion.length > 0 ||
+            {(filters.variety.length > 0 ||
+              filters.occasion.length > 0 ||
               filters.material.length > 0 ||
-              filters.color.length > 0) && (
-              <button className="clear-all" onClick={clearAllFilters}>
-                CLEAR ALL
+              filters.color.length > 0 ||
+              filters.specialCollection) && (
+              <button className="clear-btn" onClick={clearAllFilters}>
+                Clear All
               </button>
             )}
           </div>
 
           <div className="filter-section">
-            <h3>Occasions</h3>
+            <h3 className="filter-title">Collections</h3>
+            <div className="filter-list">
+              <label className="filter-item">
+                <input
+                  type="checkbox"
+                  checked={filters.specialCollection}
+                  onChange={() => setFilters(prev => ({ ...prev, specialCollection: !prev.specialCollection }))}
+                />
+                Special Collection
+              </label>
+            </div>
+          </div>
+
+          <div className="filter-section">
+            <h3 className="filter-title">Occasions</h3>
             <div className="filter-list">
               {occasions.map((occ) => (
                 <label key={occ.id} className="filter-item">
@@ -206,7 +239,23 @@ const Collection = () => {
           </div>
 
           <div className="filter-section">
-            <h3>Fabric</h3>
+            <h3 className="filter-title">Variety</h3>
+            <div className="filter-list">
+              {varieties.map((v) => (
+                <label key={v.id} className="filter-item">
+                  <input
+                    type="checkbox"
+                    checked={filters.variety.includes(v.id)}
+                    onChange={() => handleCheckboxChange("variety", v.id)}
+                  />
+                  {v.name}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-section">
+            <h3 className="filter-title">Fabric</h3>
             <div className="filter-list">
               {materials.map((mat) => (
                 <label key={mat.id} className="filter-item">
@@ -222,7 +271,7 @@ const Collection = () => {
           </div>
 
           <div className="filter-section">
-            <h3>Color</h3>
+            <h3 className="filter-title">Color</h3>
             <div className="filter-list">
               {colors.map((col) => (
                 <label key={col.id} className="filter-item">
@@ -242,7 +291,7 @@ const Collection = () => {
           </div>
 
           <div className="filter-section">
-            <h3>Price</h3>
+            <h3 className="filter-title">Price</h3>
             <div className="px-2">
               <input
                 type="range"
@@ -333,26 +382,30 @@ const Collection = () => {
                   </Link>
 
                   <div className="card-details">
-                    <h3 className="brand-name">VNS Saree</h3>
-                    <p className="product-title">{product.name}</p>
+                    {product.occasion?.name && (
+                      <span className="product-occasion-badge">
+                        {product.occasion.name}
+                      </span>
+                    )}
+                    <p className="product-title" title={product.name || "Premium Saree"}>
+                      {product.name || "Handcrafted Banarasi Saree"}
+                    </p>
+                    {product.short_description && (
+                      <p className="product-short-desc">
+                        {product.short_description}
+                      </p>
+                    )}
                     <div className="price-container">
                       <span className="selling-price">
-                        Rs. {Number(product.selling_price).toLocaleString()}
+                        ₹{Number(product.selling_price || 0).toLocaleString("en-IN")}
                       </span>
-                      {Number(product.mrp_price || product.mrp) >
-                        Number(product.selling_price) && (
+                      {Number(product.mrp_price || product.mrp || 0) > Number(product.selling_price || 0) && (
                         <>
                           <span className="mrp-price">
-                            Rs.{" "}
-                            {Number(
-                              product.mrp_price || product.mrp,
-                            ).toLocaleString()}
+                            ₹{Number(product.mrp_price || product.mrp).toLocaleString("en-IN")}
                           </span>
                           <span className="discount-text">
-                            ({calculateDiscount(
-                              product.mrp_price || product.mrp,
-                              product.selling_price,
-                            )}% OFF)
+                            ({calculateDiscount(product.mrp_price || product.mrp, product.selling_price)}% OFF)
                           </span>
                         </>
                       )}

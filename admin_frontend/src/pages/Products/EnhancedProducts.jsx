@@ -55,6 +55,7 @@ const INITIAL_FORM_STATE = {
 
   // Status Flags
   is_special_collection: false,
+  special_collection: false,
   is_new_arrival: false,
   is_available: true,
   store_front_visibility: false,
@@ -229,8 +230,8 @@ export default function EnhancedProducts() {
       setFormData({
         ...INITIAL_FORM_STATE,
         ...product,
-        price: product.price?.toString() || "",
-        old_price: product.old_price?.toString() || "",
+        price: (product.selling_price || product.price)?.toString() || "",
+        old_price: (product.mrp_price || product.old_price)?.toString() || "",
         cost_price: product.cost_price?.toString() || "",
         weight: product.weight?.toString() || "",
         length: product.length?.toString() || "6.5",
@@ -240,6 +241,7 @@ export default function EnhancedProducts() {
         material_id: product.material_id?.toString() || "",
         occasion_id: product.occasion_id?.toString() || "",
         store_front_visibility: !!product.store_front_visibility,
+        special_collection: !!product.special_collection,
       });
     } else {
       setEditingProduct(null);
@@ -362,6 +364,8 @@ export default function EnhancedProducts() {
         variety_id: parseInt(formData.variety_id) || null,
         occasion_id: parseInt(formData.occasion_id) || null,
         store_front_visibility: !!formData.store_front_visibility,
+        special_collection: !!formData.special_collection,
+        is_special_collection: !!formData.special_collection, // Keep in sync for compatibility
         // color_id is no longer used for primary classification in multi-color mode
       };
 

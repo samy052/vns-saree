@@ -74,6 +74,14 @@ const sanitizeProductPayload = (data = {}) => {
     sanitized.sku = `${namePrefix}-${timestamp}-${random}`;
   }
 
+  // Automatic Slug generation if not present
+  if (!sanitized.slug || String(sanitized.slug).trim() === "") {
+    sanitized.slug = (sanitized.name || "product")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '') + '-' + Date.now();
+  }
+
   // Final field cleanup
   delete sanitized.price;
   delete sanitized.old_price;
@@ -178,7 +186,7 @@ class ProductService {
     }
 
     if (specialCollection === "true" || specialCollection === "false") {
-      queryOptions.where.is_special_collection = specialCollection === "true";
+      queryOptions.where.special_collection = specialCollection === "true";
     }
 
     if (storeFrontVisibility === "true" || storeFrontVisibility === "false") {

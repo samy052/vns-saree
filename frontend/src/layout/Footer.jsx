@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "../assets/logosaree.png";
 import "./Footer.css";
 
 const Footer = () => {
@@ -11,20 +12,21 @@ const Footer = () => {
             <Link
               to="/"
               id="footer-logo"
-              className="flex items-center gap-3 mb-6"
+              className="flex items-center gap-2 group mb-6"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#800020] rounded-xl flex items-center justify-center shadow-lg">
-                <iconify-icon
-                  icon="lucide:gem"
-                  className="text-2xl text-white"
-                ></iconify-icon>
+              <div className="w-20 h-20 flex items-center justify-center group-hover:scale-105 transition-all duration-300 overflow-hidden">
+                <img
+                  src={logo}
+                  alt="VNS Saree Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="flex flex-col">
-                <span className="brand-font text-2xl font-bold tracking-tighter text-[#D4AF37]">
+                <span className="brand-font text-xl lg:text-2xl font-bold tracking-tighter text-[#D4AF37]">
                   Banarasi
                 </span>
-                <span className="text-xs tracking-[0.3em] uppercase text-white/70 -mt-1">
-                  Kala
+                <span className="text-[20px] lg:text-[20px] uppercase tracking-[0.2em] -mt-0.5 font-bold text-white/90 animate-tracking-breathe">
+                  KALA
                 </span>
               </div>
             </Link>
