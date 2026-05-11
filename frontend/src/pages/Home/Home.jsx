@@ -313,7 +313,7 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="relative flex justify-center items-center w-full overflow-visible">
+            <div className="relative flex justify-center items-center w-full overflow-visible lg:-mt-12">
               {/* Coverflow Swiper for 3D Cards */}
               <div className="relative w-full max-w-[850px] lg:max-w-[1000px]">
                 {heroLoading ? (
@@ -339,7 +339,7 @@ const Home = () => {
                     observeParents={true}
                     coverflowEffect={{
                       rotate: 15,
-                      stretch: -120,
+                      stretch: -60,
                       depth: 200,
                       modifier: 1.5,
                       slideShadows: false,
@@ -347,11 +347,11 @@ const Home = () => {
                     autoplay={{ delay: 3000, disableOnInteraction: false }}
                     pagination={{ clickable: true }}
                     loop={heroSarees.length > 3}
-                    className="hero-swiper-coverflow"
+                    className="hero-swiper-coverflow pb-12"
                   >
                     {heroSarees.map((saree, index) => (
                       <SwiperSlide key={saree.id}>
-                        <div className="relative saree-card-3d group py-10 px-4">
+                        <div className="relative saree-card-3d group px-4">
                           <div
                             className="saree-card-inner permanent-highlight w-[260px] h-[390px] lg:w-[350px] lg:h-[525px] mx-auto rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(212,175,55,0.3)] animate-float relative z-10 transition-all duration-500"
                             style={{ animationDelay: `${index * 0.5}s` }}
