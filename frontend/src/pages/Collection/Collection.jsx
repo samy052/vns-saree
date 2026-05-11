@@ -280,10 +280,9 @@ const Collection = () => {
                     checked={filters.color.includes(col.id)}
                     onChange={() => handleCheckboxChange("color", col.id)}
                   />
-                  <span
-                    className="color-swatch"
-                    style={{ backgroundColor: col.hex_code }}
-                  ></span>
+                  <svg className="color-swatch" viewBox="0 0 16 16" aria-hidden="true">
+                    <circle cx="8" cy="8" r="7.5" fill={col.hex_code || "#cccccc"} />
+                  </svg>
                   {col.name}
                 </label>
               ))}
@@ -332,18 +331,9 @@ const Collection = () => {
                   <div key={i} className="product-card">
                     <div className="card-img-container skeleton"></div>
                     <div className="card-details">
-                      <div
-                        className="skeleton"
-                        style={{ height: "20px", width: "60%", marginBottom: "8px" }}
-                      ></div>
-                      <div
-                        className="skeleton"
-                        style={{ height: "14px", width: "80%", marginBottom: "8px" }}
-                      ></div>
-                      <div
-                        className="skeleton"
-                        style={{ height: "16px", width: "40%" }}
-                      ></div>
+                      <div className="skeleton skeleton-title"></div>
+                      <div className="skeleton skeleton-description"></div>
+                      <div className="skeleton skeleton-price"></div>
                     </div>
                   </div>
                 ))
@@ -369,12 +359,12 @@ const Collection = () => {
                         onClick={(e) => handleWishlist(e, product)}
                       >
                         <iconify-icon
+                          className="wishlist-icon"
                           icon={
                             isInWishlist(product.id)
                               ? "mdi:heart"
                               : "lucide:heart"
                           }
-                          style={{ fontSize: "16px" }}
                         ></iconify-icon>
                         {isInWishlist(product.id) ? "WISHLISTED" : "WISHLIST"}
                       </button>

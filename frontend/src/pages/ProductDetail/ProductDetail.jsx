@@ -304,7 +304,9 @@ const ProductDetail = () => {
                       className={`group relative w-8 h-8 rounded-full transition-all duration-300 ${selectedColorId === color.id ? 'ring-2 ring-[#800020] ring-offset-4 scale-110' : 'hover:scale-105'}`}
                       title={color.name}
                     >
-                      <div className="w-full h-full rounded-full border border-gray-200 shadow-inner" style={{ backgroundColor: color.hex_code }} />
+                      <svg className="product-color-swatch" viewBox="0 0 32 32" aria-hidden="true">
+                        <circle cx="16" cy="16" r="15" fill={color.hex_code || "#cccccc"} />
+                      </svg>
                       <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{color.name}</span>
                     </button>
                   ))}

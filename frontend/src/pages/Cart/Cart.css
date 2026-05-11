@@ -25,6 +25,19 @@
     animation: slideInUp 0.6s ease-out forwards;
 }
 
+.cart-row-delay-0 { animation-delay: 0s; }
+.cart-row-delay-1 { animation-delay: 0.1s; }
+.cart-row-delay-2 { animation-delay: 0.2s; }
+.cart-row-delay-3 { animation-delay: 0.3s; }
+.cart-row-delay-4 { animation-delay: 0.4s; }
+.cart-row-delay-5 { animation-delay: 0.5s; }
+.cart-row-delay-6 { animation-delay: 0.6s; }
+.cart-row-delay-7 { animation-delay: 0.7s; }
+
+.cart-summary-delay {
+    animation-delay: 0.4s;
+}
+
 .item-row:hover {
     background-color: rgba(212, 175, 55, 0.03);
 }

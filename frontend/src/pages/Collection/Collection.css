@@ -142,6 +142,7 @@
     border-radius: 50%;
     margin-right: 10px;
     border: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
 }
 
 /* Product Listing Area */
@@ -252,6 +253,10 @@
     background: none;
     border: none;
     cursor: pointer;
+}
+
+.wishlist-icon {
+    font-size: 16px;
 }
 
 .wishlist-btn.active {
@@ -399,6 +404,23 @@
     background: linear-gradient(90deg, #f3f3f3 25%, #e6e6e6 50%, #f3f3f3 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
+}
+
+.skeleton-title {
+    width: 60%;
+    height: 20px;
+    margin-bottom: 8px;
+}
+
+.skeleton-description {
+    width: 80%;
+    height: 14px;
+    margin-bottom: 8px;
+}
+
+.skeleton-price {
+    width: 40%;
+    height: 16px;
 }
 
 @keyframes shimmer {

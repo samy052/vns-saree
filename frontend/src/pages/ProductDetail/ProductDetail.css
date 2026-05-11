@@ -55,6 +55,15 @@
     transform: scale(1.08);
 }
 
+.product-color-swatch {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
 /* Custom Accordion transition */
 .accordion-content {
     transition: all 0.4s ease-out;

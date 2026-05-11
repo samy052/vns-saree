@@ -27,6 +27,10 @@
     font-size: 0.85rem;
 }
 
+.contact-map-frame {
+    border: 0;
+}
+
 /* Animations sync with Home.css */
 @keyframes fadeInUp {
     from {

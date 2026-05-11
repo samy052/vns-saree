@@ -69,7 +69,7 @@ const Cart = () => {
             <div className="flex flex-col lg:flex-row gap-12 items-start">
               <div className="w-full lg:w-2/3 space-y-6">
                 {cart.map((item, index) => (
-                  <div key={`${item.id}-${item.colorId}`} className="bg-white rounded-lg p-6 shadow-sm border border-[#D4AF37]/10 flex flex-col sm:flex-row items-center gap-6 item-row transition-all animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <div key={`${item.id}-${item.colorId}`} className={`bg-white rounded-lg p-6 shadow-sm border border-[#D4AF37]/10 flex flex-col sm:flex-row items-center gap-6 item-row transition-all animate-slide-up cart-row-delay-${index % 8}`}>
                     <div className="w-32 h-40 flex-shrink-0 rounded overflow-hidden shadow-md">
                       <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                     </div>
@@ -108,7 +108,7 @@ const Cart = () => {
                 </div>
               </div>
 
-              <aside className="w-full lg:w-1/3 animate-slide-up sticky top-28" style={{ animationDelay: "0.4s" }}>
+              <aside className="w-full lg:w-1/3 animate-slide-up sticky top-28 cart-summary-delay">
                 <div className="bg-white p-8 rounded-lg shadow-xl border-t-4 border-[#800020]">
                   <h2 className="brand-font text-2xl text-[#3D2817] mb-8 uppercase tracking-wider font-bold">Order Summary</h2>
                   

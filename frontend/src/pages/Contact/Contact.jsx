@@ -186,11 +186,11 @@ const Contact = () => {
       {/* Map Placeholder */}
       <div className="w-full h-[450px] bg-gray-200 grayscale hover:grayscale-0 transition-all duration-700 mt-20 border-t-8 border-[#D4AF37]">
         <iframe 
+          className="contact-map-frame"
           title="Varanasi Boutique Map"
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3606.828604738555!2d83.00762931501258!3d25.305943983848416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x398e2df83072f447%3A0xb76166e951b33324!2sDashashwamedh%20Ghat!5e0!3m2!1sen!2sin!4v1620300000000!5m2!1sen!2sin" 
           width="100%" 
           height="100%" 
-          style={{ border: 0 }} 
           allowFullScreen="" 
           loading="lazy"
         ></iframe>

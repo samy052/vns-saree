@@ -59,30 +59,9 @@ const About = () => {
 
           {/* Animated Particles */}
           <div className="absolute inset-0 z-[3] pointer-events-none">
-            <div
-              className="orb w-48 h-48"
-              style={{
-                left: "10%",
-                animationDuration: "25s",
-                animationDelay: "0s",
-              }}
-            ></div>
-            <div
-              className="orb w-32 h-32"
-              style={{
-                left: "70%",
-                animationDuration: "35s",
-                animationDelay: "-10s",
-              }}
-            ></div>
-            <div
-              className="orb w-64 h-64"
-              style={{
-                left: "40%",
-                animationDuration: "45s",
-                animationDelay: "-5s",
-              }}
-            ></div>
+            <div className="orb orb-one w-48 h-48"></div>
+            <div className="orb orb-two w-32 h-32"></div>
+            <div className="orb orb-three w-64 h-64"></div>
           </div>
 
           <div className="max-w-5xl mx-auto px-4 text-center text-white relative z-10 hero-text-entry">
@@ -189,10 +168,7 @@ const About = () => {
                 </p>
               </div>
               {/* Step 2 */}
-              <div
-                className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/20 reveal"
-                style={{ transitionDelay: "150ms" }}
-              >
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/20 reveal reveal-delay-150">
                 <div className="w-12 h-12 rounded-full bg-[#800020] text-[#D4AF37] flex items-center justify-center font-bold mb-6 text-xl shadow-lg brand-font">
                   02
                 </div>
@@ -205,10 +181,7 @@ const About = () => {
                 </p>
               </div>
               {/* Step 3 */}
-              <div
-                className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/20 reveal"
-                style={{ transitionDelay: "300ms" }}
-              >
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/20 reveal reveal-delay-300">
                 <div className="w-12 h-12 rounded-full bg-[#800020] text-[#D4AF37] flex items-center justify-center font-bold mb-6 text-xl shadow-lg brand-font">
                   03
                 </div>
@@ -221,10 +194,7 @@ const About = () => {
                 </p>
               </div>
               {/* Step 4 */}
-              <div
-                className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/20 reveal"
-                style={{ transitionDelay: "450ms" }}
-              >
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/20 reveal reveal-delay-450">
                 <div className="w-12 h-12 rounded-full bg-[#800020] text-[#D4AF37] flex items-center justify-center font-bold mb-6 text-xl shadow-lg brand-font">
                   04
                 </div>
@@ -286,10 +256,7 @@ const About = () => {
                 </div>
               </div>
               {/* Weaver 2 */}
-              <div
-                className="weaver-card reveal"
-                style={{ transitionDelay: "200ms" }}
-              >
+              <div className="weaver-card reveal reveal-delay-200">
                 <div className="weaver-card-inner">
                   <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 group border border-white/10">
                     <img
@@ -315,10 +282,7 @@ const About = () => {
                 </div>
               </div>
               {/* Weaver 3 */}
-              <div
-                className="weaver-card reveal"
-                style={{ transitionDelay: "400ms" }}
-              >
+              <div className="weaver-card reveal reveal-delay-400">
                 <div className="weaver-card-inner">
                   <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 group border border-white/10">
                     <img

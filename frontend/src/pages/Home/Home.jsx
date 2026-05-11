@@ -353,8 +353,7 @@ const Home = () => {
                       <SwiperSlide key={saree.id}>
                         <div className="relative saree-card-3d group px-4">
                           <div
-                            className="saree-card-inner permanent-highlight w-[260px] h-[390px] lg:w-[350px] lg:h-[525px] mx-auto rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(212,175,55,0.3)] animate-float relative z-10 transition-all duration-500"
-                            style={{ animationDelay: `${index * 0.5}s` }}
+                            className={`saree-card-inner permanent-highlight w-[260px] h-[390px] lg:w-[350px] lg:h-[525px] mx-auto rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(212,175,55,0.3)] animate-float relative z-10 transition-all duration-500 float-delay-${index % 6}`}
                           >
                             <img
                               src={saree.image || getCoverImage(saree)}
@@ -410,10 +409,7 @@ const Home = () => {
 
                 {/* Glowing Accents - Adjusted for wider carousel */}
                 <div className="absolute top-0 right-0 w-64 h-64 permanent-glow-gold rounded-full z-0 animate-glow-breath opacity-40"></div>
-                <div
-                  className="absolute bottom-0 left-0 w-80 h-80 permanent-glow-maroon rounded-full z-0 animate-glow-breath opacity-40"
-                  style={{ animationDelay: "2s" }}
-                ></div>
+                <div className="absolute bottom-0 left-0 w-80 h-80 permanent-glow-maroon rounded-full z-0 animate-glow-breath opacity-40 glow-delay-long"></div>
               </div>
             </div>
           </div>

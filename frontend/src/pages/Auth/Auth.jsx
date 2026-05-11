@@ -194,7 +194,6 @@ const Auth = () => {
     }
   };
 
-  const colors = ["#ef4444", "#f59e0b", "#10b981", "#059669"];
   const texts = ["Weak", "Moderate", "Strong", "Very Strong"];
 
   return (
@@ -527,24 +526,16 @@ const Auth = () => {
                       {[1, 2, 3, 4].map((i) => (
                         <div
                           key={i}
-                          className="strength-bar h-1 w-1/4 rounded-full transition-all duration-300"
-                          style={{
-                            backgroundColor:
-                              i <= passwordStrength
-                                ? colors[passwordStrength - 1]
-                                : "#e5e7eb",
-                          }}
+                          className={`strength-bar h-1 w-1/4 rounded-full transition-all duration-300 ${
+                            i <= passwordStrength ? `strength-level-${passwordStrength}` : "strength-empty"
+                          }`}
                         ></div>
                       ))}
                     </div>
                     <p
-                      className="text-[10px] uppercase font-bold tracking-widest mt-1"
-                      style={{
-                        color:
-                          passwordStrength > 0
-                            ? colors[passwordStrength - 1]
-                            : "#3D281770",
-                      }}
+                      className={`password-strength-label text-[10px] uppercase font-bold tracking-widest mt-1 ${
+                        passwordStrength > 0 ? `strength-text-${passwordStrength}` : "strength-text-empty"
+                      }`}
                     >
                       {passwordStrength > 0
                         ? texts[passwordStrength - 1]
