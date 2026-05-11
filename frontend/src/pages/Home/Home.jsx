@@ -53,11 +53,21 @@ const HERO_SAREES = [
 const Home = () => {
   const rootRef = useRef(null);
   const [products, setProducts] = useState([]);
-  const [heroSarees, setHeroSarees] = useState([]); 
+  const [heroSarees, setHeroSarees] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [heroLoading, setHeroLoading] = useState(true);
 
   useEffect(() => {
+    // Fetch Coupons for Homepage
+    fetch(`${API_ENDPOINTS.coupons}/homepage`)
+      .then((res) => res.json())
+      .then((data) => {
+        setCoupons(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => console.error("Error fetching coupons:", err));
+
     // Fetch Dynamic Hero Sarees
     fetch(`${API_ENDPOINTS.products}?storeFrontVisibility=true`)
       .then((res) => res.json())
@@ -88,6 +98,16 @@ const Home = () => {
         console.error("Error fetching products:", err);
         setLoading(false);
       });
+
+    // Fetch Approved Feedbacks
+    fetch(`${API_ENDPOINTS.feedback}/approved`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setFeedbacks(data.data || []);
+        }
+      })
+      .catch((err) => console.error("Error fetching feedbacks:", err));
   }, []);
 
   const calculateDiscount = (mrp, selling) => {
@@ -174,8 +194,33 @@ const Home = () => {
               className="w-full h-full object-cover opacity-70"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#2D1B0E]/20 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-r from-[#2D1B0E]/20 to-transparent"></div>
           </div>
+
+          {/* Myntra-style Coupon Banner */}
+          {coupons.length > 0 && (
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 w-full max-w-4xl px-4 animate-fade-in-down">
+              <div className="coupon-banner-myntra">
+                <div className="coupon-content">
+                  <div className="coupon-left">
+                    <span className="coupon-title">
+                      {coupons[0].discount_type === 'percentage' 
+                        ? `FLAT ${coupons[0].discount_percent}% OFF` 
+                        : `FLAT ₹${Number(coupons[0].discount_amount).toLocaleString()} OFF`}
+                    </span>
+                  </div>
+                  <div className="coupon-divider"></div>
+                  <div className="coupon-right">
+                    <p className="coupon-text">{coupons[0].banner_text || `Use code ${coupons[0].code}`}</p>
+                    <div className="coupon-code-badge">{coupons[0].code}</div>
+                  </div>
+                </div>
+                {/* Scalloped edges */}
+                <div className="scallop-top"></div>
+                <div className="scallop-bottom"></div>
+              </div>
+            </div>
+          )}
 
           <div className="w-full px-4 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
             <div className="flex flex-col items-start text-left max-w-xl">
@@ -244,8 +289,8 @@ const Home = () => {
                 {heroLoading ? (
                   <div className="flex justify-center items-center gap-4 py-10">
                     {[1, 2, 3].map((i) => (
-                      <div 
-                        key={i} 
+                      <div
+                        key={i}
                         className={`w-[180px] h-[270px] lg:w-[280px] lg:h-[420px] rounded-2xl bg-white/10 animate-pulse border border-white/20 relative overflow-hidden ${i !== 2 ? 'opacity-40 scale-90' : 'z-10'}`}
                       >
                         <div className="absolute inset-0 shimmer-bg opacity-20"></div>
@@ -277,7 +322,7 @@ const Home = () => {
                     {heroSarees.map((saree, index) => (
                       <SwiperSlide key={saree.id}>
                         <div className="relative saree-card-3d group py-10 px-4">
-                          <div 
+                          <div
                             className="saree-card-inner permanent-highlight w-[260px] h-[390px] lg:w-[350px] lg:h-[525px] mx-auto rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(212,175,55,0.3)] animate-float relative z-10 transition-all duration-500"
                             style={{ animationDelay: `${index * 0.5}s` }}
                           >
@@ -300,7 +345,7 @@ const Home = () => {
                                 <div className="flex items-center justify-center gap-2 mb-2">
                                   <div className="h-px bg-[#D4AF37] w-8"></div>
                                   <span className="bg-[#D4AF37] text-[#800020] text-[10px] lg:text-[12px] font-bold px-3 py-1 rounded-full uppercase">
-                                    {saree.badge || "Exclusive"}
+                                    {saree.badge }
                                   </span>
                                   <div className="h-px bg-[#D4AF37] w-8"></div>
                                 </div>
@@ -481,22 +526,29 @@ const Home = () => {
               <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-4"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/10">
+              {(feedbacks.length > 0 ? feedbacks : [1, 2, 3]).slice(0, 3).map((item, i) => (
+                <div key={item.id || i} className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/10 reveal-up">
                   <div className="flex text-[#D4AF37] mb-6">
-                    <iconify-icon icon="mdi:star"></iconify-icon>
-                    <iconify-icon icon="mdi:star"></iconify-icon>
-                    <iconify-icon icon="mdi:star"></iconify-icon>
-                    <iconify-icon icon="mdi:star"></iconify-icon>
+                    {[...Array(item.rating || 5)].map((_, index) => (
+                      <iconify-icon key={index} icon="mdi:star"></iconify-icon>
+                    ))}
                   </div>
-                  <p className="text-lg mb-8 italic">"The quality is great and the design is beautiful. Highly recommended!"</p>
+                  <p className="text-lg mb-8 italic">
+                    "{item.comment || "The quality is great and the design is beautiful. Highly recommended!"}"
+                  </p>
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
-                      <img src={`https://i.pravatar.cc/150?u=${i}`} alt="User" />
+                    <div className="w-12 h-12 rounded-full bg-[#F5F1E8] flex items-center justify-center overflow-hidden border border-[#D4AF37]/20">
+                      <img 
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.id || i}`} 
+                        alt="User" 
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div>
-                      <h4 className="font-bold text-[#3D2817]">Happy Customer</h4>
-                      <p className="text-xs text-gray-500 uppercase">Verified Buyer</p>
+                      <h4 className="font-bold text-[#3D2817] capitalize">
+                        {item.Customer?.name || "Happy Customer"}
+                      </h4>
+                      <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Verified Buyer</p>
                     </div>
                   </div>
                 </div>
@@ -522,7 +574,7 @@ const Home = () => {
             </div>
             <div className="flex items-center space-x-4 text-white">
               <iconify-icon icon="lucide:refresh-cw" className="text-3xl text-[#D4AF37]"></iconify-icon>
-              <span>Easy Returns</span>
+              <span>Easy Exchange</span>
             </div>
           </div>
         </section>

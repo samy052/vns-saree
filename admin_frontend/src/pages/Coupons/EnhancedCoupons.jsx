@@ -427,6 +427,7 @@ export default function EnhancedCoupons() {
                     <td className="px-6 py-4 text-gray-500 font-medium">
                       {formatDateWords(c.valid_until)}
                       {isExpired(c) && <span className="ml-2 text-red-500 text-[10px] font-bold uppercase">(Expired)</span>}
+                      {c.display_on_homepage && <span className="ml-2 bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Home</span>}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-1">
@@ -623,6 +624,36 @@ export default function EnhancedCoupons() {
                         className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none" 
                       />
                     </div>
+                  </div>
+
+                  <div className="p-6 bg-[#800020]/5 rounded-3xl border border-[#800020]/10 space-y-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-[#800020]" />
+                        <span className="font-bold text-[#800020] text-sm">Display in Website Banner (Myntra Style)</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={formData.display_on_homepage} 
+                          onChange={(e) => setFormData({...formData, display_on_homepage: e.target.checked})} 
+                          className="sr-only peer" 
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#800020]"></div>
+                      </label>
+                    </div>
+                    {formData.display_on_homepage && (
+                      <div className="animate-in slide-in-from-top-2 duration-200">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Banner Message (e.g. FLAT 20% OFF)</label>
+                        <input 
+                          type="text" 
+                          value={formData.banner_text} 
+                          onChange={(e) => setFormData({...formData, banner_text: e.target.value})} 
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl mt-1 outline-none focus:border-[#800020] bg-white" 
+                          placeholder="What users will see on the banner"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -923,36 +954,6 @@ export default function EnhancedCoupons() {
                         min="1"
                       />
                     </div>
-                  </div>
-
-                  <div className="p-6 bg-[#800020]/5 rounded-3xl border border-[#800020]/10 space-y-4 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-[#800020]" />
-                        <span className="font-bold text-[#800020] text-sm">Visible on Website Banner</span>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          checked={formData.display_on_homepage} 
-                          onChange={(e) => setFormData({...formData, display_on_homepage: e.target.checked})} 
-                          className="sr-only peer" 
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#800020]"></div>
-                      </label>
-                    </div>
-                    {formData.display_on_homepage && (
-                      <div className="animate-in slide-in-from-top-2 duration-200">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Banner Text (Catchy Message)</label>
-                        <input 
-                          type="text" 
-                          value={formData.banner_text} 
-                          onChange={(e) => setFormData({...formData, banner_text: e.target.value})} 
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl mt-1 outline-none focus:border-[#800020]" 
-                          placeholder="e.g. GET 20% OFF TODAY!"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               )}

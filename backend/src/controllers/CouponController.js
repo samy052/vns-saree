@@ -10,6 +10,15 @@ class CouponController {
     }
   }
 
+  async getHomepageCoupons(req, res) {
+    try {
+      const coupons = await CouponService.getHomepageCoupons();
+      res.status(200).json(coupons);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
   async getById(req, res) {
     try {
       const coupon = await CouponService.getCouponById(req.params.id);

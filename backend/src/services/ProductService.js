@@ -63,6 +63,9 @@ const sanitizeProductPayload = (data = {}) => {
     variety_id: toIntOrNull(data.variety_id),
     occasion_id: toIntOrNull(data.occasion_id),
     color_stocks: typeof data.color_stocks === "object" ? data.color_stocks : {},
+    product_images_by_color: typeof data.product_images_by_color === "object" ? data.product_images_by_color : {},
+    cover_image_url: data.cover_image_url || null,
+    badge: data.badge || "New Arrival",
     images: Array.isArray(data.images) ? data.images : [],
   };
 
@@ -85,11 +88,19 @@ const sanitizeProductPayload = (data = {}) => {
   // Final field cleanup
   delete sanitized.price;
   delete sanitized.old_price;
-  // delete sanitized.color_stocks; // DO NOT DELETE THIS ANYMORE
   delete sanitized.cover_image_selection;
-  delete sanitized.product_images_by_color;
-  delete sanitized.cover_image_url;
   delete sanitized.image_url;
+
+  // Cleanup nested objects that might be present from Sequelize includes
+  delete sanitized.id;
+  delete sanitized.Category;
+  delete sanitized.Material;
+  delete sanitized.Variety;
+  delete sanitized.Occasion;
+  delete sanitized.productImages;
+  delete sanitized.product_images;
+  delete sanitized.createdAt;
+  delete sanitized.updatedAt;
 
   return sanitized;
 };
@@ -132,16 +143,20 @@ class ProductService {
     };
 
     // Sorting Logic
+    console.log("ProductService: sortBy =", sortBy);
     if (sortBy === "price_asc") {
       queryOptions.order.push(["selling_price", "ASC"]);
     } else if (sortBy === "price_desc") {
       queryOptions.order.push(["selling_price", "DESC"]);
     } else if (sortBy === "special") {
-      // Prioritize special collection, then newest
       queryOptions.order.push(["is_special_collection", "DESC"]);
       queryOptions.order.push(["id", "DESC"]);
+    } else if (sortBy === "newest") {
+      // Prioritize New Arrivals, then newest by ID
+      queryOptions.order.push(["is_new_arrival", "DESC"]);
+      queryOptions.order.push(["id", "DESC"]);
     } else {
-      // default: newest
+      // Default / popularity / other
       queryOptions.order.push(["id", "DESC"]);
     }
 

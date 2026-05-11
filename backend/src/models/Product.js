@@ -151,6 +151,19 @@ const Product = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    product_images_by_color: {
+      type: DataTypes.JSONB,
+      defaultValue: {},
+    },
+    cover_image_url: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    badge: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      defaultValue: "New Arrival",
+    },
   },
   {
     tableName: "products",

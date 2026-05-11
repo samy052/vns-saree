@@ -38,7 +38,8 @@ const connectDB = async () => {
     `);
     await sequelize.query(`
       ALTER TABLE "vns_saree"."products"
-      ADD COLUMN IF NOT EXISTS "cover_image_url" VARCHAR(255)
+      ADD COLUMN IF NOT EXISTS "cover_image_url" VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS "badge" VARCHAR(50) DEFAULT 'New Arrival'
     `);
     await sequelize.query(`
       ALTER TABLE "vns_saree"."carts"

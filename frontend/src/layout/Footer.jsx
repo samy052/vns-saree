@@ -34,6 +34,31 @@ const Footer = () => {
               Celebrating the timeless artistry of Banaras through exquisite
               handwoven sarees for the modern connoisseur.
             </p>
+            <div className="flex flex-col gap-4 mb-8">
+              <a 
+                href="mailto:info@banarasikala.com" 
+                className="flex items-center gap-3 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-[#800020] transition-all duration-300">
+                  <iconify-icon icon="lucide:mail" className="text-lg"></iconify-icon>
+                </div>
+                <span className="text-sm text-white/60 group-hover:text-white transition-colors">
+                  info@banarasikala.com
+                </span>
+              </a>
+              <a 
+                href="tel:+919876543210" 
+                className="flex items-center gap-3 group"
+              >
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-[#800020] transition-all duration-300">
+                  <iconify-icon icon="lucide:phone" className="text-lg"></iconify-icon>
+                </div>
+                <span className="text-sm text-white/60 group-hover:text-white transition-colors">
+                  +91 98765 43210
+                </span>
+              </a>
+            </div>
+
             <div className="flex items-center space-x-4">
               <a
                 href="#"
@@ -146,15 +171,18 @@ const Footer = () => {
             <p className="text-white/60 text-sm mb-4">
               Subscribe to get updates on new products and special offers.
             </p>
-            <form className="relative" onSubmit={(e) => e.preventDefault()}>
+            <form 
+              className="flex items-center border-b border-[#D4AF37]/30 group transition-all duration-300 focus-within:border-[#D4AF37] pb-1" 
+              onSubmit={(e) => e.preventDefault()}
+            >
               <input
                 type="email"
                 placeholder="Email Address"
-                className="w-full bg-white/10 border-b border-[#D4AF37]/50 py-3 px-0 focus:outline-none focus:border-[#D4AF37] text-sm text-white placeholder:text-white/30"
+                className="flex-grow bg-transparent py-2 text-sm text-white placeholder:text-white/30 focus:outline-none"
               />
               <button
                 type="submit"
-                className="absolute right-0 bottom-3 text-[#D4AF37] hover:scale-110 transition-transform"
+                className="text-[#D4AF37]/60 hover:text-[#D4AF37] hover:scale-110 transition-all duration-300 ml-3 flex items-center"
               >
                 <iconify-icon
                   icon="lucide:arrow-right-circle"

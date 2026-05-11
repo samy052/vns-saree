@@ -381,7 +381,10 @@ export default function EnhancedProducts() {
 
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("accessToken")}`
+        },
         body: JSON.stringify(payload),
       });
 
@@ -408,6 +411,9 @@ export default function EnhancedProducts() {
     try {
       const response = await fetch(`${API_ENDPOINTS.products}/${id}`, {
         method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("accessToken")}`
+        }
       });
       if (response.ok) {
         await fetchAllData();

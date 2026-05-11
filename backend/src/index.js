@@ -2,6 +2,12 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { connectDB } = require("./config/db");
+const cron = require("node-cron");
+
+// Keep-alive cron job (runs every 10 minutes)
+cron.schedule("*/10 * * * *", () => {
+  console.log(`Cron Job: Backend heartbeat at ${new Date().toLocaleString()}`);
+});
 
 // Import Routes
 const CategoryRoutes = require("./routes/CategoryRoutes");

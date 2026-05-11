@@ -4,6 +4,7 @@ const CouponController = require('../controllers/CouponController');
 const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 
 router.get('/', CouponController.getAll);
+router.get('/homepage', CouponController.getHomepageCoupons);
 router.get('/:id', CouponController.getById);
 router.post('/', authMiddleware, adminMiddleware, CouponController.create);
 router.put('/:id', authMiddleware, adminMiddleware, CouponController.update);

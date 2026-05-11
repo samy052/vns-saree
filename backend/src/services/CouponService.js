@@ -10,6 +10,15 @@ class CouponService {
     return await Coupon.findAll();
   }
 
+  async getHomepageCoupons() {
+    return await Coupon.findAll({
+      where: {
+        is_active: true,
+        display_on_homepage: true
+      }
+    });
+  }
+
   async getCouponById(id) {
     return await Coupon.findByPk(id);
   }

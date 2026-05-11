@@ -11,7 +11,7 @@ const INITIAL_FORM_STATE = {
   color_stocks: {},
   weight: "", length: "6.5", width: "1.1",
   category_id: "", material_id: "", variety_id: "", occasion_id: "",
-  is_special_collection: false, is_new_arrival: false, is_available: true,
+  is_special_collection: false, special_collection: false, is_new_arrival: false, is_available: true,
   blouse_piece: true,
 };
 
@@ -335,9 +335,11 @@ export default function Products() {
       color_stocks: formData.color_stocks || {},
       images: formData.images || [],
       cover_image_selection: formData.cover_image_selection || "",
-      category_id: formData.category_id || null, material_id: formData.material_id || null,
+      category_id: formData.category_id || null, 
+      material_id: formData.material_id || null,
       variety_id: formData.variety_id || null, 
       occasion_id: formData.occasion_id || null,
+      special_collection: formData.special_collection || formData.is_special_collection || false,
     };
 
     const formPayload = new FormData();
@@ -374,7 +376,7 @@ export default function Products() {
       } else {
         const err = await res.json();
         console.error("Product save failed:", err);
-        showModal("error", "Save failed", "Unable to save product right now. Please check inputs and try again.");
+        showModal("error", "Save failed", err.message || "Unable to save product right now. Please check inputs and try again.");
       }
     } catch (err) {
       console.error("Product save network error:", err);
