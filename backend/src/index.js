@@ -1,5 +1,12 @@
 const express = require("express");
 const cors = require("cors");
+const dns = require("dns");
+
+// Force IPv4 resolution to avoid ENETUNREACH errors on Render/Heroku
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 require("dotenv").config();
 const { connectDB } = require("./config/db");
 const cron = require("node-cron");
