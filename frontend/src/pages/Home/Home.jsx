@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useNotification } from "../../context/NotificationContext";
 import "./Home.css";
 
 // Swiper imports
@@ -58,6 +59,35 @@ const Home = () => {
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [heroLoading, setHeroLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showNotification } = useNotification();
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formData = new FormData(e.target);
+    formData.append("access_key", "f23a0283-8a44-4d5b-a9bb-bd25ea343936");
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification("Message sent successfully! We'll get back to you soon.", "success");
+        e.target.reset();
+      } else {
+        showNotification(data.message || "Something went wrong. Please try again.", "error");
+      }
+    } catch (error) {
+      showNotification("Network error. Please try again later.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     // Fetch Coupons for Homepage
@@ -555,6 +585,73 @@ const Home = () => {
               ))}
             </div>
           </div>
+        </section>
+
+        {/* Contact Us / Web3 Form Section */}
+        <section className="py-20 bg-[#2D1B0E] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent"></div>
+          <div className="container mx-auto px-4 max-w-4xl relative z-10">
+            <div className="text-center mb-12 animate-fade-in-up">
+              <h2 className="brand-font text-3xl lg:text-5xl text-[#D4AF37] mb-4 italic-text">Get In Touch</h2>
+              <p className="text-white/60 text-sm lg:text-base max-w-xl mx-auto">
+                Have questions about our collection or need help with your order? Send us a message and we'll get back to you shortly.
+              </p>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-xl p-8 lg:p-12 rounded-[2rem] border border-[#D4AF37]/20 shadow-2xl animate-fade-in-up delay-300">
+              <form onSubmit={handleContactSubmit} className="space-y-6">
+                <input type="hidden" name="subject" value="New Inquiry from VNS Saree Website" />
+                <input type="checkbox" name="botcheck" id="" className="hidden" />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Full Name</label>
+                    <input 
+                      type="text" 
+                      name="name" 
+                      placeholder="John Doe" 
+                      required 
+                      className="w-full bg-white/5 border-b border-[#D4AF37]/30 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#D4AF37] transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Email Address</label>
+                    <input 
+                      type="email" 
+                      name="email" 
+                      placeholder="john@example.com" 
+                      required 
+                      className="w-full bg-white/5 border-b border-[#D4AF37]/30 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#D4AF37] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Message</label>
+                  <textarea 
+                    name="message" 
+                    rows="4" 
+                    placeholder="How can we help you?" 
+                    required 
+                    className="w-full bg-white/5 border-b border-[#D4AF37]/30 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#D4AF37] transition-all resize-none"
+                  ></textarea>
+                </div>
+
+                <div className="flex justify-center pt-4">
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="bg-[#D4AF37] text-[#2D1B0E] font-bold py-4 px-12 rounded-full hover:bg-white hover:scale-105 transition-all duration-500 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? "Sending..." : "Send Message"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+          {/* Subtle Background Elements */}
+          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#800020]/20 blur-[100px] rounded-full"></div>
+          <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#D4AF37]/10 blur-[100px] rounded-full"></div>
         </section>
 
         {/* Trust Badges */}
