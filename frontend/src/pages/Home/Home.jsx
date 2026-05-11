@@ -484,7 +484,6 @@ const Home = () => {
 
         {/* Featured Collections Section */}
         <section id="featured-collections" className="py-16 bg-gradient-to-b from-white via-[#FFF8F0] to-white relative overflow-hidden">
-        <section className="py-16 bg-gradient-to-b from-white via-[#FFF8F0] to-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#800020] via-[#D4AF37] to-[#800020]"></div>
 
           <div className="w-full px-4 lg:px-12 relative z-10">
@@ -610,6 +609,7 @@ const Home = () => {
             </div>
           </div>
         </section>
+        
 
         {/* Story Section */}
         <section className="py-16 bg-[#800020] text-white text-center relative overflow-hidden">
