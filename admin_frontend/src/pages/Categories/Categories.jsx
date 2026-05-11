@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Pencil,
@@ -61,7 +61,7 @@ export default function Categories() {
 
       setCategories(cats);
       setVarieties(vars);
-    } catch (err) {
+    } catch {
       showModal("error", "Error", "Failed to load data from server");
     } finally {
       setLoading(false);
@@ -175,7 +175,7 @@ export default function Categories() {
               err.message || "Failed to save category",
             );
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Network error. Please try again.");
         } finally {
           setSubmitting(false);
@@ -227,7 +227,7 @@ export default function Categories() {
               const err = await res.json();
               showModal("error", "Error", err.message || "Failed to delete category");
             }
-          } catch (err) {
+          } catch {
             showModal("error", "Error", "Network error. Please try again.");
           }
         },

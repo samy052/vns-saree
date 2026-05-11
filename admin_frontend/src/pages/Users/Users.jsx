@@ -1,4 +1,3 @@
-import React from 'react';
 import { Search, Pencil, Ban, Trash2 } from 'lucide-react';
 import './Users.css';
 

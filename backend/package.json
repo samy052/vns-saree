@@ -2,11 +2,10 @@
   "name": "vns-saree-backend",
   "version": "1.0.0",
   "description": "Backend for VNS Saree E-commerce",
-  "main": "src/index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "seed": "node src/config/seed.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

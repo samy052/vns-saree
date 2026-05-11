@@ -1,4 +1,3 @@
-import React from 'react';
 import { Users, Box, TrendingUp, IndianRupee, Eye, TrendingDown } from 'lucide-react';
 import { Line, Doughnut } from 'react-chartjs-2';
 import {

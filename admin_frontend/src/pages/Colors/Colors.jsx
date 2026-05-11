@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Pencil,
@@ -244,7 +244,7 @@ export default function Colors() {
             const err = await res.json();
             showModal("error", "Error", err.message || "Failed to delete color");
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Network error. Please try again.");
         }
       },

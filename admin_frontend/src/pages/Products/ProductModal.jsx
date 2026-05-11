@@ -1,6 +1,6 @@
-import React from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Plus, Calculator, Hash, AlertTriangle, Package, Sparkles, Star, Search } from "lucide-react";
+import { X, Calculator, Hash, AlertTriangle, Package, Sparkles, Star, Search } from "lucide-react";
 
 const ProductModal = ({
   isOpen,
@@ -23,8 +23,8 @@ const ProductModal = ({
   occasions,
 }) => {
   const navigate = useNavigate();
-  const [colorSearch, setColorSearch] = React.useState("");
-  const [previewImage, setPreviewImage] = React.useState(null);
+  const [colorSearch, setColorSearch] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
 
   if (!isOpen) return null;
 
@@ -58,7 +58,7 @@ const ProductModal = ({
   const profitPercent = buyingPrice > 0 ? Math.round((profitAmount / buyingPrice) * 100) : 0;
 
   const handleNumberInput = (e) => {
-    const { name, value } = e.target;
+    const { value } = e.target;
     // Only allow numbers and decimal
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       onInputChange(e);

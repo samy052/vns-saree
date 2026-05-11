@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Pencil,
@@ -53,7 +53,7 @@ export default function Occasions() {
       occ.sort((a, b) => b.id - a.id);
       setOccasions(occ);
       setProducts(prods);
-    } catch (err) {
+    } catch {
       showModal("error", "Error", "Failed to load occasions from server");
     } finally {
       setLoading(false);
@@ -140,7 +140,7 @@ export default function Occasions() {
             const err = await res.json();
             showModal("error", "Error", err.message || "Failed to save occasion");
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Network error. Please try again.");
         } finally {
           setSubmitting(false);
@@ -190,7 +190,7 @@ export default function Occasions() {
             const err = await res.json();
             showModal("error", "Error", err.message || "Failed to delete occasion");
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Network error. Please try again.");
         }
       },

@@ -116,7 +116,7 @@ const Auth = () => {
       let data;
       try {
         data = await res.json();
-      } catch (e) {
+      } catch {
         throw new Error("Server error. Please try again later.");
       }
       if (!res.ok) throw new Error(data.message || "Request failed");
@@ -146,7 +146,7 @@ const Auth = () => {
       let data;
       try {
         data = await res.json();
-      } catch (e) {
+      } catch {
         throw new Error("Server error. Please try again later.");
       }
       if (!res.ok) throw new Error(data.message || "Verification failed");
@@ -181,7 +181,7 @@ const Auth = () => {
       let data;
       try {
         data = await res.json();
-      } catch (e) {
+      } catch {
         throw new Error("Server error. Please try again later.");
       }
       if (!res.ok) throw new Error(data.message || "Reset failed");

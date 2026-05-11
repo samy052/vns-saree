@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Trash2, CheckCircle, Clock, Star, MessageSquare } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Trash2, CheckCircle, Star, MessageSquare } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api';
 import './Reviews.css';
 

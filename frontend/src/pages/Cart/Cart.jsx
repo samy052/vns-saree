@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
-import { useNotification } from "../../context/NotificationContext";
 import api from "../../utils/api";
 import { API_ENDPOINTS } from "../../config/api";
 import "./Cart.css";
@@ -19,7 +18,6 @@ const Cart = () => {
     removeCoupon 
   } = useCart();
   const { addToWishlist } = useWishlist();
-  const { showNotification } = useNotification();
 
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [showCouponDrawer, setShowCouponDrawer] = useState(false);

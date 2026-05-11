@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, Search, Filter, ChevronLeft, ChevronRight, Package, AlertCircle, Star, Sparkles, CheckCircle, AlertTriangle, X } from "lucide-react";
 import { API_ENDPOINTS } from "../../config/api";
 import ProductModal from "./ProductModal";
@@ -276,7 +276,7 @@ export default function Products() {
     });
   };
 
-  const handleCoverImageSelect = ({ type, colorId, index, url }) => {
+  const handleCoverImageSelect = ({ type, colorId, index }) => {
     const selection = `${type}:${colorId}:${index}`;
     setFormData((prev) => ({
       ...prev,

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { API_ENDPOINTS } from "../../config/api";
@@ -118,7 +118,7 @@ const Checkout = () => {
 
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
-    } catch (err) {
+    } catch {
       alert("Error initiating payment.");
     } finally {
       setLoading(false);

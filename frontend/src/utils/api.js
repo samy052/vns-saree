@@ -42,7 +42,7 @@ api.interceptors.response.use(
             api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
             return api(originalRequest);
           }
-        } catch (refreshError) {
+        } catch {
           // Refresh token expired or invalid
           localStorage.clear();
           sessionStorage.clear();

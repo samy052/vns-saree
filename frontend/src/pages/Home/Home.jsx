@@ -82,7 +82,7 @@ const Home = () => {
       } else {
         showNotification(data.message || "Something went wrong. Please try again.", "error");
       }
-    } catch (error) {
+    } catch {
       showNotification("Network error. Please try again later.", "error");
     } finally {
       setIsSubmitting(false);

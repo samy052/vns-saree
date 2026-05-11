@@ -1,5 +1,4 @@
-import React from 'react';
-import { CreditCard, Wallet, Smartphone } from 'lucide-react';
+import { CreditCard, Smartphone } from 'lucide-react';
 import './Orders.css';
 
 export default function Orders() {

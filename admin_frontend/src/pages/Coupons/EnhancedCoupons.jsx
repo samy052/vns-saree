@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { 
-  Plus, Pencil, Trash2, Tag, Calendar, Users, Percent, 
-  IndianRupee, Copy, Eye, EyeOff, MapPin, CheckCircle2, 
-  XCircle, Clock, Info, ChevronRight, Settings, Target,
+  Plus, Pencil, Trash2, Tag, Percent,
+  IndianRupee, CheckCircle2,
+  Info, ChevronRight, Settings, Target,
   ExternalLink, Search, AlertTriangle, AlertCircle
 } from "lucide-react";
 import { API_ENDPOINTS } from "../../config/api";
@@ -42,12 +42,9 @@ export default function EnhancedCoupons() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [confirmData, setConfirmData] = useState(null); // { coupon, action }
   const [viewingCoupon, setViewingCoupon] = useState(null);
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM);
-  const [showInactive, setShowInactive] = useState(false);
   const [currentStep, setCurrentStep] = useState(1); // 1, 2, 3
   const [mappingType, setMappingType] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,7 +85,7 @@ export default function EnhancedCoupons() {
       setColors(data[4]);
       setOccasions(data[5]);
       setMaterials(data[6]);
-    } catch (err) {
+    } catch {
       showModal("error", "Error", "Failed to load data from server");
     } finally {
       setLoading(false);
@@ -209,7 +206,7 @@ export default function EnhancedCoupons() {
         const err = await res.json();
         showModal("error", "Error", err.message || "Failed to save coupon");
       }
-    } catch (err) {
+    } catch {
       showModal("error", "Error", "Network error. Please try again.");
     }
   };
@@ -238,7 +235,7 @@ export default function EnhancedCoupons() {
             await fetchData();
             showModal("success", "Status Updated", `Coupon is now ${action}.`);
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Failed to update status");
         }
       }
@@ -259,7 +256,7 @@ export default function EnhancedCoupons() {
             await fetchData();
             showModal("success", "Deleted", "Coupon removed successfully.");
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Failed to delete coupon");
         }
       }

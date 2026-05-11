@@ -3,6 +3,7 @@ const router = express.Router();
 const WishlistController = require("../controllers/WishlistController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
+// Customer protected routes
 router.use(authMiddleware);
 
 router.get("/", WishlistController.getWishlist);

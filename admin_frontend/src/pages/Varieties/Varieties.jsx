@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Pencil,
@@ -70,7 +70,7 @@ export default function Varieties() {
       setVarieties(vars);
       setCategories(cats);
       setProducts(prods);
-    } catch (err) {
+    } catch {
       showModal(
         "error",
         "Error",
@@ -217,7 +217,7 @@ export default function Varieties() {
               err.message || "Failed to save variety",
             );
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Network error. Please try again.");
         } finally {
           setSubmitting(false);
@@ -278,7 +278,7 @@ export default function Varieties() {
             const err = await res.json();
             showModal("error", "Error", err.message || "Failed to delete variety");
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Network error. Please try again.");
         }
       },

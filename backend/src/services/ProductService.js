@@ -1,6 +1,5 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
-const Color = require('../models/Color');
 const Material = require('../models/Material');
 const Variety = require('../models/Variety');
 const Occasion = require("../models/Occasion");

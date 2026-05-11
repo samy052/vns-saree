@@ -3,7 +3,6 @@ const { sequelize } = require("../config/db");
 const Category = require("./Category");
 const Material = require("./Material");
 const Variety = require("./Variety");
-const Color = require("./Color");
 const Occasion = require("./Occasion");
 
 const Product = sequelize.define(

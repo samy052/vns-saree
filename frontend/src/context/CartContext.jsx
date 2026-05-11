@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import api from '../utils/api';
 import { API_ENDPOINTS } from '../config/api';
@@ -178,7 +178,7 @@ export const CartProvider = ({ children }) => {
     }
 
     // 3. Calculate Discount
-    let discount = 0;
+    let discount;
     if (coupon.discount_type === "percentage") {
       discount = (applicableSubtotal * Number(coupon.discount_percent)) / 100;
       if (coupon.max_discount_amount && discount > Number(coupon.max_discount_amount)) {

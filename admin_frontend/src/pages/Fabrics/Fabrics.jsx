@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Pencil,
@@ -53,7 +53,7 @@ export default function Fabrics() {
       data.sort((a, b) => b.id - a.id);
       setFabrics(data);
       setProducts(prods);
-    } catch (err) {
+    } catch {
       showModal("error", "Error", "Failed to load fabrics from server");
     } finally {
       setLoading(false);
@@ -140,7 +140,7 @@ export default function Fabrics() {
             const err = await res.json();
             showModal("error", "Error", err.message || "Failed to save fabric");
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Network error. Please try again.");
         } finally {
           setSubmitting(false);
@@ -190,7 +190,7 @@ export default function Fabrics() {
             const err = await res.json();
             showModal("error", "Error", err.message || "Failed to delete fabric");
           }
-        } catch (err) {
+        } catch {
           showModal("error", "Error", "Network error. Please try again.");
         }
       },

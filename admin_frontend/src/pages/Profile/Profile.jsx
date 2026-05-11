@@ -1,4 +1,3 @@
-import React from 'react';
 import { Camera, Mail, Phone, MapPin, Shield, Key } from 'lucide-react';
 
 export default function Profile() {

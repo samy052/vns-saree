@@ -1,22 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const dns = require("dns");
 
-// Force IPv4 resolution to avoid ENETUNREACH errors on Render/Heroku
-if (dns.setDefaultResultOrder) {
-  dns.setDefaultResultOrder('ipv4first');
-}
-
-require("dotenv").config();
-const { connectDB } = require("./config/db");
-const cron = require("node-cron");
-
-// Keep-alive cron job (runs every 10 minutes)
-cron.schedule("*/10 * * * *", () => {
-  console.log(`Cron Job: Backend heartbeat at ${new Date().toLocaleString()}`);
-});
-
-// Import Routes
 const CategoryRoutes = require("./routes/CategoryRoutes");
 const VarietyRoutes = require("./routes/VarietyRoutes");
 const ColorRoutes = require("./routes/ColorRoutes");
@@ -31,39 +15,69 @@ const CartRoutes = require("./routes/CartRoutes");
 const WishlistRoutes = require("./routes/WishlistRoutes");
 const FeedbackRoutes = require("./routes/FeedbackRoutes");
 
+const parseCorsOrigins = () => {
+  const origins = process.env.CORS_ORIGINS;
+  if (!origins || origins === "*") return true;
+  return origins.split(",").map((origin) => origin.trim()).filter(Boolean);
+};
+
 const app = express();
-const PORT = process.env.PORT || 5003;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors({ origin: parseCorsOrigins(), credentials: true }));
+app.use(express.json({ limit: "10mb" }));
 
-// Routes
+app.get("/", (req, res) => {
+  res.json({
+    name: "VNS Saree API",
+    status: "ok",
+    environment: process.env.NODE_ENV || "development",
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+// Authentication APIs.
+// Public: customer register/login, admin login, password reset, token refresh.
+app.use("/api/auth", AuthRoutes);
+
+// Catalog APIs.
+// Public: read endpoints used by the customer storefront.
+// Admin: create/update/delete endpoints inside these routers require admin auth.
+app.use("/api/products", ProductRoutes);
 app.use("/api/categories", CategoryRoutes);
 app.use("/api/varieties", VarietyRoutes);
 app.use("/api/colors", ColorRoutes);
 app.use("/api/materials", MaterialRoutes);
 app.use("/api/occasions", OccasionRoutes);
 app.use("/api/coupons", CouponRoutes);
-app.use("/api/products", ProductRoutes);
-app.use("/api/orders", OrderRoutes);
-app.use("/api/razorpay", RazorpayRoutes);
-app.use("/api/auth", AuthRoutes);
-app.use("/api/cart", CartRoutes);
-app.use("/api/wishlist", WishlistRoutes);
+
+// Feedback APIs.
+// Public: approved feedback list. Customer: submit feedback. Admin: moderation.
 app.use("/api/feedback", FeedbackRoutes);
 
-app.get("/", (req, res) => {
-  res.send("VNS Saree API is running...");
+// Checkout APIs.
+// Public from the backend perspective; checkout pages control customer access
+// in the frontend and payment verification happens through Razorpay callbacks.
+app.use("/api/razorpay", RazorpayRoutes);
+app.use("/api/orders", OrderRoutes);
+
+// Customer account APIs. Route files enforce customer authentication.
+app.use("/api/cart", CartRoutes);
+app.use("/api/wishlist", WishlistRoutes);
+
+app.use((req, res) => {
+  res.status(404).json({ message: "API route not found" });
 });
 
-// Database Connection & Server Start
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+app.use((error, req, res, next) => {
+  console.error("Unhandled API error:", error);
+  res.status(error.status || 500).json({
+    message: process.env.NODE_ENV === "production"
+      ? "Internal server error"
+      : error.message,
   });
-}).catch(err => {
-  console.error("Failed to start server due to database connection error:", err);
-  process.exit(1);
 });
+
+module.exports = app;

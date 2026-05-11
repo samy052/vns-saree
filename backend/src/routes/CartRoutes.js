@@ -3,6 +3,7 @@ const router = express.Router();
 const CartController = require("../controllers/CartController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
+// Customer protected routes
 router.use(authMiddleware);
 
 router.get("/", CartController.getCart);

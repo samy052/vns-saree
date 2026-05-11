@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -6,7 +5,6 @@ import {
   ShoppingBag,
   Layers,
   GitBranch,
-  Ruler,
   Palette,
   FileBadge,
   TicketPercent,
