@@ -19,6 +19,10 @@ const Material = sequelize.define('Material', {
   description: {
     type: DataTypes.TEXT,
     allowNull: true
+  },
+  image_url: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   tableName: 'materials'

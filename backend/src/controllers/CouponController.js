@@ -55,6 +55,16 @@ class CouponController {
       res.status(400).json({ message: error.message });
     }
   }
+
+  async validate(req, res) {
+    try {
+      const { code, amount, email } = req.body;
+      const result = await CouponService.validateCoupon(code, amount, email);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
 }
 
 module.exports = new CouponController();

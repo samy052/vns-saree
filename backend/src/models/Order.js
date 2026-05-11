@@ -35,12 +35,22 @@ const Order = sequelize.define('Order', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
+  coupon_code: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  discount_amount: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0
+  },
   status: {
     type: DataTypes.STRING,
     defaultValue: 'Pending'
   }
 }, {
-  tableName: 'orders'
+  tableName: 'orders',
+  schema: 'vns_saree'
 });
 
 module.exports = Order;
