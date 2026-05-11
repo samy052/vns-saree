@@ -13,6 +13,11 @@ import Testimonials from "./pages/Testimonials/Testimonials";
 import Wishlist from "./pages/Wishlist/Wishlist";
 import Contact from "./pages/Contact/Contact";
 import Feedback from "./pages/Feedback/Feedback";
+import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy/RefundPolicy";
+import ReturnExchange from "./pages/ReturnExchange/ReturnExchange";
+import ShippingPolicy from "./pages/ShippingPolicy/ShippingPolicy";
+import TermsConditions from "./pages/TermsConditions/TermsConditions";
 import Layout from "./layout/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -102,6 +107,20 @@ function App() {
                       }
                     />
                     <Route path="/testimonials" element={<Testimonials />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/refund-policy" element={<RefundPolicy />} />
+                    <Route
+                      path="/return-exchange"
+                      element={<ReturnExchange />}
+                    />
+                    <Route
+                      path="/shipping-policy"
+                      element={<ShippingPolicy />}
+                    />
+                    <Route
+                      path="/terms-conditions"
+                      element={<TermsConditions />}
+                    />
                     <Route path="/login" element={<Auth />} />
                   </Route>
                 </Routes>

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "../assets/logosaree.png";
+import logo from "../assets/logo.png";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -15,11 +15,21 @@ const Header = ({ activeItem }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [policyOpen, setPolicyOpen] = useState(false);
 
   const isAuthPage = location.pathname === "/login";
   const userName = user?.name || "User";
   const firstName = userName.split(" ")[0];
   const userPhone = user?.phone || "Welcome to Banarasi Kala";
+
+  // Check if current path is a policy page
+  const isPolicyPage = [
+    "/privacy-policy",
+    "/refund-policy",
+    "/return-exchange",
+    "/shipping-policy",
+    "/terms-conditions",
+  ].includes(location.pathname);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -81,14 +91,14 @@ const Header = ({ activeItem }) => {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div className="flex flex-col">
+              {/* <div className="flex flex-col">
                 <span className="brand-font text-xl lg:text-2xl font-bold tracking-tighter maroon-shimmer">
                   Banarasi
                 </span>
                 <span className="text-[20px] lg:text-[20px] uppercase tracking-[0.2em] -mt-0.5 font-bold gold-shimmer animate-tracking-breathe">
                   KALA
                 </span>
-              </div>
+              </div> */}
             </Link>
           </div>
 
@@ -130,15 +140,61 @@ const Header = ({ activeItem }) => {
                 className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "contact" ? "w-full" : "w-0 group-hover:w-full"}`}
               ></span>
             </Link>
-            <Link
-              to="/feedback"
-              className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "feedback" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
+            {/* Policy Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setPolicyOpen(true)}
+              onMouseLeave={() => setPolicyOpen(false)}
             >
-              Feedback
-              <span
-                className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "feedback" ? "w-full" : "w-0 group-hover:w-full"}`}
-              ></span>
-            </Link>
+              <button
+                className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group flex items-center gap-1 ${isPolicyPage ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
+              >
+                Policy
+                <iconify-icon
+                  icon="lucide:chevron-down"
+                  className="text-sm"
+                ></iconify-icon>
+                <span
+                  className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${isPolicyPage ? "w-full" : "w-0 group-hover:w-full"}`}
+                ></span>
+              </button>
+
+              {/* Policy Dropdown Menu */}
+              {policyOpen && (
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-[#D4AF37]/20 py-2 z-50">
+                  <Link
+                    to="/privacy-policy"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                  <Link
+                    to="/refund-policy"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
+                  >
+                    Refund Policy
+                  </Link>
+                  <Link
+                    to="/return-exchange"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
+                  >
+                    Return & Exchange
+                  </Link>
+                  <Link
+                    to="/shipping-policy"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
+                  >
+                    Shipping Policy
+                  </Link>
+                  <Link
+                    to="/terms-conditions"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
+                  >
+                    Terms & Conditions
+                  </Link>
+                </div>
+              )}
+            </div>
             <Link
               to="/testimonials"
               className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "blogs" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
@@ -155,15 +211,17 @@ const Header = ({ activeItem }) => {
             {/* Search Form */}
             <form
               onSubmit={handleSearch}
-              className={`hidden md:flex items-center rounded-full border-2 transition-all duration-300 overflow-hidden ${searchFocused
-                ? "border-[#800020] bg-white shadow-lg shadow-[#800020]/10 w-72"
-                : "border-[#D4AF37]/40 bg-white w-56"
-                }`}
+              className={`hidden md:flex items-center rounded-full border-2 transition-all duration-300 overflow-hidden ${
+                searchFocused
+                  ? "border-[#800020] bg-white shadow-lg shadow-[#800020]/10 w-72"
+                  : "border-[#D4AF37]/40 bg-white w-56"
+              }`}
             >
               <button
                 type="submit"
-                className={`pl-4 pr-2 flex items-center justify-center transition-colors ${searchFocused ? "text-[#800020]" : "text-gray-400"
-                  }`}
+                className={`pl-4 pr-2 flex items-center justify-center transition-colors ${
+                  searchFocused ? "text-[#800020]" : "text-gray-400"
+                }`}
               >
                 <iconify-icon
                   icon="lucide:search"

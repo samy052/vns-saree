@@ -1,204 +1,200 @@
 import { Link } from "react-router-dom";
-import logo from "../assets/logosaree.png";
+import logo from "../assets/logo.png";
 import "./Footer.css";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#800020] text-white pt-20 pb-10">
-      <div className="w-full px-4 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          {/* Brand & Socials */}
-          <div className="lg:col-span-1">
-            <Link
-              to="/"
-              id="footer-logo"
-              className="flex items-center gap-2 group mb-6"
-            >
-              <div className="w-20 h-20 flex items-center justify-center group-hover:scale-105 transition-all duration-300 overflow-hidden">
-                <img
-                  src={logo}
-                  alt="VNS Saree Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="brand-font text-xl lg:text-2xl font-bold tracking-tighter text-[#D4AF37]">
-                  Banarasi
-                </span>
-                <span className="text-[20px] lg:text-[20px] uppercase tracking-[0.2em] -mt-0.5 font-bold text-white/90 animate-tracking-breathe">
-                  KALA
-                </span>
-              </div>
-            </Link>
-            <p className="text-white/60 text-sm leading-relaxed mb-6">
-              Celebrating the timeless artistry of Banaras through exquisite
-              handwoven sarees for the modern connoisseur.
-            </p>
-            <div className="flex flex-col gap-4 mb-8">
-              <a 
-                href="mailto:info@banarasikala.com" 
-                className="flex items-center gap-3 group"
-              >
-                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-[#800020] transition-all duration-300">
-                  <iconify-icon icon="lucide:mail" className="text-lg"></iconify-icon>
-                </div>
-                <span className="text-sm text-white/60 group-hover:text-white transition-colors">
-                  info@banarasikala.com
-                </span>
-              </a>
-              <a 
-                href="tel:+919876543210" 
-                className="flex items-center gap-3 group"
-              >
-                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#D4AF37] group-hover:bg-[#D4AF37] group-hover:text-[#800020] transition-all duration-300">
-                  <iconify-icon icon="lucide:phone" className="text-lg"></iconify-icon>
-                </div>
-                <span className="text-sm text-white/60 group-hover:text-white transition-colors">
-                  +91 98765 43210
-                </span>
-              </a>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4AF37] transition-colors"
-              >
-                <iconify-icon icon="mdi:facebook"></iconify-icon>
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4AF37] transition-colors"
-              >
-                <iconify-icon icon="mdi:instagram"></iconify-icon>
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4AF37] transition-colors"
-              >
-                <iconify-icon icon="mdi:pinterest"></iconify-icon>
-              </a>
-            </div>
-          </div>
-
-          {/* About Links */}
+    <footer className="bg-[#800020] text-white pt-16 pb-8">
+      <div className="w-full px-6 lg:px-16">
+        {/* Main Footer Grid - 3 Columns like reference */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+          {/* Column 1: About Us */}
           <div>
-            <h4 className="text-[#D4AF37] font-bold uppercase tracking-widest text-sm mb-6">
+            <h4 className="text-white/80 uppercase tracking-wider text-sm font-medium mb-6">
               About Us
             </h4>
-            <ul className="space-y-4">
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  Our Story
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  Our Artisans
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  Authenticity Guide
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  Saree Care & Storage
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Customer Support Links */}
-          <div>
-            <h4 className="text-[#D4AF37] font-bold uppercase tracking-widest text-sm mb-6">
-              Customer Care
-            </h4>
-            <ul className="space-y-4">
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  Track Your Order
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  Blouse Stitching Guide
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  Shipping & Deliveries
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-sm text-white/60 hover:text-white transition-colors"
-                >
-                  Terms of Service
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <h4 className="text-[#D4AF37] font-bold uppercase tracking-widest text-sm mb-6">
-              Newsletter
-            </h4>
-            <p className="text-white/60 text-sm mb-4">
-              Subscribe to get updates on new products and special offers.
+            <p className="text-white/70 text-sm leading-relaxed mb-6">
+              At Banarasi Kala, we believe a saree is more than just attire - it
+              is a symbol of grace, pride, and cultural richness. Our brand was
+              built with the idea of bringing India's weaving traditions closer
+              to today's generation, blending timeless elegance with a
+              refreshing modern edge.
             </p>
-            <form 
-              className="flex items-center border-b border-[#D4AF37]/30 group transition-all duration-300 focus-within:border-[#D4AF37] pb-1" 
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input
-                type="email"
-                placeholder="Email Address"
-                className="flex-grow bg-transparent py-2 text-sm text-white placeholder:text-white/30 focus:outline-none"
-              />
-              <button
-                type="submit"
-                className="text-[#D4AF37]/60 hover:text-[#D4AF37] hover:scale-110 transition-all duration-300 ml-3 flex items-center"
+            {/* Social Icons */}
+            <div className="flex items-center gap-4">
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
               >
                 <iconify-icon
-                  icon="lucide:arrow-right-circle"
-                  className="text-2xl"
+                  icon="mdi:facebook"
+                  className="text-white"
                 ></iconify-icon>
-              </button>
-            </form>
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
+              >
+                <iconify-icon
+                  icon="mdi:instagram"
+                  className="text-white"
+                ></iconify-icon>
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
+              >
+                <iconify-icon
+                  icon="mdi:twitter"
+                  className="text-white"
+                ></iconify-icon>
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
+              >
+                <iconify-icon
+                  icon="mdi:youtube"
+                  className="text-white"
+                ></iconify-icon>
+              </a>
+            </div>
+          </div>
+
+          {/* Column 2: Quick Links (replacing Our Collections) */}
+          <div>
+            <h4 className="text-white/80 uppercase tracking-wider text-sm font-medium mb-6">
+              Quick Links
+            </h4>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  to="/"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/collection"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Shop All Sarees
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/about"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/testimonials"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Customer Reviews
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/feedback"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Share Feedback
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/wishlist"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  My Wishlist
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Policies */}
+          <div>
+            <h4 className="text-white/80 uppercase tracking-wider text-sm font-medium mb-6">
+              Policies
+            </h4>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  to="/privacy-policy"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/refund-policy"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Refund Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/return-exchange"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Return & Exchange Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/shipping-policy"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Shipping Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terms-conditions"
+                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div className="pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs text-white/40 tracking-widest">
-          <p>© 2024 BANARASI KALA. ALL RIGHTS RESERVED.</p>
-          <div className="flex space-x-8 mt-4 md:mt-0">
-            <a href="#">PRIVACY POLICY</a>
-            <a href="#">COOKIE SETTINGS</a>
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img
+                src={logo}
+                alt="Banarasi Kala"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            {/* <div>
+              <span className="text-[#D4AF37] font-bold text-sm tracking-wider">
+                BANARASI KALA
+              </span>
+            </div> */}
           </div>
+          <p className="text-white/40 text-xs tracking-wider">
+            © 2026 BANARASI KALA. ALL RIGHTS RESERVED.
+          </p>
         </div>
       </div>
     </footer>
