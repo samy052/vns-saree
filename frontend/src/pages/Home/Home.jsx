@@ -5,7 +5,12 @@ import "./Home.css";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay, EffectCoverflow } from "swiper/modules";
+import {
+  Navigation,
+  Pagination,
+  Autoplay,
+  EffectCoverflow,
+} from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -18,37 +23,42 @@ const HERO_SAREES = [
     id: 1,
     name: "Royal Red Katan",
     price: "₹12,999",
-    image: "https://tilfi.com/cdn/shop/products/KOH0003Red_Kashi_PureKatanSilkKashiGhatSaree_1200x.jpg?v=1689252962",
-    badge: "Best Seller"
+    image:
+      "https://tilfi.com/cdn/shop/products/KOH0003Red_Kashi_PureKatanSilkKashiGhatSaree_1200x.jpg?v=1689252962",
+    badge: "Best Seller",
   },
   {
     id: 2,
     name: "Golden Zari Silk",
     price: "₹15,499",
-    image: "https://www.holyweaves.com/cdn/shop/files/HW4488-1.jpg?v=1711186445&width=1200",
-    badge: "New Arrival"
+    image:
+      "https://www.holyweaves.com/cdn/shop/files/HW4488-1.jpg?v=1711186445&width=1200",
+    badge: "New Arrival",
   },
   {
     id: 3,
     name: "Midnight Blue Heritage",
     price: "₹14,999",
-    image: "https://www.holyweaves.com/cdn/shop/files/HW4502-1.jpg?v=1711187445&width=1200",
-    badge: "Limited Edition"
+    image:
+      "https://www.holyweaves.com/cdn/shop/files/HW4502-1.jpg?v=1711187445&width=1200",
+    badge: "Limited Edition",
   },
   {
     id: 4,
     name: "Classic Silk",
     price: "₹9,999",
-    image: "https://www.holyweaves.com/cdn/shop/files/HW4481-1.jpg?v=1711185445&width=1200",
-    badge: "Trending"
+    image:
+      "https://www.holyweaves.com/cdn/shop/files/HW4481-1.jpg?v=1711185445&width=1200",
+    badge: "Trending",
   },
   {
     id: 5,
     name: "Rose Pink Heritage",
     price: "₹11,499",
-    image: "https://www.holyweaves.com/cdn/shop/files/HW4495-1.jpg?v=1711186845&width=1200",
-    badge: "Artisan Choice"
-  }
+    image:
+      "https://www.holyweaves.com/cdn/shop/files/HW4495-1.jpg?v=1711186845&width=1200",
+    badge: "Artisan Choice",
+  },
 ];
 
 const Home = () => {
@@ -71,16 +81,22 @@ const Home = () => {
     try {
       const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        body: formData
+        body: formData,
       });
 
       const data = await response.json();
 
       if (data.success) {
-        showNotification("Message sent successfully! We'll get back to you soon.", "success");
+        showNotification(
+          "Message sent successfully! We'll get back to you soon.",
+          "success",
+        );
         e.target.reset();
       } else {
-        showNotification(data.message || "Something went wrong. Please try again.", "error");
+        showNotification(
+          data.message || "Something went wrong. Please try again.",
+          "error",
+        );
       }
     } catch {
       showNotification("Network error. Please try again later.", "error");
@@ -214,8 +230,8 @@ const Home = () => {
       ref={rootRef}
     >
       <main>
-        {/* Hero Section - Compact Height */}
-        <section className="relative h-[85vh] min-h-[650px] flex items-center overflow-hidden bg-[#2D1B0E]">
+        {/* Hero Section - Responsive Height */}
+        <section className="relative min-h-[650px] lg:h-[85vh] lg:min-h-[650px] flex items-center overflow-visible lg:overflow-hidden bg-[#2D1B0E]">
           {/* Hero Background Image with Dark Overlay */}
           <div className="absolute inset-0 z-0">
             <img
@@ -234,14 +250,16 @@ const Home = () => {
                 <div className="coupon-content">
                   <div className="coupon-left">
                     <span className="coupon-title">
-                      {coupons[0].discount_type === 'percentage' 
-                        ? `FLAT ${coupons[0].discount_percent}% OFF` 
+                      {coupons[0].discount_type === "percentage"
+                        ? `FLAT ${coupons[0].discount_percent}% OFF`
                         : `FLAT ₹${Number(coupons[0].discount_amount).toLocaleString()} OFF`}
                     </span>
                   </div>
                   <div className="coupon-divider"></div>
                   <div className="coupon-right">
-                    <p className="coupon-text">{coupons[0].banner_text || `Use code ${coupons[0].code}`}</p>
+                    <p className="coupon-text">
+                      {coupons[0].banner_text || `Use code ${coupons[0].code}`}
+                    </p>
                     <div className="coupon-code-badge">{coupons[0].code}</div>
                   </div>
                 </div>
@@ -252,7 +270,7 @@ const Home = () => {
             </div>
           )}
 
-          <div className="w-full px-4 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+          <div className="w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10">
             <div className="flex flex-col items-start text-left max-w-xl">
               <div className="mb-6 animate-fade-in-up">
                 <div className="premium-badge">
@@ -261,8 +279,9 @@ const Home = () => {
                 </div>
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-bold leading-[1.1] mb-6 animate-fade-in-up delay-100 premium-title drop-shadow-2xl">
-                <span className="italic-text text-white">Worn by Queens.</span> <br />
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.1] mb-6 animate-fade-in-up delay-100 premium-title drop-shadow-2xl">
+                <span className="italic-text text-white">Worn by Queens.</span>{" "}
+                <br />
                 <span className="text-[#D4AF37]">Made for You.</span> <br />
                 {/* <span className="text-white">Sarees</span> */}
               </h1>
@@ -270,8 +289,13 @@ const Home = () => {
               <div className="hero-divider mb-8 animate-fade-in-up delay-200"></div>
 
               <p className="text-lg text-white mb-10 animate-fade-in-up delay-300 leading-relaxed font-light drop-shadow-md">
-                The most celebrated silk sarees in the world, now at prices you'll love.
-                <span className="text-[#D4AF37] font-medium"> Handcrafted on the ghats of Varanasi with pure silk, real gold zari, and generations of passion.</span>
+                The most celebrated silk sarees in the world, now at prices
+                you'll love.
+                <span className="text-[#D4AF37] font-medium">
+                  {" "}
+                  Handcrafted on the ghats of Varanasi with pure silk, real gold
+                  zari, and generations of passion.
+                </span>
               </p>
 
               {/* Price & Shipping Highlight */}
@@ -307,7 +331,10 @@ const Home = () => {
                   to="/testimonials"
                   className="hero-cta-secondary group shimmer-effect"
                 >
-                  <iconify-icon icon="lucide:play-circle" className="text-xl"></iconify-icon>
+                  <iconify-icon
+                    icon="lucide:play-circle"
+                    className="text-xl"
+                  ></iconify-icon>
                   <span>Watch Our Artisans</span>
                 </Link>
               </div>
@@ -321,7 +348,7 @@ const Home = () => {
                     {[1, 2, 3].map((i) => (
                       <div
                         key={i}
-                        className={`w-[180px] h-[270px] lg:w-[280px] lg:h-[420px] rounded-2xl bg-white/10 animate-pulse border border-white/20 relative overflow-hidden ${i !== 2 ? 'opacity-40 scale-90' : 'z-10'}`}
+                        className={`w-[180px] h-[270px] lg:w-[280px] lg:h-[420px] rounded-2xl bg-white/10 animate-pulse border border-white/20 relative overflow-hidden ${i !== 2 ? "opacity-40 scale-90" : "z-10"}`}
                       >
                         <div className="absolute inset-0 shimmer-bg opacity-20"></div>
                       </div>
@@ -362,9 +389,18 @@ const Home = () => {
                             />
 
                             {/* Discount Badge */}
-                            {(saree.discount_percent || calculateDiscount(saree.mrp_price || saree.mrp, saree.selling_price)) > 0 && (
+                            {(saree.discount_percent ||
+                              calculateDiscount(
+                                saree.mrp_price || saree.mrp,
+                                saree.selling_price,
+                              )) > 0 && (
                               <div className="absolute top-4 right-4 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#800020] text-xs lg:text-sm font-bold px-3 py-2 rounded-lg shadow-lg animate-bounce z-20">
-                                {saree.discount_percent || calculateDiscount(saree.mrp_price || saree.mrp, saree.selling_price)}% OFF
+                                {saree.discount_percent ||
+                                  calculateDiscount(
+                                    saree.mrp_price || saree.mrp,
+                                    saree.selling_price,
+                                  )}
+                                % OFF
                               </div>
                             )}
 
@@ -374,7 +410,7 @@ const Home = () => {
                                 <div className="flex items-center justify-center gap-2 mb-2">
                                   <div className="h-px bg-[#D4AF37] w-8"></div>
                                   <span className="bg-[#D4AF37] text-[#800020] text-[10px] lg:text-[12px] font-bold px-3 py-1 rounded-full uppercase">
-                                    {saree.badge }
+                                    {saree.badge}
                                   </span>
                                   <div className="h-px bg-[#D4AF37] w-8"></div>
                                 </div>
@@ -384,17 +420,32 @@ const Home = () => {
                                 <div className="flex flex-col items-center mt-2">
                                   <div className="flex items-center gap-2">
                                     <span className="text-white text-lg lg:text-2xl font-bold">
-                                      ₹{Number(saree.selling_price || (typeof saree.price === 'string' ? saree.price.replace(/[^0-9]/g, '') : saree.price)).toLocaleString("en-IN")}
+                                      ₹
+                                      {Number(
+                                        saree.selling_price ||
+                                          (typeof saree.price === "string"
+                                            ? saree.price.replace(/[^0-9]/g, "")
+                                            : saree.price),
+                                      ).toLocaleString("en-IN")}
                                     </span>
-                                    {Number(saree.mrp_price || saree.mrp) > Number(saree.selling_price) && (
+                                    {Number(saree.mrp_price || saree.mrp) >
+                                      Number(saree.selling_price) && (
                                       <span className="text-white/60 text-sm line-through">
-                                        ₹{Number(saree.mrp_price || saree.mrp).toLocaleString("en-IN")}
+                                        ₹
+                                        {Number(
+                                          saree.mrp_price || saree.mrp,
+                                        ).toLocaleString("en-IN")}
                                       </span>
                                     )}
                                   </div>
-                                  {Number(saree.mrp_price || saree.mrp) > Number(saree.selling_price) && (
+                                  {Number(saree.mrp_price || saree.mrp) >
+                                    Number(saree.selling_price) && (
                                     <span className="text-[10px] lg:text-xs font-bold text-[#D4AF37] border border-[#D4AF37] px-2 py-0.5 rounded mt-1">
-                                      {calculateDiscount(saree.mrp_price || saree.mrp, saree.selling_price)}% OFF
+                                      {calculateDiscount(
+                                        saree.mrp_price || saree.mrp,
+                                        saree.selling_price,
+                                      )}
+                                      % OFF
                                     </span>
                                   )}
                                 </div>
@@ -415,14 +466,24 @@ const Home = () => {
           </div>
 
           {/* Scroll Indicator */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce-elegant z-20">
+          <button
+            onClick={() => {
+              document.getElementById('featured-collections')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce-elegant z-20 cursor-pointer hover:scale-110 transition-transform"
+            aria-label="Scroll to featured collections"
+          >
             <div className="scroll-arrow-wrap">
-              <iconify-icon icon="lucide:arrow-down" className="text-xl"></iconify-icon>
+              <iconify-icon
+                icon="lucide:arrow-down"
+                className="text-xl"
+              ></iconify-icon>
             </div>
-          </div>
+          </button>
         </section>
 
         {/* Featured Collections Section */}
+        <section id="featured-collections" className="py-16 bg-gradient-to-b from-white via-[#FFF8F0] to-white relative overflow-hidden">
         <section className="py-16 bg-gradient-to-b from-white via-[#FFF8F0] to-white relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#800020] via-[#D4AF37] to-[#800020]"></div>
 
@@ -453,7 +514,9 @@ const Home = () => {
                 </div>
               ) : products.length === 0 ? (
                 <div className="col-span-full text-center py-20">
-                  <p className="text-gray-600">Special collection coming soon.</p>
+                  <p className="text-gray-600">
+                    Special collection coming soon.
+                  </p>
                 </div>
               ) : (
                 <>
@@ -499,17 +562,29 @@ const Home = () => {
                             <div className="flex flex-col items-center justify-center">
                               <div className="flex items-center justify-center gap-2">
                                 <span className="text-xl font-black text-[#800020]">
-                                  ₹{Number(product.selling_price).toLocaleString("en-IN")}
+                                  ₹
+                                  {Number(product.selling_price).toLocaleString(
+                                    "en-IN",
+                                  )}
                                 </span>
-                                {Number(product.mrp_price || product.mrp) > Number(product.selling_price) && (
+                                {Number(product.mrp_price || product.mrp) >
+                                  Number(product.selling_price) && (
                                   <span className="text-sm text-gray-500 line-through opacity-70">
-                                    ₹{Number(product.mrp_price || product.mrp).toLocaleString("en-IN")}
+                                    ₹
+                                    {Number(
+                                      product.mrp_price || product.mrp,
+                                    ).toLocaleString("en-IN")}
                                   </span>
                                 )}
                               </div>
-                              {Number(product.mrp_price || product.mrp) > Number(product.selling_price) && (
+                              {Number(product.mrp_price || product.mrp) >
+                                Number(product.selling_price) && (
                                 <span className="text-xs font-bold text-[#D4AF37] bg-[#800020] px-2 py-0.5 rounded mt-1">
-                                  {calculateDiscount(product.mrp_price || product.mrp, product.selling_price)}% OFF
+                                  {calculateDiscount(
+                                    product.mrp_price || product.mrp,
+                                    product.selling_price,
+                                  )}
+                                  % OFF
                                 </span>
                               )}
                             </div>
@@ -519,10 +594,16 @@ const Home = () => {
                     ))}
                   </Swiper>
                   <button className="swiper-button-prev-custom absolute top-1/2 -left-4 md:-left-8 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-[#800020] z-30">
-                    <iconify-icon icon="lucide:chevron-left" className="text-2xl"></iconify-icon>
+                    <iconify-icon
+                      icon="lucide:chevron-left"
+                      className="text-2xl"
+                    ></iconify-icon>
                   </button>
                   <button className="swiper-button-next-custom absolute top-1/2 -right-4 md:-right-8 -translate-y-1/2 w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-[#800020] z-30">
-                    <iconify-icon icon="lucide:chevron-right" className="text-2xl"></iconify-icon>
+                    <iconify-icon
+                      icon="lucide:chevron-right"
+                      className="text-2xl"
+                    ></iconify-icon>
                   </button>
                 </>
               )}
@@ -533,13 +614,25 @@ const Home = () => {
         {/* Story Section */}
         <section className="py-16 bg-[#800020] text-white text-center relative overflow-hidden">
           <div className="max-w-5xl mx-auto px-4 relative z-10">
-            <h2 className="text-3xl md:text-5xl font-bold mb-8 text-[#D4AF37]">Every Saree Tells a Story</h2>
-            <p className="text-xl mb-12 opacity-90">Handcrafted with love by skilled artisans at prices you'll love.</p>
-            <Link to="/testimonials" className="inline-flex items-center gap-4 group">
+            <h2 className="text-3xl md:text-5xl font-bold mb-8 text-[#D4AF37]">
+              Every Saree Tells a Story
+            </h2>
+            <p className="text-xl mb-12 opacity-90">
+              Handcrafted with love by skilled artisans at prices you'll love.
+            </p>
+            <Link
+              to="/testimonials"
+              className="inline-flex items-center gap-4 group"
+            >
               <span className="w-16 h-16 rounded-full bg-[#D4AF37] flex items-center justify-center transition-transform group-hover:scale-110">
-                <iconify-icon icon="lucide:play" className="text-2xl text-[#800020]"></iconify-icon>
+                <iconify-icon
+                  icon="lucide:play"
+                  className="text-2xl text-[#800020]"
+                ></iconify-icon>
               </span>
-              <span className="text-[#D4AF37] font-bold uppercase tracking-widest">Watch Video</span>
+              <span className="text-[#D4AF37] font-bold uppercase tracking-widest">
+                Watch Video
+              </span>
             </Link>
           </div>
         </section>
@@ -548,37 +641,52 @@ const Home = () => {
         <section className="py-16 bg-[#F5F1E8]">
           <div className="w-full px-4 lg:px-12">
             <div className="text-center mb-10">
-              <h2 className="text-4xl font-bold text-[#800020] mb-4">What Our Customers Say</h2>
+              <h2 className="text-4xl font-bold text-[#800020] mb-4">
+                What Our Customers Say
+              </h2>
               <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-4"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {(feedbacks.length > 0 ? feedbacks : [1, 2, 3]).slice(0, 3).map((item, i) => (
-                <div key={item.id || i} className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/10 reveal-up">
-                  <div className="flex text-[#D4AF37] mb-6">
-                    {[...Array(item.rating || 5)].map((_, index) => (
-                      <iconify-icon key={index} icon="mdi:star"></iconify-icon>
-                    ))}
-                  </div>
-                  <p className="text-lg mb-8 italic">
-                    "{item.comment || "The quality is great and the design is beautiful. Highly recommended!"}"
-                  </p>
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-[#F5F1E8] flex items-center justify-center overflow-hidden border border-[#D4AF37]/20">
-                      <img 
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.id || i}`} 
-                        alt="User" 
-                        className="w-full h-full object-cover"
-                      />
+              {(feedbacks.length > 0 ? feedbacks : [1, 2, 3])
+                .slice(0, 3)
+                .map((item, i) => (
+                  <div
+                    key={item.id || i}
+                    className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/10 reveal-up"
+                  >
+                    <div className="flex text-[#D4AF37] mb-6">
+                      {[...Array(item.rating || 5)].map((_, index) => (
+                        <iconify-icon
+                          key={index}
+                          icon="mdi:star"
+                        ></iconify-icon>
+                      ))}
                     </div>
-                    <div>
-                      <h4 className="font-bold text-[#3D2817] capitalize">
-                        {item.Customer?.name || "Happy Customer"}
-                      </h4>
-                      <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Verified Buyer</p>
+                    <p className="text-lg mb-8 italic">
+                      "
+                      {item.comment ||
+                        "The quality is great and the design is beautiful. Highly recommended!"}
+                      "
+                    </p>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 rounded-full bg-[#F5F1E8] flex items-center justify-center overflow-hidden border border-[#D4AF37]/20">
+                        <img
+                          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.id || i}`}
+                          alt="User"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#3D2817] capitalize">
+                          {item.Customer?.name || "Happy Customer"}
+                        </h4>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">
+                          Verified Buyer
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </section>
@@ -588,54 +696,72 @@ const Home = () => {
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent"></div>
           <div className="container mx-auto px-4 max-w-4xl relative z-10">
             <div className="text-center mb-12 animate-fade-in-up">
-              <h2 className="brand-font text-3xl lg:text-5xl text-[#D4AF37] mb-4 italic-text">Get In Touch</h2>
+              <h2 className="brand-font text-3xl lg:text-5xl text-[#D4AF37] mb-4 italic-text">
+                Get In Touch
+              </h2>
               <p className="text-white/60 text-sm lg:text-base max-w-xl mx-auto">
-                Have questions about our collection or need help with your order? Send us a message and we'll get back to you shortly.
+                Have questions about our collection or need help with your
+                order? Send us a message and we'll get back to you shortly.
               </p>
             </div>
 
             <div className="bg-white/5 backdrop-blur-xl p-8 lg:p-12 rounded-[2rem] border border-[#D4AF37]/20 shadow-2xl animate-fade-in-up delay-300">
               <form onSubmit={handleContactSubmit} className="space-y-6">
-                <input type="hidden" name="subject" value="New Inquiry from VNS Saree Website" />
-                <input type="checkbox" name="botcheck" id="" className="hidden" />
+                <input
+                  type="hidden"
+                  name="subject"
+                  value="New Inquiry from VNS Saree Website"
+                />
+                <input
+                  type="checkbox"
+                  name="botcheck"
+                  id=""
+                  className="hidden"
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Full Name</label>
-                    <input 
-                      type="text" 
-                      name="name" 
-                      placeholder="John Doe" 
-                      required 
+                    <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="John Doe"
+                      required
                       className="w-full bg-white/5 border-b border-[#D4AF37]/30 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#D4AF37] transition-all"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Email Address</label>
-                    <input 
-                      type="email" 
-                      name="email" 
-                      placeholder="john@example.com" 
-                      required 
+                    <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="john@example.com"
+                      required
                       className="w-full bg-white/5 border-b border-[#D4AF37]/30 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#D4AF37] transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">Message</label>
-                  <textarea 
-                    name="message" 
-                    rows="4" 
-                    placeholder="How can we help you?" 
-                    required 
+                  <label className="text-[10px] uppercase tracking-widest text-[#D4AF37] font-bold">
+                    Message
+                  </label>
+                  <textarea
+                    name="message"
+                    rows="4"
+                    placeholder="How can we help you?"
+                    required
                     className="w-full bg-white/5 border-b border-[#D4AF37]/30 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-[#D4AF37] transition-all resize-none"
                   ></textarea>
                 </div>
 
                 <div className="flex justify-center pt-4">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isSubmitting}
                     className="bg-[#D4AF37] text-[#2D1B0E] font-bold py-4 px-12 rounded-full hover:bg-white hover:scale-105 transition-all duration-500 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -652,22 +778,48 @@ const Home = () => {
 
         {/* Trust Badges */}
         <section className="py-12 bg-[#3D2817]">
-          <div className="w-full px-4 flex flex-wrap justify-around items-center gap-8">
+          <div className="w-full px-4 flex flex-wrap justify-around items-start gap-8">
             <div className="flex items-center space-x-4 text-white">
-              <iconify-icon icon="lucide:shield-check" className="text-3xl text-[#D4AF37]"></iconify-icon>
-              <span>Genuine Product</span>
+              <iconify-icon
+                icon="lucide:shield-check"
+                className="text-3xl text-[#D4AF37]"
+              ></iconify-icon>
+              <div className="flex flex-col">
+                <span className="font-semibold">Genuine Product</span>
+                <span className="text-xs text-white/70">
+                  100% Authentic Silk
+                </span>
+              </div>
             </div>
             <div className="flex items-center space-x-4 text-white">
-              <iconify-icon icon="lucide:truck" className="text-3xl text-[#D4AF37]"></iconify-icon>
-              <span>Free Shipping</span>
+              <iconify-icon
+                icon="lucide:truck"
+                className="text-3xl text-[#D4AF37]"
+              ></iconify-icon>
+              <div className="flex flex-col">
+                <span className="font-semibold">Free Shipping</span>
+                <span className="text-xs text-white/70">All Over India</span>
+              </div>
             </div>
             <div className="flex items-center space-x-4 text-white">
-              <iconify-icon icon="lucide:lock" className="text-3xl text-[#D4AF37]"></iconify-icon>
-              <span>Safe Payment</span>
+              <iconify-icon
+                icon="lucide:lock"
+                className="text-3xl text-[#D4AF37]"
+              ></iconify-icon>
+              <div className="flex flex-col">
+                <span className="font-semibold">Safe Payment</span>
+                <span className="text-xs text-white/70">Secure Checkout</span>
+              </div>
             </div>
             <div className="flex items-center space-x-4 text-white">
-              <iconify-icon icon="lucide:refresh-cw" className="text-3xl text-[#D4AF37]"></iconify-icon>
-              <span>Easy Exchange</span>
+              <iconify-icon
+                icon="lucide:refresh-cw"
+                className="text-3xl text-[#D4AF37]"
+              ></iconify-icon>
+              <div className="flex flex-col">
+                <span className="font-semibold">Easy Exchange</span>
+                <span className="text-xs text-white/70">7 Days Return</span>
+              </div>
             </div>
           </div>
         </section>

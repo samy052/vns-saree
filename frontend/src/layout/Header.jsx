@@ -3,7 +3,7 @@ import logo from "../assets/logo.png";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Header.css";
 
 const Header = ({ activeItem }) => {
@@ -16,6 +16,19 @@ const Header = ({ activeItem }) => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
 
   const isAuthPage = location.pathname === "/login";
   const userName = user?.name || "User";
@@ -77,8 +90,26 @@ const Header = ({ activeItem }) => {
 
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b-2 border-[#D4AF37]/40 shadow-[0_4px_30px_rgba(128,0,32,0.15)] transition-all duration-500 relative">
         <nav className="w-full px-4 lg:px-12 h-20 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex-shrink-0">
+          {/* Left: Hamburger + Logo */}
+          <div className="flex items-center gap-3">
+            {/* Hamburger Menu Button - Mobile Only */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`lg:hidden flex flex-col items-center justify-center w-11 h-11 border-2 rounded-lg shadow-md space-y-1.5 focus:outline-none active:scale-95 transition-all ${mobileMenuOpen ? "bg-[#800020] border-white" : "bg-white border-[#D4AF37]"}`}
+              aria-label="Toggle menu"
+            >
+              <span
+                className={`block w-5 h-0.5 rounded-full transition-all duration-300 ${mobileMenuOpen ? "bg-white rotate-45 translate-y-2" : "bg-[#800020]"}`}
+              ></span>
+              <span
+                className={`block w-5 h-0.5 rounded-full transition-all duration-300 ${mobileMenuOpen ? "bg-white opacity-0" : "bg-[#800020]"}`}
+              ></span>
+              <span
+                className={`block w-5 h-0.5 rounded-full transition-all duration-300 ${mobileMenuOpen ? "bg-white -rotate-45 -translate-y-2" : "bg-[#800020]"}`}
+              ></span>
+            </button>
+
+            {/* Logo */}
             <Link
               to="/"
               id="nav-logo-link"
@@ -207,7 +238,7 @@ const Header = ({ activeItem }) => {
           </div>
 
           {/* Search & Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             {/* Search Form */}
             <form
               onSubmit={handleSearch}
@@ -255,12 +286,13 @@ const Header = ({ activeItem }) => {
               {/* Mobile search icon */}
               <button
                 onClick={() => navigate("/collection")}
-                className="md:hidden hover:text-[#D4AF37] transition-all duration-300"
+                className="md:hidden header-action-item hover:text-[#D4AF37]"
               >
                 <iconify-icon
                   icon="lucide:search"
                   className="text-xl"
                 ></iconify-icon>
+                <span>Search</span>
               </button>
 
               {!isAuthPage && (
@@ -378,6 +410,227 @@ const Header = ({ activeItem }) => {
           </div>
         </nav>
       </header>
+
+      {/* Mobile Menu Drawer - Outside Header */}
+      <div
+        className={`lg:hidden fixed inset-0 z-[100] transition-all duration-300 ${mobileMenuOpen ? "visible" : "invisible"}`}
+      >
+        {/* Backdrop */}
+        <div
+          className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${mobileMenuOpen ? "opacity-100" : "opacity-0"}`}
+          onClick={() => setMobileMenuOpen(false)}
+        ></div>
+
+        {/* Drawer Panel - Solid White */}
+        <div
+          className={`fixed top-0 right-0 h-full w-[280px] shadow-2xl transform transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+          style={{ backgroundColor: "#ffffff" }}
+        >
+          {/* Close Button */}
+          <div
+            className="flex items-center justify-between p-4 border-b border-[#D4AF37]/20"
+            style={{ backgroundColor: "#ffffff" }}
+          >
+            <span className="text-[#800020] font-bold text-lg">Menu</span>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-[#800020] transition-colors"
+              aria-label="Close menu"
+            >
+              <iconify-icon icon="lucide:x" className="text-2xl"></iconify-icon>
+            </button>
+          </div>
+
+          {/* Mobile Navigation Links */}
+          <nav
+            className="flex flex-col py-4"
+            style={{ backgroundColor: "#ffffff" }}
+          >
+            <Link
+              to="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "home" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
+              style={{
+                backgroundColor: activeItem === "home" ? "#FFF8F0" : "#ffffff",
+              }}
+            >
+              Home
+            </Link>
+            <Link
+              to="/collection"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "collections" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
+              style={{
+                backgroundColor:
+                  activeItem === "collections" ? "#FFF8F0" : "#ffffff",
+              }}
+            >
+              Shop
+            </Link>
+            <Link
+              to="/about"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "about" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
+              style={{
+                backgroundColor: activeItem === "about" ? "#FFF8F0" : "#ffffff",
+              }}
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "contact" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
+              style={{
+                backgroundColor:
+                  activeItem === "contact" ? "#FFF8F0" : "#ffffff",
+              }}
+            >
+              Contact
+            </Link>
+            <Link
+              to="/testimonials"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "blogs" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
+              style={{
+                backgroundColor: activeItem === "blogs" ? "#FFF8F0" : "#ffffff",
+              }}
+            >
+              Blogs
+            </Link>
+
+            {/* Divider */}
+            <div
+              className="my-4 border-t border-[#D4AF37]/20"
+              style={{ backgroundColor: "#ffffff" }}
+            ></div>
+
+            {/* Policy Section */}
+            <span
+              className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              Policies
+            </span>
+            <Link
+              to="/privacy-policy"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/refund-policy"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              Refund Policy
+            </Link>
+            <Link
+              to="/return-exchange"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              Return & Exchange
+            </Link>
+            <Link
+              to="/shipping-policy"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              Shipping Policy
+            </Link>
+            <Link
+              to="/terms-conditions"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              Terms & Conditions
+            </Link>
+
+            {/* Divider */}
+            <div
+              className="my-4 border-t border-[#D4AF37]/20"
+              style={{ backgroundColor: "#ffffff" }}
+            ></div>
+
+            {/* User Actions */}
+            <span
+              className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              Account
+            </span>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                goProtected("/cart");
+              }}
+              className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              <iconify-icon
+                icon="lucide:shopping-bag"
+                className="text-lg"
+              ></iconify-icon>
+              My Orders
+              {getCartCount() > 0 && (
+                <span className="ml-auto bg-[#800020] text-[#D4AF37] text-xs font-bold px-2 py-0.5 rounded-full">
+                  {getCartCount()}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                goProtected("/wishlist");
+              }}
+              className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              <iconify-icon
+                icon="lucide:heart"
+                className="text-lg"
+              ></iconify-icon>
+              Wishlist
+              {getWishlistCount() > 0 && (
+                <span className="ml-auto bg-[#800020] text-[#D4AF37] text-xs font-bold px-2 py-0.5 rounded-full">
+                  {getWishlistCount()}
+                </span>
+              )}
+            </button>
+            {user ? (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
+                style={{ backgroundColor: "#ffffff" }}
+              >
+                <iconify-icon
+                  icon="lucide:log-out"
+                  className="text-lg"
+                ></iconify-icon>
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase text-[#800020] bg-[#FFF8F0] mx-4 mt-2 rounded text-center"
+              >
+                Login / Signup
+              </Link>
+            )}
+          </nav>
+        </div>
+      </div>
     </>
   );
 };

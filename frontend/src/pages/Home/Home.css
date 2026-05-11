@@ -542,6 +542,12 @@ h3,
 }
 
 /* Swiper Custom Styles */
+.special-collection-carousel .swiper-pagination {
+    margin-top: 20px;
+    position: relative;
+    bottom: 0;
+}
+
 .special-collection-carousel .swiper-pagination-bullet {
     background: var(--maroon);
     opacity: 0.3;
@@ -818,6 +824,12 @@ h3,
     opacity: 0.6;
     filter: blur(1px);
     z-index: 10 !important;
+}
+
+.hero-swiper-coverflow .swiper-pagination {
+    margin-top: 30px;
+    position: relative;
+    bottom: 0;
 }
 
 .hero-swiper-coverflow .swiper-pagination-bullet {
