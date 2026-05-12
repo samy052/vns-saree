@@ -23,8 +23,9 @@ const startHeartbeat = () => {
   cron.schedule("*/10 * * * *", async () => {
     try {
       const response = await fetch(
-        "https://your-render-url.onrender.com/health"
+        "https://vns-saree.onrender.com/health"
       );
+
 
       console.log(
         `Heartbeat sent at ${new Date().toISOString()} | Status: ${response.status}`
