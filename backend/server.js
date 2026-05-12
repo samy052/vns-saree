@@ -11,15 +11,34 @@ if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder("ipv4first");
 }
 
+// Health Route
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is running",
+  });
+});
+
 const startHeartbeat = () => {
-  cron.schedule("*/10 * * * *", () => {
-    console.log(`Heartbeat: ${new Date().toISOString()}`);
+  cron.schedule("*/10 * * * *", async () => {
+    try {
+      const response = await fetch(
+        "https://your-render-url.onrender.com/health"
+      );
+
+      console.log(
+        `Heartbeat sent at ${new Date().toISOString()} | Status: ${response.status}`
+      );
+    } catch (error) {
+      console.error("Heartbeat failed:", error.message);
+    }
   });
 };
 
 const startServer = async () => {
   try {
     await connectDB();
+
     startHeartbeat();
 
     app.listen(PORT, () => {
