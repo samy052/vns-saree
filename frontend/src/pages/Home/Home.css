@@ -841,13 +841,14 @@ h3,
     background: #FFF;
     border: 2px dashed var(--gold);
     border-radius: 12px;
-    padding: 15px 30px;
+    padding: 10px 20px;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     overflow: visible;
+    transform: scale(0.9);
 }
 
 .coupon-content {
@@ -864,7 +865,7 @@ h3,
 
 .coupon-title {
     font-family: 'Cinzel', serif;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 900;
     color: var(--maroon);
     letter-spacing: 1px;
@@ -931,4 +932,18 @@ h3,
     .coupon-content {
         gap: 10px;
     }
+}
+
+/* Coupon Swiper Pagination */
+.coupon-swiper .swiper-pagination {
+    bottom: -10px !important;
+}
+
+.coupon-swiper .swiper-pagination-bullet {
+    background: var(--gold) !important;
+    opacity: 0.5;
+}
+
+.coupon-swiper .swiper-pagination-bullet-active {
+    opacity: 1;
 }

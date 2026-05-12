@@ -243,34 +243,46 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-r from-[#2D1B0E]/20 to-transparent"></div>
           </div>
 
-          {/* Myntra-style Coupon Banner */}
+          {/* Myntra-style Coupon Banner Slider */}
           {coupons.length > 0 && (
-            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 w-full max-w-4xl px-4 animate-fade-in-down">
-              <div className="coupon-banner-myntra">
-                <div className="coupon-content">
-                  <div className="coupon-left">
-                    <span className="coupon-title">
-                      {coupons[0].discount_type === "percentage"
-                        ? `FLAT ${coupons[0].discount_percent}% OFF`
-                        : `FLAT ₹${Number(coupons[0].discount_amount).toLocaleString()} OFF`}
-                    </span>
-                  </div>
-                  <div className="coupon-divider"></div>
-                  <div className="coupon-right">
-                    <p className="coupon-text">
-                      {coupons[0].banner_text || `Use code ${coupons[0].code}`}
-                    </p>
-                    <div className="coupon-code-badge">{coupons[0].code}</div>
-                  </div>
-                </div>
-                {/* Scalloped edges */}
-                <div className="scallop-top"></div>
-                <div className="scallop-bottom"></div>
-              </div>
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-4xl px-4">
+              <Swiper
+                modules={[Autoplay, Pagination]}
+                slidesPerView={1}
+                autoplay={{ delay: 4000, disableOnInteraction: false }}
+                loop={coupons.length > 1}
+                className="coupon-swiper"
+              >
+                {coupons.map((coupon) => (
+                  <SwiperSlide key={coupon.id}>
+                    <div className="coupon-banner-myntra animate-fade-in-down">
+                      <div className="coupon-content">
+                        <div className="coupon-left">
+                          <span className="coupon-title">
+                            {coupon.discount_type === "percentage"
+                              ? `FLAT ${coupon.discount_percent}% OFF`
+                              : `FLAT ₹${Number(coupon.discount_amount).toLocaleString()} OFF`}
+                          </span>
+                        </div>
+                        <div className="coupon-divider"></div>
+                        <div className="coupon-right">
+                          <p className="coupon-text">
+                            {coupon.banner_text || `Use code ${coupon.code}`}
+                          </p>
+                          <div className="coupon-code-badge">{coupon.code}</div>
+                        </div>
+                      </div>
+                      {/* Scalloped edges */}
+                      <div className="scallop-top"></div>
+                      <div className="scallop-bottom"></div>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </div>
           )}
 
-          <div className="w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10">
+          <div className={`w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 ${coupons.length > 0 ? 'mt-20 lg:mt-24' : ''}`}>
             <div className="flex flex-col items-start text-left max-w-xl">
               <div className="mb-6 animate-fade-in-up">
                 <div className="premium-badge">

@@ -75,7 +75,12 @@ export default function EnhancedCoupons() {
         API_ENDPOINTS.materials
       ];
       
-      const responses = await Promise.all(endpoints.map(url => fetch(url)));
+      const token = localStorage.getItem("accessToken");
+      const responses = await Promise.all(endpoints.map(url => fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })));
       const data = await Promise.all(responses.map(res => res.json()));
       
       setCoupons(Array.isArray(data[0]) ? data[0] : []);
@@ -193,9 +198,13 @@ export default function EnhancedCoupons() {
     try {
       const url = editingCoupon ? `${API_ENDPOINTS.coupons}/${editingCoupon.id}` : API_ENDPOINTS.coupons;
       const method = editingCoupon ? "PUT" : "POST";
+      const token = localStorage.getItem("accessToken");
       const res = await fetch(url, { 
         method, 
-        headers: { "Content-Type": "application/json" }, 
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }, 
         body: JSON.stringify(payload) 
       });
       if (res.ok) { 
@@ -226,9 +235,13 @@ export default function EnhancedCoupons() {
           return;
         }
         try {
+          const token = localStorage.getItem("accessToken");
           const res = await fetch(`${API_ENDPOINTS.coupons}/${coupon.id}`, {
             method: "PUT", 
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify({ is_active: action === "active" }),
           });
           if (res.ok) {
@@ -251,7 +264,13 @@ export default function EnhancedCoupons() {
       async () => {
         closeModal();
         try {
-          const res = await fetch(`${API_ENDPOINTS.coupons}/${id}`, { method: "DELETE" });
+          const token = localStorage.getItem("accessToken");
+          const res = await fetch(`${API_ENDPOINTS.coupons}/${id}`, { 
+            method: "DELETE",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          });
           if (res.ok) {
             await fetchData();
             showModal("success", "Deleted", "Coupon removed successfully.");
@@ -627,7 +646,7 @@ export default function EnhancedCoupons() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-5 h-5 text-[#800020]" />
-                        <span className="font-bold text-[#800020] text-sm">Display in Website Banner (Myntra Style)</span>
+                        <span className="font-bold text-[#800020] text-sm">Visible on Home Screen (Myntra Style)</span>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input 

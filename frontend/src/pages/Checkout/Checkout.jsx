@@ -90,7 +90,7 @@ const Checkout = () => {
               pincode: formData.pincode,
               phone: formData.phone,
               total_amount: total,
-              coupon_applied: appliedCoupon?.code || null,
+              coupon_code: appliedCoupon?.code || null,
               discount_amount: discountAmount,
               items: cart.map((item) => ({
                 id: item.id,
