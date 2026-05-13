@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+
+
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
@@ -6,7 +8,10 @@ import { useNotification } from "../../context/NotificationContext";
 import { API_ENDPOINTS } from "../../config/api";
 import "./Collection.css";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 40;
+
+
+
 
 const Collection = () => {
   const [searchParams] = useSearchParams();
@@ -23,6 +28,8 @@ const Collection = () => {
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+
+
 
   const [filters, setFilters] = useState({
     variety: [],
@@ -42,6 +49,7 @@ const Collection = () => {
   }, [searchParams]);
 
   const totalPaginationPages = Math.ceil(totalItems / PAGE_SIZE);
+
 
   // Fetch Metadata (Categories, Materials, Colors, Varieties)
   useEffect(() => {
@@ -101,6 +109,27 @@ const Collection = () => {
     }
   };
 
+  // Reveal Observer for Fade-in Animation
+  useEffect(() => {
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const cards = document.querySelectorAll(".reveal-card:not(.visible)");
+    cards.forEach((card) => revealObserver.observe(card));
+
+    return () => revealObserver.disconnect();
+  }, [products, loading]);
+
+
   useEffect(() => {
     setCurrentPage(1);
     fetchProducts(1);
@@ -110,6 +139,8 @@ const Collection = () => {
     fetchProducts(currentPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
+
+
 
   const handleCheckboxChange = (type, id) => {
     setFilters((prev) => {
@@ -123,7 +154,7 @@ const Collection = () => {
 
   const handlePriceChange = (e) =>
     setFilters((prev) => ({ ...prev, maxPrice: e.target.value }));
-  
+
   const handleSortChange = (e) =>
     setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
 
@@ -149,17 +180,9 @@ const Collection = () => {
   };
 
   const getCoverImage = (product) => {
-    const allImages = [
-      ...(product.images || []),
-      ...(product.productImages || []),
-    ];
-    
-    if (allImages.length === 0) {
-      return product.image_url || "https://via.placeholder.com/400x600?text=VNS+Saree";
-    }
-
+    const allImages = [...(product.images || []), ...(product.productImages || [])];
+    if (allImages.length === 0) return product.image_url || "https://via.placeholder.com/400x600?text=VNS+Saree";
     const cover = allImages.find((img) => img && (img.is_cover || img.is_primary)) || allImages[0];
-    
     if (typeof cover === 'string') return cover;
     return cover?.url || "https://via.placeholder.com/400x600?text=VNS+Saree";
   };
@@ -177,7 +200,6 @@ const Collection = () => {
 
   return (
     <div className="collection-container">
-      {/* Breadcrumbs */}
       <nav className="breadcrumb">
         <Link to="/">Home</Link>
         <span className="mx-2">/</span>
@@ -186,14 +208,12 @@ const Collection = () => {
         <span className="font-bold">Sarees</span>
       </nav>
 
-      {/* Page Header */}
       <div className="page-header">
         <h1 className="page-title">Sarees For Women</h1>
         <span className="item-count">- {totalItems} items</span>
       </div>
 
       <div className="main-content">
-        {/* Sidebar Filters */}
         <aside className="filters-sidebar">
           <div className="sidebar-header">
             <h2>FILTERS</h2>
@@ -202,10 +222,10 @@ const Collection = () => {
               filters.material.length > 0 ||
               filters.color.length > 0 ||
               filters.specialCollection) && (
-              <button className="clear-btn" onClick={clearAllFilters}>
-                Clear All
-              </button>
-            )}
+                <button className="clear-btn" onClick={clearAllFilters}>
+                  Clear All
+                </button>
+              )}
           </div>
 
           <div className="filter-section">
@@ -309,7 +329,6 @@ const Collection = () => {
           </div>
         </aside>
 
-        {/* Product Listing Area */}
         <section className="product-listing">
           <div className="listing-controls">
             <div className="sort-container">
@@ -324,26 +343,24 @@ const Collection = () => {
 
           <div className="product-grid">
             {loading ? (
-              // Skeleton Loading
-              Array(8)
-                .fill(0)
-                .map((_, i) => (
-                  <div key={i} className="product-card">
-                    <div className="card-img-container skeleton"></div>
-                    <div className="card-details">
-                      <div className="skeleton skeleton-title"></div>
-                      <div className="skeleton skeleton-description"></div>
-                      <div className="skeleton skeleton-price"></div>
-                    </div>
+              Array(8).fill(0).map((_, i) => (
+                <div key={i} className="product-card">
+                  <div className="card-img-container skeleton"></div>
+                  <div className="card-details">
+                    <div className="skeleton skeleton-title"></div>
+                    <div className="skeleton skeleton-description"></div>
+                    <div className="skeleton skeleton-price"></div>
                   </div>
-                ))
+                </div>
+              ))
             ) : products.length === 0 ? (
               <div className="col-span-full text-center py-20 text-gray-500">
                 No products found matching your filters.
               </div>
             ) : (
               products.map((product) => (
-                <div key={product.id} className="product-card">
+                <div key={product.id} className="product-card reveal-card">
+
                   <Link
                     to={`/product/${product.slug}`}
                     className="card-img-container"
@@ -409,12 +426,14 @@ const Collection = () => {
           {/* Pagination */}
           {totalPaginationPages > 1 && (
             <div className="pagination">
+
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(currentPage - 1)}
                 className="page-btn"
               >
-                Previous
+                <iconify-icon icon="lucide:chevron-left" className="mr-1"></iconify-icon>
+                Prev
               </button>
               {[...Array(totalPaginationPages)].map((_, i) => (
                 <button
@@ -431,11 +450,14 @@ const Collection = () => {
                 className="page-btn"
               >
                 Next
+                <iconify-icon icon="lucide:chevron-right" className="ml-1"></iconify-icon>
               </button>
             </div>
           )}
+          {/* End of product listing */}
         </section>
       </div>
+
     </div>
   );
 };

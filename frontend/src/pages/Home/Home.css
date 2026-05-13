@@ -564,4 +564,22 @@ h3,
     .coupon-content {
         gap: 10px;
     }
+
+    @media (max-width: 768px) {
+        .animate-float {
+            animation: float-mobile 6s ease-in-out infinite;
+        }
+
+        @keyframes float-mobile {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotateY(8deg);
+            }
+
+            50% {
+                transform: translateY(-10px) rotateY(12deg);
+            }
+        }
+    }
 }

@@ -28,6 +28,12 @@ const ProductDetail = () => {
   const perspectiveRef = useRef(null);
   const rootRef = useRef(null);
 
+  const getUniqueImages = (imgs1 = [], imgs2 = []) => {
+    const combined = [...imgs1, ...imgs2];
+    const unique = Array.from(new Map(combined.map(img => [img.url, img])).values());
+    return unique;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -48,7 +54,7 @@ const ProductDetail = () => {
         setProduct(prodData);
         setAllColors(colorsData);
         
-        const allImages = [...(prodData.images || []), ...(prodData.productImages || [])];
+        const allImages = getUniqueImages(prodData.images, prodData.productImages);
         const coverImg = allImages.find(img => img.is_cover || img.is_primary) || allImages[0];
         const initialColorId = coverImg ? coverImg.color_id : null;
         
@@ -67,7 +73,7 @@ const ProductDetail = () => {
 
   const handleColorChange = (colorId) => {
     setSelectedColorId(colorId);
-    const allImages = [...(product.images || []), ...(product.productImages || [])];
+    const allImages = getUniqueImages(product.images, product.productImages);
     const colorImages = allImages.filter(img => img.color_id === colorId);
     if (colorImages.length > 0) {
       setMainImage(colorImages[0].url);
@@ -75,18 +81,19 @@ const ProductDetail = () => {
   };
 
   const getDistinctProductColors = () => {
-    const allImages = [...(product.images || []), ...(product.productImages || [])];
+    const allImages = getUniqueImages(product.images, product.productImages);
     if (allImages.length === 0) return [];
     const colorIds = [...new Set(allImages.map(img => img.color_id))].filter(id => id);
     return allColors.filter(c => colorIds.includes(c.id));
   };
 
   const getVisibleImages = () => {
-    const allImages = [...(product.images || []), ...(product.productImages || [])];
+    const allImages = getUniqueImages(product.images, product.productImages);
     if (allImages.length === 0) return [];
     if (!selectedColorId) return allImages;
     return allImages.filter(img => img.color_id === selectedColorId);
   };
+
 
   useEffect(() => {
     const frame = frameRef.current;

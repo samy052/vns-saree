@@ -122,13 +122,13 @@ const Home = () => {
         if (items && items.length > 0) {
           setHeroSarees(items);
         } else {
-          setHeroSarees(HERO_SAREES); // Fallback if no products flagged
+          setHeroSarees(HERO_SAREES);
         }
         setHeroLoading(false);
       })
       .catch((err) => {
         console.error("Error fetching hero sarees:", err);
-        setHeroSarees(HERO_SAREES); // Fallback on error
+        setHeroSarees(HERO_SAREES);
         setHeroLoading(false);
       });
 
@@ -176,7 +176,7 @@ const Home = () => {
     const root = rootRef.current;
     if (!root) return;
 
-    // 1. Intersection Observer (One-time reveal)
+    // Intersection Observer (One-time reveal)
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -193,7 +193,7 @@ const Home = () => {
       .querySelectorAll(".reveal-up, .avatar-reveal")
       .forEach((el) => observer.observe(el));
 
-    // 2. Optimized Parallax
+    // Optimized Parallax
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
@@ -230,9 +230,10 @@ const Home = () => {
       ref={rootRef}
     >
       <main>
-        {/* Hero Section - Responsive Height */}
-        <section className="relative min-h-[650px] lg:h-[85vh] lg:min-h-[650px] flex items-center overflow-visible lg:overflow-hidden bg-[#2D1B0E]">
-          {/* Hero Background Image with Dark Overlay */}
+        {/* ===================== HERO SECTION ===================== */}
+        <section className="relative min-h-screen lg:h-[85vh] lg:min-h-[650px] flex items-center overflow-visible lg:overflow-hidden bg-[#2D1B0E]">
+
+          {/* Hero Background Image */}
           <div className="absolute inset-0 z-0">
             <img
               src="https://t4.ftcdn.net/jpg/09/59/22/75/360_F_959227512_u0Hg5qCKW10OgI4GYaS0bdbHk1sjHPEP.jpg"
@@ -243,7 +244,7 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-r from-[#2D1B0E]/20 to-transparent"></div>
           </div>
 
-          {/* Myntra-style Coupon Banner Slider */}
+          {/* Coupon Banner Slider */}
           {coupons.length > 0 && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-4xl px-4">
               <Swiper
@@ -272,7 +273,6 @@ const Home = () => {
                           <div className="coupon-code-badge">{coupon.code}</div>
                         </div>
                       </div>
-                      {/* Scalloped edges */}
                       <div className="scallop-top"></div>
                       <div className="scallop-bottom"></div>
                     </div>
@@ -282,25 +282,131 @@ const Home = () => {
             </div>
           )}
 
-          <div className={`w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center relative z-10 ${coupons.length > 0 ? 'mt-20 lg:mt-24' : ''}`}>
-            <div className="flex flex-col items-start text-left max-w-xl">
-              <div className="mb-6 animate-fade-in-up">
+          {/* ---- GRID: Mobile = image upar, text neeche | Desktop = text left, image right ---- */}
+          <div
+            className={`w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center relative z-10 ${
+              coupons.length > 0 ? "mt-20 lg:mt-24" : "mt-8 lg:mt-0"
+            }`}
+          >
+            {/* ===== IMAGE — order-1 on mobile (upar), order-2 on desktop (right) ===== */}
+            <div className="relative flex justify-center items-center w-full overflow-visible lg:-mt-12 order-1 lg:order-2">
+              <div className="relative w-full max-w-[850px] lg:max-w-[1000px]">
+                <div className="relative flex justify-center items-center">
+                  {heroLoading ? (
+                    <div className="w-[220px] h-[330px] sm:w-[260px] sm:h-[390px] lg:w-[350px] lg:h-[525px] rounded-2xl bg-white/10 animate-pulse border border-white/20 relative overflow-hidden">
+                      <div className="absolute inset-0 shimmer-bg opacity-20"></div>
+                    </div>
+                  ) : (
+                    <div className="relative saree-card-3d group">
+                      {heroSarees.length > 0 && (
+                        <div className="saree-card-inner permanent-highlight w-[220px] h-[330px] sm:w-[260px] sm:h-[390px] lg:w-[350px] lg:h-[525px] mx-auto rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(212,175,55,0.3)] animate-float relative z-10 transition-all duration-500">
+                          <img
+                            src={
+                              heroSarees[0].image ||
+                              getCoverImage(heroSarees[0])
+                            }
+                            alt={heroSarees[0].name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                          />
+
+                          {/* Discount Badge */}
+                          {(heroSarees[0].discount_percent ||
+                            calculateDiscount(
+                              heroSarees[0].mrp_price || heroSarees[0].mrp,
+                              heroSarees[0].selling_price,
+                            )) > 0 && (
+                            <div className="absolute top-4 right-4 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#800020] text-xs lg:text-sm font-bold px-3 py-2 rounded-lg shadow-lg animate-bounce z-20">
+                              {heroSarees[0].discount_percent ||
+                                calculateDiscount(
+                                  heroSarees[0].mrp_price || heroSarees[0].mrp,
+                                  heroSarees[0].selling_price,
+                                )}
+                              % OFF
+                            </div>
+                          )}
+
+                          {/* Text Overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#2D1B0E]/95 via-[#3D2817]/20 to-transparent flex items-end p-4 lg:p-8 opacity-100">
+                            <div className="text-white w-full">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <div className="h-px bg-[#D4AF37] w-6 lg:w-8"></div>
+                                <span className="bg-[#D4AF37] text-[#800020] text-[9px] lg:text-[12px] font-bold px-2 lg:px-3 py-1 rounded-full uppercase">
+                                  {heroSarees[0].badge || "Best Seller"}
+                                </span>
+                                <div className="h-px bg-[#D4AF37] w-6 lg:w-8"></div>
+                              </div>
+                              <h3 className="text-lg lg:text-3xl font-bold brand-font text-center text-[#D4AF37] drop-shadow-lg truncate">
+                                {heroSarees[0].name}
+                              </h3>
+                              <div className="flex flex-col items-center mt-1 lg:mt-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-white text-base lg:text-2xl font-bold">
+                                    ₹
+                                    {Number(
+                                      heroSarees[0].selling_price ||
+                                        (typeof heroSarees[0].price === "string"
+                                          ? heroSarees[0].price.replace(
+                                              /[^0-9]/g,
+                                              "",
+                                            )
+                                          : heroSarees[0].price),
+                                    ).toLocaleString("en-IN")}
+                                  </span>
+                                  {Number(
+                                    heroSarees[0].mrp_price || heroSarees[0].mrp,
+                                  ) > Number(heroSarees[0].selling_price) && (
+                                    <span className="text-white/60 text-xs line-through">
+                                      ₹
+                                      {Number(
+                                        heroSarees[0].mrp_price ||
+                                          heroSarees[0].mrp,
+                                      ).toLocaleString("en-IN")}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Sparkle Effects */}
+                      <div className="absolute top-1/4 -right-4 w-3 h-3 bg-[#D4AF37] rounded-full shadow-[0_0_20px_#D4AF37] animate-ping z-20"></div>
+                      <div
+                        className="absolute bottom-1/3 -left-4 w-2 h-2 bg-[#D4AF37] rounded-full shadow-[0_0_15px_#D4AF37] animate-ping z-20"
+                        style={{
+                          animationDuration: "2s",
+                          animationDelay: "0.5s",
+                        }}
+                      ></div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Glowing Accents */}
+                <div className="absolute top-0 right-0 w-64 h-64 permanent-glow-gold rounded-full z-0 animate-glow-breath opacity-40"></div>
+                <div className="absolute bottom-0 left-0 w-80 h-80 permanent-glow-maroon rounded-full z-0 animate-glow-breath opacity-40 glow-delay-long"></div>
+              </div>
+            </div>
+
+            {/* ===== TEXT — order-2 on mobile (neeche), order-1 on desktop (left) ===== */}
+            <div className="flex flex-col items-center text-center lg:items-start lg:text-left max-w-xl mx-auto lg:mx-0 order-2 lg:order-1">
+              <div className="mb-4 lg:mb-6 animate-fade-in-up">
                 <div className="premium-badge">
                   <span className="dot"></span>
                   PREMIUM SAREES AT BEST PRICES
                 </div>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.1] mb-6 animate-fade-in-up delay-100 premium-title drop-shadow-2xl">
+              <h1 className="text-3xl sm:text-4xl lg:text-7xl font-bold leading-[1.1] mb-4 lg:mb-6 animate-fade-in-up delay-100 premium-title drop-shadow-2xl">
                 <span className="italic-text text-white">Worn by Queens.</span>{" "}
                 <br />
-                <span className="text-[#D4AF37]">Made for You.</span> <br />
-                {/* <span className="text-white">Sarees</span> */}
+                <span className="text-[#D4AF37]">Made for You.</span>
               </h1>
 
-              <div className="hero-divider mb-8 animate-fade-in-up delay-200"></div>
+              <div className="hero-divider mb-6 lg:mb-8 animate-fade-in-up delay-200 mx-auto lg:mx-0"></div>
 
-              <p className="text-lg text-white mb-10 animate-fade-in-up delay-300 leading-relaxed font-light drop-shadow-md">
+              <p className="text-base lg:text-lg text-white mb-8 lg:mb-10 animate-fade-in-up delay-300 leading-relaxed font-light drop-shadow-md">
                 The most celebrated silk sarees in the world, now at prices
                 you'll love.
                 <span className="text-[#D4AF37] font-medium">
@@ -310,8 +416,8 @@ const Home = () => {
                 </span>
               </p>
 
-              {/* Price & Shipping Highlight */}
-              <div className="flex flex-wrap gap-4 mb-10 animate-fade-in-up delay-400">
+              {/* Price & Shipping Pills */}
+              <div className="flex flex-wrap gap-3 mb-8 lg:mb-10 animate-fade-in-up delay-400 justify-center lg:justify-start">
                 <div className="feature-pill">
                   <iconify-icon
                     icon="lucide:tag"
@@ -328,7 +434,7 @@ const Home = () => {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-6 animate-fade-in-up delay-500">
+              <div className="flex flex-wrap gap-4 lg:gap-6 animate-fade-in-up delay-500 justify-center lg:justify-start">
                 <Link
                   to="/collection"
                   className="hero-cta-primary group shimmer-effect"
@@ -351,108 +457,16 @@ const Home = () => {
                 </Link>
               </div>
             </div>
-
-            <div className="relative flex justify-center items-center w-full overflow-visible lg:-mt-12">
-              {/* Coverflow Swiper for 3D Cards */}
-              <div className="relative w-full max-w-[850px] lg:max-w-[1000px]">
-                {/* Single 3D Floating Saree Visual */}
-                <div className="relative flex justify-center items-center">
-                  {heroLoading ? (
-                    <div className="w-[260px] h-[390px] lg:w-[350px] lg:h-[525px] rounded-2xl bg-white/10 animate-pulse border border-white/20 relative overflow-hidden">
-                      <div className="absolute inset-0 shimmer-bg opacity-20"></div>
-                    </div>
-                  ) : (
-                    <div className="relative saree-card-3d group">
-                      {heroSarees.length > 0 && (
-                        <div
-                          className="saree-card-inner permanent-highlight w-[260px] h-[390px] lg:w-[350px] lg:h-[525px] mx-auto rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(212,175,55,0.3)] animate-float relative z-10 transition-all duration-500"
-                        >
-                          <img
-                            src={heroSarees[0].image || getCoverImage(heroSarees[0])}
-                            alt={heroSarees[0].name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                          />
-
-                          {/* Discount Badge */}
-                          {(heroSarees[0].discount_percent ||
-                            calculateDiscount(
-                              heroSarees[0].mrp_price || heroSarees[0].mrp,
-                              heroSarees[0].selling_price,
-                            )) > 0 && (
-                              <div className="absolute top-4 right-4 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-[#800020] text-xs lg:text-sm font-bold px-3 py-2 rounded-lg shadow-lg animate-bounce z-20">
-                                {heroSarees[0].discount_percent ||
-                                  calculateDiscount(
-                                    heroSarees[0].mrp_price || heroSarees[0].mrp,
-                                    heroSarees[0].selling_price,
-                                  )}
-                                % OFF
-                              </div>
-                            )}
-
-                          {/* Elegant Text Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#2D1B0E]/95 via-[#3D2817]/20 to-transparent flex items-end p-6 lg:p-8 opacity-100">
-                            <div className="text-white w-full">
-                              <div className="flex items-center justify-center gap-2 mb-2">
-                                <div className="h-px bg-[#D4AF37] w-8"></div>
-                                <span className="bg-[#D4AF37] text-[#800020] text-[10px] lg:text-[12px] font-bold px-3 py-1 rounded-full uppercase">
-                                  {heroSarees[0].badge || 'Best Seller'}
-                                </span>
-                                <div className="h-px bg-[#D4AF37] w-8"></div>
-                              </div>
-                              <h3 className="text-xl lg:text-3xl font-bold brand-font text-center text-[#D4AF37] drop-shadow-lg truncate">
-                                {heroSarees[0].name}
-                              </h3>
-                              <div className="flex flex-col items-center mt-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-white text-lg lg:text-2xl font-bold">
-                                    ₹
-                                    {Number(
-                                      heroSarees[0].selling_price ||
-                                      (typeof heroSarees[0].price === "string"
-                                        ? heroSarees[0].price.replace(/[^0-9]/g, "")
-                                        : heroSarees[0].price),
-                                    ).toLocaleString("en-IN")}
-                                  </span>
-                                  {Number(heroSarees[0].mrp_price || heroSarees[0].mrp) >
-                                    Number(heroSarees[0].selling_price) && (
-                                      <span className="text-white/60 text-sm line-through">
-                                        ₹
-                                        {Number(
-                                          heroSarees[0].mrp_price || heroSarees[0].mrp,
-                                        ).toLocaleString("en-IN")}
-                                      </span>
-                                    )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Sparkle Effects */}
-                      <div className="absolute top-1/4 -right-4 w-3 h-3 bg-[#D4AF37] rounded-full shadow-[0_0_20px_#D4AF37] animate-ping z-20"></div>
-                      <div
-                        className="absolute bottom-1/3 -left-4 w-2 h-2 bg-[#D4AF37] rounded-full shadow-[0_0_15px_#D4AF37] animate-ping z-20"
-                        style={{ animationDuration: "2s", animationDelay: "0.5s" }}
-                      ></div>
-                    </div>
-                  )}
-                </div>
-
-
-                {/* Glowing Accents - Adjusted for wider carousel */}
-                <div className="absolute top-0 right-0 w-64 h-64 permanent-glow-gold rounded-full z-0 animate-glow-breath opacity-40"></div>
-                <div className="absolute bottom-0 left-0 w-80 h-80 permanent-glow-maroon rounded-full z-0 animate-glow-breath opacity-40 glow-delay-long"></div>
-              </div>
-            </div>
           </div>
 
           {/* Scroll Indicator */}
           <button
             onClick={() => {
-              document.getElementById('featured-collections')?.scrollIntoView({ behavior: 'smooth' });
+              document
+                .getElementById("featured-collections")
+                ?.scrollIntoView({ behavior: "smooth" });
             }}
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce-elegant z-20 cursor-pointer hover:scale-110 transition-transform"
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce-elegant z-20 cursor-pointer hover:scale-110 transition-transform"
             aria-label="Scroll to featured collections"
           >
             <div className="scroll-arrow-wrap">
@@ -464,8 +478,11 @@ const Home = () => {
           </button>
         </section>
 
-        {/* Featured Collections Section */}
-        <section id="featured-collections" className="py-16 bg-gradient-to-b from-white via-[#FFF8F0] to-white relative overflow-hidden">
+        {/* ===================== FEATURED COLLECTIONS ===================== */}
+        <section
+          id="featured-collections"
+          className="py-16 bg-gradient-to-b from-white via-[#FFF8F0] to-white relative overflow-hidden"
+        >
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#800020] via-[#D4AF37] to-[#800020]"></div>
 
           <div className="w-full px-4 lg:px-12 relative z-10">
@@ -540,35 +557,38 @@ const Home = () => {
                             <h3 className="premium-title text-2xl text-[#800020] mb-2 truncate group-hover:text-[#D4AF37] transition-colors">
                               {product.name}
                             </h3>
-
                             <div className="flex flex-col items-center justify-center">
                               <div className="flex items-center justify-center gap-2">
                                 <span className="text-xl font-black text-[#800020]">
                                   ₹
-                                  {Number(product.selling_price || product.price).toLocaleString(
-                                    "en-IN",
-                                  )}
+                                  {Number(
+                                    product.selling_price || product.price,
+                                  ).toLocaleString("en-IN")}
                                 </span>
                                 {Number(product.mrp_price || product.mrp) >
-                                  Number(product.selling_price || product.price) && (
-                                    <span className="text-sm text-gray-500 line-through opacity-70">
-                                      ₹
-                                      {Number(
-                                        product.mrp_price || product.mrp,
-                                      ).toLocaleString("en-IN")}
-                                    </span>
-                                  )}
-                              </div>
-                              {Number(product.mrp_price || product.mrp) >
-                                Number(product.selling_price || product.price) && (
-                                  <span className="text-xs font-bold text-[#D4AF37] bg-[#800020] px-2 py-0.5 rounded mt-1">
-                                    {calculateDiscount(
+                                  Number(
+                                    product.selling_price || product.price,
+                                  ) && (
+                                  <span className="text-sm text-gray-500 line-through opacity-70">
+                                    ₹
+                                    {Number(
                                       product.mrp_price || product.mrp,
-                                      product.selling_price || product.price,
-                                    )}
-                                    % OFF
+                                    ).toLocaleString("en-IN")}
                                   </span>
                                 )}
+                              </div>
+                              {Number(product.mrp_price || product.mrp) >
+                                Number(
+                                  product.selling_price || product.price,
+                                ) && (
+                                <span className="text-xs font-bold text-[#D4AF37] bg-[#800020] px-2 py-0.5 rounded mt-1">
+                                  {calculateDiscount(
+                                    product.mrp_price || product.mrp,
+                                    product.selling_price || product.price,
+                                  )}
+                                  % OFF
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -593,12 +613,8 @@ const Home = () => {
           </div>
         </section>
 
-
-
-
-        {/* Video/Story Showcase - Compact Padding */}
+        {/* ===================== VIDEO / STORY SECTION ===================== */}
         <section className="py-16 bg-gradient-to-br from-[#800020] via-[#3D2817] to-[#800020] text-white relative overflow-hidden">
-          {/* Decorative gradient orbs */}
           <div className="absolute top-10 left-10 w-64 h-64 bg-[#D4AF37]/20 rounded-full blur-3xl"></div>
           <div className="absolute bottom-10 right-10 w-80 h-80 bg-[#800020]/40 rounded-full blur-3xl"></div>
 
@@ -632,10 +648,8 @@ const Home = () => {
           </div>
         </section>
 
-
-        {/* Testimonials - More Professional */}
+        {/* ===================== TESTIMONIALS ===================== */}
         <section className="py-20 bg-[#FFF8F0] relative overflow-hidden">
-          {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#D4AF37]/5 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#800020]/5 rounded-full blur-3xl"></div>
 
@@ -654,28 +668,28 @@ const Home = () => {
               {(feedbacks.length > 0
                 ? feedbacks
                 : [
-                  {
-                    id: 1,
-                    rating: 5,
-                    comment:
-                      "The Katan Silk saree I ordered is even more beautiful in person. Truly a piece of art!",
-                    Customer: { name: "Priya Sharma" },
-                  },
-                  {
-                    id: 2,
-                    rating: 5,
-                    comment:
-                      "VNS Saree has the most authentic Banarasi collection I've found online. Highly recommend!",
-                    Customer: { name: "Anjali Gupta" },
-                  },
-                  {
-                    id: 3,
-                    rating: 5,
-                    comment:
-                      "I wore their hand-woven saree for my daughter's wedding and received so many compliments.",
-                    Customer: { name: "Meera Reddy" },
-                  },
-                ]
+                    {
+                      id: 1,
+                      rating: 5,
+                      comment:
+                        "The Katan Silk saree I ordered is even more beautiful in person. Truly a piece of art!",
+                      Customer: { name: "Priya Sharma" },
+                    },
+                    {
+                      id: 2,
+                      rating: 5,
+                      comment:
+                        "VNS Saree has the most authentic Banarasi collection I've found online. Highly recommend!",
+                      Customer: { name: "Anjali Gupta" },
+                    },
+                    {
+                      id: 3,
+                      rating: 5,
+                      comment:
+                        "I wore their hand-woven saree for my daughter's wedding and received so many compliments.",
+                      Customer: { name: "Meera Reddy" },
+                    },
+                  ]
               )
                 .slice(0, 3)
                 .map((item, i) => (
@@ -685,7 +699,10 @@ const Home = () => {
                   >
                     <div className="flex text-[#D4AF37] mb-6">
                       {[...Array(item.rating || 5)].map((_, index) => (
-                        <iconify-icon key={index} icon="mdi:star"></iconify-icon>
+                        <iconify-icon
+                          key={index}
+                          icon="mdi:star"
+                        ></iconify-icon>
                       ))}
                     </div>
                     <p className="text-lg mb-8 italic text-[#3D2817]">
@@ -701,7 +718,9 @@ const Home = () => {
                       </div>
                       <div>
                         <h4 className="font-bold text-[#3D2817] capitalize">
-                          {item.Customer?.name || item.name || "Happy Customer"}
+                          {item.Customer?.name ||
+                            item.name ||
+                            "Happy Customer"}
                         </h4>
                         <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">
                           Verified Buyer
@@ -711,11 +730,10 @@ const Home = () => {
                   </div>
                 ))}
             </div>
-
           </div>
         </section>
 
-        {/* Contact Us / Web3 Form Section */}
+        {/* ===================== CONTACT SECTION ===================== */}
         <section className="py-20 bg-[#2D1B0E] relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent"></div>
           <div className="container mx-auto px-4 max-w-4xl relative z-10">
@@ -795,14 +813,12 @@ const Home = () => {
               </form>
             </div>
           </div>
-          {/* Subtle Background Elements */}
           <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[#800020]/20 blur-[100px] rounded-full"></div>
           <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#D4AF37]/10 blur-[100px] rounded-full"></div>
         </section>
 
-        {/* Trust Badges - Compact Padding */}
+        {/* ===================== TRUST BADGES ===================== */}
         <section className="py-12 bg-gradient-to-r from-[#800020] via-[#3D2817] to-[#800020] relative overflow-hidden">
-          {/* Decorative pattern */}
           <div
             className="absolute inset-0 opacity-10"
             style={{
