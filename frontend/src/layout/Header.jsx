@@ -35,7 +35,6 @@ const Header = ({ activeItem }) => {
   const firstName = userName.split(" ")[0];
   const userPhone = user?.phone || "Welcome to Banarasi Kala";
 
-  // Check if current path is a policy page
   const isPolicyPage = [
     "/privacy-policy",
     "/refund-policy",
@@ -122,14 +121,6 @@ const Header = ({ activeItem }) => {
                   className="w-full h-full object-contain"
                 />
               </div>
-              {/* <div className="flex flex-col">
-                <span className="brand-font text-xl lg:text-2xl font-bold tracking-tighter maroon-shimmer">
-                  Banarasi
-                </span>
-                <span className="text-[20px] lg:text-[20px] uppercase tracking-[0.2em] -mt-0.5 font-bold gold-shimmer animate-tracking-breathe">
-                  KALA
-                </span>
-              </div> */}
             </Link>
           </div>
 
@@ -190,7 +181,6 @@ const Header = ({ activeItem }) => {
                 ></span>
               </button>
 
-              {/* Policy Dropdown Menu */}
               {policyOpen && (
                 <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-[#D4AF37]/20 py-2 z-50">
                   <Link
@@ -421,14 +411,14 @@ const Header = ({ activeItem }) => {
           onClick={() => setMobileMenuOpen(false)}
         ></div>
 
-        {/* Drawer Panel - Solid White */}
+        {/* Drawer Panel - RIGHT side slide-in, full height scrollable */}
         <div
-          className={`fixed top-0 right-0 h-full w-[280px] shadow-2xl transform transition-transform duration-300 ${mobileMenuOpen ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 left-0 h-full w-[280px] shadow-2xl transform transition-transform duration-300 flex flex-col ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
           style={{ backgroundColor: "#ffffff" }}
         >
-          {/* Close Button */}
+          {/* Header — fixed at top, never scrolls away */}
           <div
-            className="flex items-center justify-between p-4 border-b border-[#D4AF37]/20"
+            className="flex items-center justify-between p-4 border-b border-[#D4AF37]/20 flex-shrink-0"
             style={{ backgroundColor: "#ffffff" }}
           >
             <span className="text-[#800020] font-bold text-lg">Menu</span>
@@ -441,18 +431,16 @@ const Header = ({ activeItem }) => {
             </button>
           </div>
 
-          {/* Mobile Navigation Links */}
+          {/* Scrollable nav content */}
           <nav
-            className="flex flex-col py-4"
-            style={{ backgroundColor: "#ffffff" }}
+            className="flex flex-col py-4 overflow-y-auto flex-1"
+            style={{ backgroundColor: "#ffffff", WebkitOverflowScrolling: "touch" }}
           >
             <Link
               to="/"
               onClick={() => setMobileMenuOpen(false)}
               className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "home" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{
-                backgroundColor: activeItem === "home" ? "#FFF8F0" : "#ffffff",
-              }}
+              style={{ backgroundColor: activeItem === "home" ? "#FFF8F0" : "#ffffff" }}
             >
               Home
             </Link>
@@ -460,10 +448,7 @@ const Header = ({ activeItem }) => {
               to="/collection"
               onClick={() => setMobileMenuOpen(false)}
               className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "collections" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{
-                backgroundColor:
-                  activeItem === "collections" ? "#FFF8F0" : "#ffffff",
-              }}
+              style={{ backgroundColor: activeItem === "collections" ? "#FFF8F0" : "#ffffff" }}
             >
               Shop
             </Link>
@@ -471,9 +456,7 @@ const Header = ({ activeItem }) => {
               to="/about"
               onClick={() => setMobileMenuOpen(false)}
               className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "about" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{
-                backgroundColor: activeItem === "about" ? "#FFF8F0" : "#ffffff",
-              }}
+              style={{ backgroundColor: activeItem === "about" ? "#FFF8F0" : "#ffffff" }}
             >
               About
             </Link>
@@ -481,10 +464,7 @@ const Header = ({ activeItem }) => {
               to="/contact"
               onClick={() => setMobileMenuOpen(false)}
               className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "contact" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{
-                backgroundColor:
-                  activeItem === "contact" ? "#FFF8F0" : "#ffffff",
-              }}
+              style={{ backgroundColor: activeItem === "contact" ? "#FFF8F0" : "#ffffff" }}
             >
               Contact
             </Link>
@@ -492,31 +472,22 @@ const Header = ({ activeItem }) => {
               to="/testimonials"
               onClick={() => setMobileMenuOpen(false)}
               className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "blogs" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{
-                backgroundColor: activeItem === "blogs" ? "#FFF8F0" : "#ffffff",
-              }}
+              style={{ backgroundColor: activeItem === "blogs" ? "#FFF8F0" : "#ffffff" }}
             >
               Blogs
             </Link>
 
             {/* Divider */}
-            <div
-              className="my-4 border-t border-[#D4AF37]/20"
-              style={{ backgroundColor: "#ffffff" }}
-            ></div>
+            <div className="my-4 border-t border-[#D4AF37]/20"></div>
 
             {/* Policy Section */}
-            <span
-              className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider"
-              style={{ backgroundColor: "#ffffff" }}
-            >
+            <span className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider">
               Policies
             </span>
             <Link
               to="/privacy-policy"
               onClick={() => setMobileMenuOpen(false)}
               className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-              style={{ backgroundColor: "#ffffff" }}
             >
               Privacy Policy
             </Link>
@@ -524,7 +495,6 @@ const Header = ({ activeItem }) => {
               to="/refund-policy"
               onClick={() => setMobileMenuOpen(false)}
               className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-              style={{ backgroundColor: "#ffffff" }}
             >
               Refund Policy
             </Link>
@@ -532,7 +502,6 @@ const Header = ({ activeItem }) => {
               to="/return-exchange"
               onClick={() => setMobileMenuOpen(false)}
               className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-              style={{ backgroundColor: "#ffffff" }}
             >
               Return & Exchange
             </Link>
@@ -540,7 +509,6 @@ const Header = ({ activeItem }) => {
               to="/shipping-policy"
               onClick={() => setMobileMenuOpen(false)}
               className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-              style={{ backgroundColor: "#ffffff" }}
             >
               Shipping Policy
             </Link>
@@ -548,36 +516,23 @@ const Header = ({ activeItem }) => {
               to="/terms-conditions"
               onClick={() => setMobileMenuOpen(false)}
               className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-              style={{ backgroundColor: "#ffffff" }}
             >
               Terms & Conditions
             </Link>
 
             {/* Divider */}
-            <div
-              className="my-4 border-t border-[#D4AF37]/20"
-              style={{ backgroundColor: "#ffffff" }}
-            ></div>
+            <div className="my-4 border-t border-[#D4AF37]/20"></div>
 
-            {/* User Actions */}
-            <span
-              className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider"
-              style={{ backgroundColor: "#ffffff" }}
-            >
+            {/* Account Section */}
+            <span className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider">
               Account
             </span>
             <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                goProtected("/cart");
-              }}
+              onClick={() => { setMobileMenuOpen(false); goProtected("/cart"); }}
               className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
               style={{ backgroundColor: "#ffffff" }}
             >
-              <iconify-icon
-                icon="lucide:shopping-bag"
-                className="text-lg"
-              ></iconify-icon>
+              <iconify-icon icon="lucide:shopping-bag" className="text-lg"></iconify-icon>
               My Orders
               {getCartCount() > 0 && (
                 <span className="ml-auto bg-[#800020] text-[#D4AF37] text-xs font-bold px-2 py-0.5 rounded-full">
@@ -586,17 +541,11 @@ const Header = ({ activeItem }) => {
               )}
             </button>
             <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                goProtected("/wishlist");
-              }}
+              onClick={() => { setMobileMenuOpen(false); goProtected("/wishlist"); }}
               className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
               style={{ backgroundColor: "#ffffff" }}
             >
-              <iconify-icon
-                icon="lucide:heart"
-                className="text-lg"
-              ></iconify-icon>
+              <iconify-icon icon="lucide:heart" className="text-lg"></iconify-icon>
               Wishlist
               {getWishlistCount() > 0 && (
                 <span className="ml-auto bg-[#800020] text-[#D4AF37] text-xs font-bold px-2 py-0.5 rounded-full">
@@ -604,30 +553,27 @@ const Header = ({ activeItem }) => {
                 </span>
               )}
             </button>
-            {user ? (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleLogout();
-                }}
-                className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
-                style={{ backgroundColor: "#ffffff" }}
-              >
-                <iconify-icon
-                  icon="lucide:log-out"
-                  className="text-lg"
-                ></iconify-icon>
-                Logout
-              </button>
-            ) : (
-              <Link
-                to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase text-[#800020] bg-[#FFF8F0] mx-4 mt-2 rounded text-center"
-              >
-                Login / Signup
-              </Link>
-            )}
+
+            {/* LOGIN / LOGOUT — always visible, padded at bottom for iPhone safe area */}
+            <div className="px-4 pt-2 pb-8">
+              {user ? (
+                <button
+                  onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
+                  className="w-full py-3 text-sm font-bold tracking-[0.15em] uppercase text-white bg-[#800020] rounded-lg flex items-center justify-center gap-2"
+                >
+                  <iconify-icon icon="lucide:log-out" className="text-lg"></iconify-icon>
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full py-3 text-sm font-bold tracking-[0.15em] uppercase text-center text-white bg-[#800020] rounded-lg"
+                >
+                  Login / Signup
+                </Link>
+              )}
+            </div>
           </nav>
         </div>
       </div>

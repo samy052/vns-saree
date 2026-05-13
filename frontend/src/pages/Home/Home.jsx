@@ -244,9 +244,12 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-r from-[#2D1B0E]/20 to-transparent"></div>
           </div>
 
-          {/* Coupon Banner Slider */}
+          {/* ---- GRID: Mobile = image upar, text neeche | Desktop = text left, image right ---- */}
+          <div className="w-full flex flex-col relative z-10">
+
+          {/* Coupon Banner — normal flow, no absolute, no overlap */}
           {coupons.length > 0 && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-4xl px-4">
+            <div className="w-full px-4 pt-4 pb-2">
               <Swiper
                 modules={[Autoplay, Pagination]}
                 slidesPerView={1}
@@ -282,11 +285,8 @@ const Home = () => {
             </div>
           )}
 
-          {/* ---- GRID: Mobile = image upar, text neeche | Desktop = text left, image right ---- */}
           <div
-            className={`w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center relative z-10 ${
-              coupons.length > 0 ? "mt-20 lg:mt-24" : "mt-8 lg:mt-0"
-            }`}
+            className="w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center"
           >
             {/* ===== IMAGE — order-1 on mobile (upar), order-2 on desktop (right) ===== */}
             <div className="relative flex justify-center items-center w-full overflow-visible lg:-mt-12 order-1 lg:order-2">
@@ -458,6 +458,8 @@ const Home = () => {
               </div>
             </div>
           </div>
+
+          </div>{/* end w-full flex flex-col */}
 
           {/* Scroll Indicator */}
           <button
