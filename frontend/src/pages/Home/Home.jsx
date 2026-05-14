@@ -244,87 +244,49 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-r from-[#2D1B0E]/20 to-transparent"></div>
           </div>
 
-          {/* Coupon Banner — mobile: normal flow (no overlap), desktop: absolute top center */}
-          {coupons.length > 0 && (
-            <>
-              {/* Mobile only — in flow, above grid */}
-              <div className="lg:hidden w-full px-4 pt-4 pb-2 relative z-10">
-                <Swiper
-                  modules={[Autoplay, Pagination]}
-                  slidesPerView={1}
-                  autoplay={{ delay: 4000, disableOnInteraction: false }}
-                  loop={coupons.length > 1}
-                  className="coupon-swiper"
-                >
-                  {coupons.map((coupon) => (
-                    <SwiperSlide key={coupon.id}>
-                      <div className="coupon-banner-myntra animate-fade-in-down">
-                        <div className="coupon-content">
-                          <div className="coupon-left">
-                            <span className="coupon-title">
-                              {coupon.discount_type === "percentage"
-                                ? `FLAT ${coupon.discount_percent}% OFF`
-                                : `FLAT ₹${Number(coupon.discount_amount).toLocaleString()} OFF`}
-                            </span>
-                          </div>
-                          <div className="coupon-divider"></div>
-                          <div className="coupon-right">
-                            <p className="coupon-text">
-                              {coupon.banner_text || `Use code ${coupon.code}`}
-                            </p>
-                            <div className="coupon-code-badge">{coupon.code}</div>
-                          </div>
-                        </div>
-                        <div className="scallop-top"></div>
-                        <div className="scallop-bottom"></div>
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
-
-              {/* Desktop only — absolute floating inside hero */}
-              <div className="hidden lg:block absolute top-4 left-1/2 -translate-x-1/2 z-20 w-full max-w-4xl px-4">
-                <Swiper
-                  modules={[Autoplay, Pagination]}
-                  slidesPerView={1}
-                  autoplay={{ delay: 4000, disableOnInteraction: false }}
-                  loop={coupons.length > 1}
-                  className="coupon-swiper"
-                >
-                  {coupons.map((coupon) => (
-                    <SwiperSlide key={coupon.id}>
-                      <div className="coupon-banner-myntra animate-fade-in-down">
-                        <div className="coupon-content">
-                          <div className="coupon-left">
-                            <span className="coupon-title">
-                              {coupon.discount_type === "percentage"
-                                ? `FLAT ${coupon.discount_percent}% OFF`
-                                : `FLAT ₹${Number(coupon.discount_amount).toLocaleString()} OFF`}
-                            </span>
-                          </div>
-                          <div className="coupon-divider"></div>
-                          <div className="coupon-right">
-                            <p className="coupon-text">
-                              {coupon.banner_text || `Use code ${coupon.code}`}
-                            </p>
-                            <div className="coupon-code-badge">{coupon.code}</div>
-                          </div>
-                        </div>
-                        <div className="scallop-top"></div>
-                        <div className="scallop-bottom"></div>
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
-            </>
-          )}
-
           {/* ---- GRID: Mobile = image upar, text neeche | Desktop = text left, image right ---- */}
           <div className="w-full flex flex-col relative z-10">
+
+          {/* Coupon Banner — normal flow, no absolute, no overlap */}
+          {coupons.length > 0 && (
+            <div className="w-full px-4 pt-4 pb-2">
+              <Swiper
+                modules={[Autoplay, Pagination]}
+                slidesPerView={1}
+                autoplay={{ delay: 4000, disableOnInteraction: false }}
+                loop={coupons.length > 1}
+                className="coupon-swiper"
+              >
+                {coupons.map((coupon) => (
+                  <SwiperSlide key={coupon.id}>
+                    <div className="coupon-banner-myntra animate-fade-in-down">
+                      <div className="coupon-content">
+                        <div className="coupon-left">
+                          <span className="coupon-title">
+                            {coupon.discount_type === "percentage"
+                              ? `FLAT ${coupon.discount_percent}% OFF`
+                              : `FLAT ₹${Number(coupon.discount_amount).toLocaleString()} OFF`}
+                          </span>
+                        </div>
+                        <div className="coupon-divider"></div>
+                        <div className="coupon-right">
+                          <p className="coupon-text">
+                            {coupon.banner_text || `Use code ${coupon.code}`}
+                          </p>
+                          <div className="coupon-code-badge">{coupon.code}</div>
+                        </div>
+                      </div>
+                      <div className="scallop-top"></div>
+                      <div className="scallop-bottom"></div>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          )}
+
           <div
-            className={`w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center ${coupons.length > 0 ? "lg:mt-24" : "lg:mt-0"}`}
+            className="w-full px-4 lg:px-12 py-8 lg:py-0 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center"
           >
             {/* ===== IMAGE — order-1 on mobile (upar), order-2 on desktop (right) ===== */}
             <div className="relative flex justify-center items-center w-full overflow-visible lg:-mt-12 order-1 lg:order-2">
