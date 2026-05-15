@@ -11,6 +11,7 @@ import Auth from "./pages/Auth/Auth";
 import About from "./pages/About/About";
 import Testimonials from "./pages/Testimonials/Testimonials";
 import Wishlist from "./pages/Wishlist/Wishlist";
+import MyOrders from "./pages/MyOrders/MyOrders";
 import Contact from "./pages/Contact/Contact";
 import Feedback from "./pages/Feedback/Feedback";
 import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
@@ -78,6 +79,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Wishlist />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/my-orders"
+                      element={
+                        <ProtectedRoute>
+                          <MyOrders />
                         </ProtectedRoute>
                       }
                     />

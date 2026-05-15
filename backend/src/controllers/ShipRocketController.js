@@ -1,0 +1,210 @@
+const ShipRocketService = require('../services/ShipRocketService');
+const Order = require('../models/Order');
+const OrderItem = require('../models/OrderItem');
+
+class ShipRocketController {
+
+  // ── Push a VNS order to ShipRocket and (optionally) auto-assign AWB ──────────
+  async pushOrder(req, res) {
+    try {
+      const { orderId, autoAssignCourier = true } = req.body;
+
+      if (!orderId) return res.status(400).json({ message: 'orderId is required' });
+
+      // Fetch order + items from DB
+      const order = await Order.findByPk(orderId, { include: [OrderItem] });
+      if (!order) return res.status(404).json({ message: 'Order not found' });
+
+      // Map OrderItems to a flat items array with name fallback
+      const items = order.OrderItems.map(oi => ({
+        product_id: oi.product_id,
+        quantity: oi.quantity,
+        price: oi.price,
+        name: oi.product_name || `Product #${oi.product_id}`,
+      }));
+
+      // Step 1: Create order on ShipRocket
+      const srOrder = await ShipRocketService.createOrder({ order, items });
+      const shipmentId = srOrder.shipment_id;
+      const srOrderId = srOrder.order_id;
+
+      let awbData = null;
+
+      // Step 2 (optional): Auto-assign AWB
+      if (autoAssignCourier && shipmentId) {
+        awbData = await ShipRocketService.assignAWB(shipmentId);
+      }
+
+      // Persist shiprocket_order_id + awb on the local order record if columns exist
+      try {
+        const updatePayload = { shiprocket_order_id: srOrderId };
+        if (awbData?.response?.data?.awb_code) {
+          updatePayload.shiprocket_awb = awbData.response.data.awb_code;
+        }
+        await order.update(updatePayload);
+      } catch (_) {
+        // Columns may not exist yet — ignore silently
+      }
+
+      return res.status(200).json({
+        message: 'Order pushed to ShipRocket successfully',
+        shiprocket_order_id: srOrderId,
+        shipment_id: shipmentId,
+        awb: awbData?.response?.data?.awb_code || null,
+      });
+    } catch (error) {
+      console.error('[ShipRocket] pushOrder error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to push order to ShipRocket',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+
+  // ── Assign / reassign AWB for an existing ShipRocket shipment ────────────────
+  async assignAWB(req, res) {
+    try {
+      const { shipment_id, courier_id } = req.body;
+      if (!shipment_id) return res.status(400).json({ message: 'shipment_id is required' });
+
+      const data = await ShipRocketService.assignAWB(shipment_id, courier_id || null);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('[ShipRocket] assignAWB error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to assign AWB',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+
+  // ── Generate shipping label (returns label PDF URL) ──────────────────────────
+  async generateLabel(req, res) {
+    try {
+      const { shipment_ids } = req.body;
+      if (!shipment_ids || !shipment_ids.length) {
+        return res.status(400).json({ message: 'shipment_ids array is required' });
+      }
+      const data = await ShipRocketService.generateLabel(shipment_ids);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('[ShipRocket] generateLabel error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to generate label',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+
+  // ── Generate manifest PDF ────────────────────────────────────────────────────
+  async generateManifest(req, res) {
+    try {
+      const { shipment_ids } = req.body;
+      if (!shipment_ids || !shipment_ids.length) {
+        return res.status(400).json({ message: 'shipment_ids array is required' });
+      }
+      const data = await ShipRocketService.generateManifest(shipment_ids);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('[ShipRocket] generateManifest error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to generate manifest',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+
+  // ── Track by AWB ─────────────────────────────────────────────────────────────
+  async trackByAWB(req, res) {
+    try {
+      const { awb } = req.params;
+      if (!awb) return res.status(400).json({ message: 'awb is required' });
+
+      const data = await ShipRocketService.trackByAWB(awb);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('[ShipRocket] trackByAWB error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to fetch tracking info',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+
+  // ── Track by VNS Order ID (looks up shiprocket_order_id from DB) ─────────────
+  async trackByOrderId(req, res) {
+    try {
+      const { orderId } = req.params;
+      const order = await Order.findByPk(orderId);
+      if (!order) return res.status(404).json({ message: 'Order not found' });
+
+      if (!order.shiprocket_order_id) {
+        return res.status(400).json({ message: 'This order has not been pushed to ShipRocket yet' });
+      }
+
+      const data = await ShipRocketService.trackByOrderId(order.shiprocket_order_id);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('[ShipRocket] trackByOrderId error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to fetch tracking info',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+
+  // ── Schedule pickup ───────────────────────────────────────────────────────────
+  async schedulePickup(req, res) {
+    try {
+      const { shipment_ids } = req.body;
+      if (!shipment_ids || !shipment_ids.length) {
+        return res.status(400).json({ message: 'shipment_ids array is required' });
+      }
+      const data = await ShipRocketService.schedulePickup(shipment_ids);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('[ShipRocket] schedulePickup error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to schedule pickup',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+
+  // ── Cancel ShipRocket orders ─────────────────────────────────────────────────
+  async cancelOrders(req, res) {
+    try {
+      const { shiprocket_order_ids } = req.body;
+      if (!shiprocket_order_ids || !shiprocket_order_ids.length) {
+        return res.status(400).json({ message: 'shiprocket_order_ids array is required' });
+      }
+      const data = await ShipRocketService.cancelOrders(shiprocket_order_ids);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('[ShipRocket] cancelOrders error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to cancel ShipRocket orders',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+
+  // ── Check serviceability for a pincode ───────────────────────────────────────
+  async checkServiceability(req, res) {
+    try {
+      const { pincode, shipment_id } = req.query;
+      if (!pincode) return res.status(400).json({ message: 'pincode is required' });
+
+      const data = await ShipRocketService.getServiceableCouries(shipment_id, pincode);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('[ShipRocket] serviceability error:', error?.response?.data || error.message);
+      return res.status(500).json({
+        message: 'Failed to check serviceability',
+        detail: error?.response?.data || error.message,
+      });
+    }
+  }
+}
+
+module.exports = new ShipRocketController();

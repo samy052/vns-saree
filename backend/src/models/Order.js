@@ -47,10 +47,24 @@ const Order = sequelize.define('Order', {
   status: {
     type: DataTypes.STRING,
     defaultValue: 'Pending'
+  },
+  state: {
+    type: DataTypes.STRING,
+    defaultValue: 'Uttar Pradesh'
+  },
+  shiprocket_order_id: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  shiprocket_awb: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   tableName: 'orders',
-  schema: 'vns_saree'
+  schema: 'vns_saree',
+  timestamps: true,
+  underscored: true
 });
 
 module.exports = Order;

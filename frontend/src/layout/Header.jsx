@@ -316,9 +316,10 @@ const Header = ({ activeItem }) => {
                           <div className="profile-panel-group">
                             <button
                               type="button"
-                              onClick={() => goProtected("/cart")}
+                              onClick={() => goProtected("/my-orders")}
                             >
-                              Orders
+                              <iconify-icon icon="lucide:package-search" style={{marginRight:'6px'}}></iconify-icon>
+                              My Orders
                             </button>
                             <button
                               type="button"
@@ -528,17 +529,12 @@ const Header = ({ activeItem }) => {
               Account
             </span>
             <button
-              onClick={() => { setMobileMenuOpen(false); goProtected("/cart"); }}
+              onClick={() => { setMobileMenuOpen(false); goProtected("/my-orders"); }}
               className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
               style={{ backgroundColor: "#ffffff" }}
             >
-              <iconify-icon icon="lucide:shopping-bag" className="text-lg"></iconify-icon>
+              <iconify-icon icon="lucide:package-search" className="text-lg"></iconify-icon>
               My Orders
-              {getCartCount() > 0 && (
-                <span className="ml-auto bg-[#800020] text-[#D4AF37] text-xs font-bold px-2 py-0.5 rounded-full">
-                  {getCartCount()}
-                </span>
-              )}
             </button>
             <button
               onClick={() => { setMobileMenuOpen(false); goProtected("/wishlist"); }}

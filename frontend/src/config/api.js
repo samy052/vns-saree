@@ -15,6 +15,10 @@ export const API_ENDPOINTS = {
   cart: `${API_BASE_URL}/api/cart`,
   wishlist: `${API_BASE_URL}/api/wishlist`,
   feedback: `${API_BASE_URL}/api/feedback`,
+  myOrders: (email) => `${API_BASE_URL}/api/orders/my/${encodeURIComponent(email)}`,
+  trackOrder: (orderId) => `${API_BASE_URL}/api/orders/track/${orderId}`,
+  shiprocket: `${API_BASE_URL}/api/shiprocket`,
+
   razorpay: {
     createOrder: `${API_BASE_URL}/api/razorpay/create-order`,
     verifyPayment: `${API_BASE_URL}/api/razorpay/verify-payment`,

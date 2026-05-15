@@ -24,9 +24,16 @@ const OrderItem = sequelize.define('OrderItem', {
   price: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
+  },
+  product_name: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
-  tableName: 'order_items'
+  tableName: 'order_items',
+  schema: 'vns_saree',
+  timestamps: true,
+  underscored: true
 });
 
 // Associations

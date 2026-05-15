@@ -14,6 +14,7 @@ const AuthRoutes = require("./routes/AuthRoutes");
 const CartRoutes = require("./routes/CartRoutes");
 const WishlistRoutes = require("./routes/WishlistRoutes");
 const FeedbackRoutes = require("./routes/FeedbackRoutes");
+const ShipRocketRoutes = require("./routes/ShipRocketRoutes");
 
 const parseCorsOrigins = () => {
   const origins = process.env.CORS_ORIGINS;
@@ -62,6 +63,9 @@ app.use("/api/feedback", FeedbackRoutes);
 // in the frontend and payment verification happens through Razorpay callbacks.
 app.use("/api/razorpay", RazorpayRoutes);
 app.use("/api/orders", OrderRoutes);
+
+// Shipping APIs (admin-initiated).
+app.use("/api/shiprocket", ShipRocketRoutes);
 
 // Customer account APIs. Route files enforce customer authentication.
 app.use("/api/cart", CartRoutes);

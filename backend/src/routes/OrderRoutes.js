@@ -2,10 +2,16 @@ const express = require('express');
 const router = express.Router();
 const OrderController = require('../controllers/OrderController');
 
-// Public checkout route. Frontend checkout is customer-protected.
+// Public checkout route.
 router.post('/', OrderController.createOrder);
 
-// Admin/order lookup route. Keep auth behavior unchanged for current clients.
+// Get all orders for a specific customer email (customer-facing My Orders page)
+router.get('/my/:email', OrderController.getOrdersByEmail);
+
+// Live tracking by order ID (fetches ShipRocket tracking data)
+router.get('/track/:orderId', OrderController.trackOrder);
+
+// Admin/order lookup route.
 router.get('/', OrderController.getMyOrders);
 
 module.exports = router;
