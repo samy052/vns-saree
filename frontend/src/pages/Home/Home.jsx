@@ -69,6 +69,7 @@ const Home = () => {
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [heroLoading, setHeroLoading] = useState(true);
+  const [feedbacksLoading, setFeedbacksLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showNotification } = useNotification();
 
@@ -152,8 +153,12 @@ const Home = () => {
         if (data.success) {
           setFeedbacks(data.data || []);
         }
+        setFeedbacksLoading(false);
       })
-      .catch((err) => console.error("Error fetching feedbacks:", err));
+      .catch((err) => {
+        console.error("Error fetching feedbacks:", err);
+        setFeedbacksLoading(false);
+      });
   }, []);
 
   const calculateDiscount = (mrp, selling) => {
@@ -667,37 +672,37 @@ const Home = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {(feedbacks.length > 0
-                ? feedbacks
-                : [
-                    {
-                      id: 1,
-                      rating: 5,
-                      comment:
-                        "The Katan Silk saree I ordered is even more beautiful in person. Truly a piece of art!",
-                      Customer: { name: "Priya Sharma" },
-                    },
-                    {
-                      id: 2,
-                      rating: 5,
-                      comment:
-                        "VNS Saree has the most authentic Banarasi collection I've found online. Highly recommend!",
-                      Customer: { name: "Anjali Gupta" },
-                    },
-                    {
-                      id: 3,
-                      rating: 5,
-                      comment:
-                        "I wore their hand-woven saree for my daughter's wedding and received so many compliments.",
-                      Customer: { name: "Meera Reddy" },
-                    },
-                  ]
-              )
-                .slice(0, 3)
-                .map((item, i) => (
+              {feedbacksLoading ? (
+                // Skeleton loader
+                [1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/10 animate-pulse"
+                  >
+                    <div className="flex space-x-1 mb-6">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <div key={star} className="w-5 h-5 bg-[#F5F1E8] rounded"></div>
+                      ))}
+                    </div>
+                    <div className="space-y-3 mb-8">
+                      <div className="h-4 bg-[#F5F1E8] rounded w-full"></div>
+                      <div className="h-4 bg-[#F5F1E8] rounded w-5/6"></div>
+                      <div className="h-4 bg-[#F5F1E8] rounded w-4/6"></div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 rounded-full bg-[#F5F1E8]"></div>
+                      <div className="space-y-2">
+                        <div className="h-4 bg-[#F5F1E8] rounded w-24"></div>
+                        <div className="h-3 bg-[#F5F1E8] rounded w-16"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : feedbacks.length > 0 ? (
+                feedbacks.slice(0, 3).map((item, i) => (
                   <div
                     key={item.id || i}
-                    className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/10 reveal-up hover:shadow-md transition-all duration-300"
+                    className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/10 animate-fade-in-up hover:shadow-md transition-all duration-300"
                   >
                     <div className="flex text-[#D4AF37] mb-6">
                       {[...Array(item.rating || 5)].map((_, index) => (
@@ -730,7 +735,68 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                ))
+              ) : (
+                [
+                  {
+                    id: 1,
+                    rating: 5,
+                    comment:
+                      "The Katan Silk saree I ordered is even more beautiful in person. Truly a piece of art!",
+                    Customer: { name: "Priya Sharma" },
+                  },
+                  {
+                    id: 2,
+                    rating: 5,
+                    comment:
+                      "VNS Saree has the most authentic Banarasi collection I've found online. Highly recommend!",
+                    Customer: { name: "Anjali Gupta" },
+                  },
+                  {
+                    id: 3,
+                    rating: 5,
+                    comment:
+                      "I wore their hand-woven saree for my daughter's wedding and received so many compliments.",
+                    Customer: { name: "Meera Reddy" },
+                  },
+                ].map((item, i) => (
+                  <div
+                    key={item.id || i}
+                    className="bg-white p-8 rounded-xl shadow-sm border border-[#D4AF37]/10 animate-fade-in-up hover:shadow-md transition-all duration-300"
+                  >
+                    <div className="flex text-[#D4AF37] mb-6">
+                      {[...Array(item.rating || 5)].map((_, index) => (
+                        <iconify-icon
+                          key={index}
+                          icon="mdi:star"
+                        ></iconify-icon>
+                      ))}
+                    </div>
+                    <p className="text-lg mb-8 italic text-[#3D2817]">
+                      "{item.comment || item.text}"
+                    </p>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 rounded-full bg-[#F5F1E8] flex items-center justify-center overflow-hidden border border-[#D4AF37]/20">
+                        <img
+                          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.Customer?.name || i}`}
+                          alt="User"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#3D2817] capitalize">
+                          {item.Customer?.name ||
+                            item.name ||
+                            "Happy Customer"}
+                        </h4>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">
+                          Verified Buyer
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>
