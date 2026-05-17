@@ -19,6 +19,7 @@ import RefundPolicy from "./pages/RefundPolicy/RefundPolicy";
 import ReturnExchange from "./pages/ReturnExchange/ReturnExchange";
 import ShippingPolicy from "./pages/ShippingPolicy/ShippingPolicy";
 import TermsConditions from "./pages/TermsConditions/TermsConditions";
+import Profile from "./pages/Profile/Profile";
 import Layout from "./layout/Layout";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -87,6 +88,14 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <MyOrders />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
                         </ProtectedRoute>
                       }
                     />

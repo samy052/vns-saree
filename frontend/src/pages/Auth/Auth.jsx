@@ -20,10 +20,20 @@ const Auth = () => {
     phone: "",
     email: "",
     password: "",
+    referralCode: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const refCode = params.get("ref");
+    if (refCode) {
+      setSignupData((prev) => ({ ...prev, referralCode: refCode }));
+      setActiveTab("signup");
+    }
+  }, [location.search]);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [forgotPasswordData, setForgotPasswordData] = useState({
     email: "",
@@ -541,6 +551,20 @@ const Auth = () => {
                         ? texts[passwordStrength - 1]
                         : "Enter Password"}
                     </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
+                      Referral Code (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="referralCode"
+                      placeholder="SAM123"
+                      value={signupData.referralCode}
+                      onChange={handleSignupChange}
+                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm uppercase"
+                    />
                   </div>
 
                   <button

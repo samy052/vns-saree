@@ -7,7 +7,7 @@ const { Op } = require("sequelize");
 
 class AuthService {
   async register(userData) {
-    const { name, phone, email, password } = userData;
+    const { name, phone, email, password, referralCode } = userData;
 
     const existingPhone = await Customer.findOne({ where: { phone } });
     if (existingPhone) {
@@ -27,11 +27,40 @@ class AuthService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Handle referral code logic
+    let referredBy = null;
+    let initialBalance = 0;
+    
+    if (referralCode) {
+      const referrer = await Customer.findOne({ where: { referral_code: referralCode } });
+      if (!referrer) {
+        throw new Error("Invalid referral code");
+      }
+      referredBy = referrer.id;
+      initialBalance = 50; // 50rs reward for signing up with a referral code
+    }
+
+    // Generate a unique referral code for the new user
+    let isUnique = false;
+    let newReferralCode = "";
+    while (!isUnique) {
+      const prefix = name.replace(/[^a-zA-Z]/g, "").substring(0, 3).toUpperCase() || "VNS";
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      newReferralCode = `${prefix}${randomNum}`;
+      const existingCode = await Customer.findOne({ where: { referral_code: newReferralCode } });
+      if (!existingCode) {
+        isUnique = true;
+      }
+    }
+
     const customer = await Customer.create({
       name,
       phone,
       email,
       password: hashedPassword,
+      referral_code: newReferralCode,
+      referred_by: referredBy,
+      wallet_balance: initialBalance,
     });
 
     return this.generateTokens(customer);
@@ -89,6 +118,40 @@ class AuthService {
     }
   }
 
+  async getMe(user, role) {
+    if (role === "customer" && !user.referral_code) {
+      let isUnique = false;
+      let newReferralCode = "";
+      while (!isUnique) {
+        const prefix = user.name.replace(/[^a-zA-Z]/g, "").substring(0, 3).toUpperCase() || "VNS";
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        newReferralCode = `${prefix}${randomNum}`;
+        const existingCode = await Customer.findOne({ where: { referral_code: newReferralCode } });
+        if (!existingCode) {
+          isUnique = true;
+        }
+      }
+      user.referral_code = newReferralCode;
+      await user.save();
+    }
+
+    const userPayload = {
+      id: user.id,
+      name: user.name,
+      phone: user.phone,
+      email: user.email,
+      role: role,
+      referral_code: user.referral_code,
+      wallet_balance: user.wallet_balance,
+    };
+
+    return {
+      user: userPayload,
+      customer: role === "customer" ? userPayload : null,
+      admin: role === "admin" ? userPayload : null,
+    };
+  }
+
   async generateTokens(user, role = "customer") {
     const accessToken = jwt.sign(
       { id: user.id, role: role },
@@ -111,6 +174,8 @@ class AuthService {
       phone: user.phone,
       email: user.email,
       role: role,
+      referral_code: user.referral_code,
+      wallet_balance: user.wallet_balance,
     };
 
     return {

@@ -59,6 +59,11 @@ const Order = sequelize.define('Order', {
   shiprocket_awb: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  wallet_discount: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0
   }
 }, {
   tableName: 'orders',

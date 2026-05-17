@@ -10,7 +10,7 @@ class OrderController {
     try {
       const { 
         customer_name, customer_email, address, city, state, pincode, phone, 
-        total_amount, items, coupon_code 
+        total_amount, items, coupon_code, wallet_discount 
       } = req.body;
 
       let discount_amount = 0;
@@ -36,6 +36,22 @@ class OrderController {
         }
       }
 
+      // Check if this is the customer's first order for referral reward
+      const previousOrderCount = await Order.count({ where: { customer_email }, transaction: t });
+
+      const final_wallet_discount = Number(wallet_discount || 0);
+      if (final_wallet_discount > 0) {
+        const Customer = require('../models/Customer');
+        const customer = await Customer.findOne({ where: { email: customer_email }, transaction: t });
+        if (!customer) {
+          throw new Error("Customer not found for wallet discount");
+        }
+        if (Number(customer.wallet_balance) < final_wallet_discount) {
+          throw new Error("Insufficient wallet balance");
+        }
+        await customer.decrement('wallet_balance', { by: final_wallet_discount, transaction: t });
+      }
+
       const order = await Order.create({
         customer_name,
         customer_email,
@@ -44,9 +60,10 @@ class OrderController {
         state: state || 'Uttar Pradesh',
         pincode,
         phone,
-        total_amount: final_total,
+        total_amount: final_total - final_wallet_discount,
         coupon_code,
-        discount_amount
+        discount_amount,
+        wallet_discount: final_wallet_discount
       }, { transaction: t });
 
       const orderItems = items.map(item => ({
@@ -58,6 +75,20 @@ class OrderController {
       }));
 
       await OrderItem.bulkCreate(orderItems, { transaction: t });
+
+      // Referral Reward Logic (Reward User A 100rs on User B's first order)
+      if (previousOrderCount === 0) {
+        const Customer = require('../models/Customer');
+        const customer = await Customer.findOne({ where: { email: customer_email }, transaction: t });
+        if (customer && customer.referred_by) {
+          // Give 100rs to the referrer
+          await Customer.increment('wallet_balance', { 
+            by: 100, 
+            where: { id: customer.referred_by }, 
+            transaction: t 
+          });
+        }
+      }
 
       await t.commit();
 

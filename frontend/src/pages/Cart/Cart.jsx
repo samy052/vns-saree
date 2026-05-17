@@ -4,6 +4,7 @@ import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import api from "../../utils/api";
 import { API_ENDPOINTS } from "../../config/api";
+import { useAuth } from "../../context/AuthContext";
 import "./Cart.css";
 
 const Cart = () => {
@@ -15,15 +16,28 @@ const Cart = () => {
     appliedCoupon, 
     discountAmount, 
     applyCoupon, 
-    removeCoupon 
+    removeCoupon,
+    useWallet,
+    setUseWallet,
+    walletDiscountAmount
   } = useCart();
   const { addToWishlist } = useWishlist();
+  const { user } = useAuth();
 
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [showCouponDrawer, setShowCouponDrawer] = useState(false);
 
   const subtotal = getSubtotal();
-  const total = subtotal - discountAmount;
+  const total = subtotal - discountAmount - walletDiscountAmount;
+
+  console.log("Cart Calculations:", {
+    subtotal,
+    discountAmount,
+    useWallet,
+    walletBalance: user?.wallet_balance,
+    walletDiscountAmount,
+    total
+  });
 
   useEffect(() => {
     const fetchCoupons = async () => {
@@ -134,6 +148,19 @@ const Cart = () => {
                         </div>
                       </div>
                     )}
+
+                    {useWallet && walletDiscountAmount > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-bold items-center py-2 px-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div className="flex items-center gap-2">
+                          <iconify-icon icon="lucide:wallet" />
+                          <span className="text-xs uppercase">WALLET DISCOUNT</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm">-₹{walletDiscountAmount.toLocaleString("en-IN")}</span>
+                          <button onClick={() => setUseWallet(false)} className="text-gray-400 hover:text-red-500"><iconify-icon icon="lucide:x" /></button>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="pt-6 border-t border-[#D4AF37]/30">
                       <div className="flex justify-between items-baseline text-3xl font-black text-[#800020] mb-2">
@@ -153,6 +180,31 @@ const Cart = () => {
                       </div>
                     </div>
                   </div>
+
+                  {user && Number(user.wallet_balance || 0) > 0 && (
+                    <div 
+                      onClick={() => setUseWallet(!useWallet)}
+                      className={`mb-6 p-4 border-2 rounded-lg cursor-pointer transition-all flex items-center justify-between ${
+                        useWallet 
+                          ? "border-[#800020] bg-[#800020]/5 shadow-md" 
+                          : "border-dashed border-[#D4AF37]/40 bg-[#FBF9F6] hover:border-[#800020]/50"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <iconify-icon 
+                          icon={useWallet ? "lucide:check-square" : "lucide:square"} 
+                          className={`text-2xl ${useWallet ? "text-[#800020]" : "text-[#D4AF37]"}`} 
+                        />
+                        <div>
+                          <p className="text-xs font-bold text-[#3D2817] uppercase tracking-wider">Use Wallet Balance</p>
+                          <p className="text-[10px] text-gray-500">Available: ₹{user.wallet_balance}</p>
+                        </div>
+                      </div>
+                      {useWallet && (
+                        <span className="text-xs font-bold text-green-700">-₹{walletDiscountAmount.toLocaleString("en-IN")}</span>
+                      )}
+                    </div>
+                  )}
 
                   {!appliedCoupon && (
                     <div className="mb-10">

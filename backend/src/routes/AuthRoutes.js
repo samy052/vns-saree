@@ -2,9 +2,14 @@ const express = require("express");
 const router = express.Router();
 const AuthController = require("../controllers/AuthController");
 
+const { authMiddleware } = require("../middleware/authMiddleware");
+
 // Public customer auth
 router.post("/register", AuthController.register);
 router.post("/login", AuthController.login);
+
+// Protected customer auth
+router.get("/me", authMiddleware, AuthController.getMe);
 
 // Public admin auth entrypoint
 router.post("/admin-login", AuthController.adminLogin);

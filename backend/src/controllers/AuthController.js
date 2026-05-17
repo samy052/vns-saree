@@ -20,6 +20,15 @@ class AuthController {
     }
   }
 
+  async getMe(req, res) {
+    try {
+      const result = await AuthService.getMe(req.user, req.userRole);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
   async adminLogin(req, res) {
     try {
       const { email, password } = req.body;

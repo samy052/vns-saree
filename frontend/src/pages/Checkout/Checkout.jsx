@@ -7,8 +7,8 @@ import { validateCheckoutForm } from "../../utils/validation";
 import "./Checkout.css";
 
 const Checkout = () => {
-  const { cart, getSubtotal, clearCart, appliedCoupon, discountAmount } = useCart();
-  const { user } = useAuth();
+  const { cart, getSubtotal, clearCart, appliedCoupon, discountAmount, useWallet, walletDiscountAmount } = useCart();
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
   const [activePayment, setActivePayment] = useState("card");
   const [loading, setLoading] = useState(false);
@@ -24,7 +24,27 @@ const Checkout = () => {
   });
 
   const subtotal = getSubtotal();
-  const total = subtotal - discountAmount;
+  const total = subtotal - discountAmount - walletDiscountAmount;
+
+  const syncUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+      if (!token) return;
+      const profileRes = await fetch(`${API_ENDPOINTS.auth}/me`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const profileData = await profileRes.json();
+      if (profileData && profileData.user) {
+        setUser(profileData.user);
+        if (localStorage.getItem("customer")) localStorage.setItem("customer", JSON.stringify(profileData.user));
+        if (sessionStorage.getItem("customer")) sessionStorage.setItem("customer", JSON.stringify(profileData.user));
+        if (localStorage.getItem("user")) localStorage.setItem("user", JSON.stringify(profileData.user));
+        if (sessionStorage.getItem("user")) sessionStorage.setItem("user", JSON.stringify(profileData.user));
+      }
+    } catch (e) {
+      console.error("Error updating user after checkout:", e);
+    }
+  };
 
   useEffect(() => {
     if (cart.length === 0) {
@@ -55,6 +75,43 @@ const Checkout = () => {
 
     setLoading(true);
     try {
+      const finalOrderData = {
+        customer_name: formData.fullName,
+        customer_email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        pincode: formData.pincode,
+        phone: formData.phone,
+        total_amount: total,
+        coupon_code: appliedCoupon?.code || null,
+        discount_amount: discountAmount,
+        wallet_discount: walletDiscountAmount,
+        items: cart.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          price: item.price,
+          colorId: item.colorId
+        })),
+      };
+
+      if (total === 0) {
+        // Zero payment (100% wallet or coupon discount) -> Create order directly
+        const dbRes = await fetch(API_ENDPOINTS.orders, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(finalOrderData),
+        });
+
+        if (dbRes.ok) {
+          await syncUserProfile();
+          clearCart();
+          navigate("/order-confirmation");
+        } else {
+          alert("Failed to place order.");
+        }
+        return;
+      }
+
       const orderResponse = await fetch(API_ENDPOINTS.razorpay.createOrder, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,24 +139,6 @@ const Checkout = () => {
           const verifyData = await verifyRes.json();
 
           if (verifyData.success) {
-            const finalOrderData = {
-              customer_name: formData.fullName,
-              customer_email: formData.email,
-              address: formData.address,
-              city: formData.city,
-              pincode: formData.pincode,
-              phone: formData.phone,
-              total_amount: total,
-              coupon_code: appliedCoupon?.code || null,
-              discount_amount: discountAmount,
-              items: cart.map((item) => ({
-                id: item.id,
-                quantity: item.quantity,
-                price: item.price,
-                colorId: item.colorId
-              })),
-            };
-
             const dbRes = await fetch(API_ENDPOINTS.orders, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -107,6 +146,7 @@ const Checkout = () => {
             });
 
             if (dbRes.ok) {
+              await syncUserProfile();
               clearCart();
               navigate("/order-confirmation");
             }
@@ -238,6 +278,13 @@ const Checkout = () => {
                       <div className="flex justify-between items-center text-xs text-emerald-600 font-bold">
                         <div className="flex items-center gap-1"><iconify-icon icon="lucide:ticket" /><span>COUPON ({appliedCoupon.code})</span></div>
                         <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
+                      </div>
+                    )}
+
+                    {useWallet && walletDiscountAmount > 0 && (
+                      <div className="flex justify-between items-center text-xs text-emerald-600 font-bold">
+                        <div className="flex items-center gap-1"><iconify-icon icon="lucide:wallet" /><span>WALLET DISCOUNT</span></div>
+                        <span>-₹{walletDiscountAmount.toLocaleString("en-IN")}</span>
                       </div>
                     )}
 

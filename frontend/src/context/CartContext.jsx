@@ -15,7 +15,7 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const { showNotification } = useNotification();
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,12 +23,33 @@ export const CartProvider = ({ children }) => {
   // Coupon States shared across Bag and Checkout
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [useWallet, setUseWallet] = useState(false);
 
   // Load cart from backend when user changes
   useEffect(() => {
     const fetchCart = async () => {
       if (user) {
         setLoading(true);
+        try {
+          const profileRes = await api.get(`${API_ENDPOINTS.auth}/me`);
+          if (profileRes.data && profileRes.data.user) {
+            const latestUser = profileRes.data.user;
+            setUser(latestUser);
+            if (localStorage.getItem("customer")) {
+              localStorage.setItem("customer", JSON.stringify(latestUser));
+            } else if (sessionStorage.getItem("customer")) {
+              sessionStorage.setItem("customer", JSON.stringify(latestUser));
+            }
+            if (localStorage.getItem("user")) {
+              localStorage.setItem("user", JSON.stringify(latestUser));
+            } else if (sessionStorage.getItem("user")) {
+              sessionStorage.setItem("user", JSON.stringify(latestUser));
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching latest profile:", error);
+        }
+
         try {
           const res = await api.get(API_ENDPOINTS.cart);
           const formattedCart = res.data.map(item => {
@@ -57,6 +78,7 @@ export const CartProvider = ({ children }) => {
         setCart([]);
         setAppliedCoupon(null);
         setDiscountAmount(0);
+        setUseWallet(false);
       }
     };
 
@@ -133,6 +155,7 @@ export const CartProvider = ({ children }) => {
       setCart([]);
       setAppliedCoupon(null);
       setDiscountAmount(0);
+      setUseWallet(false);
       await api.delete(API_ENDPOINTS.cart);
     } catch (error) {
       console.error("Error clearing cart:", error);
@@ -204,6 +227,11 @@ export const CartProvider = ({ children }) => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   }, [cart]);
 
+  const subtotal = getSubtotal();
+  const walletDiscountAmount = useWallet && user
+    ? Math.min(parseFloat(user.wallet_balance) || 0, subtotal - discountAmount)
+    : 0;
+
   return (
     <CartContext.Provider value={{
       cart,
@@ -217,6 +245,9 @@ export const CartProvider = ({ children }) => {
       discountAmount,
       applyCoupon,
       removeCoupon,
+      useWallet,
+      setUseWallet,
+      walletDiscountAmount,
       loading
     }}>
       {children}

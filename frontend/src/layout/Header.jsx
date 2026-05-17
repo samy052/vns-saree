@@ -311,9 +311,37 @@ const Header = ({ activeItem }) => {
                           <div className="profile-panel-head">
                             <p className="profile-hello">Hello {firstName}</p>
                             <p className="profile-phone">{userPhone}</p>
+                            
+                            {user?.referral_code && (
+                              <div className="mt-3 p-2 bg-white/10 rounded border border-[#D4AF37]/30">
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-[10px] uppercase tracking-wider text-[#D4AF37]">Wallet Balance</span>
+                                  <span className="font-bold text-white">₹{user.wallet_balance || 0}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[10px] uppercase tracking-wider text-[#D4AF37]">Code: {user.referral_code}</span>
+                                  <button 
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(`${window.location.origin}/login?ref=${user.referral_code}`);
+                                      alert('Referral link copied!');
+                                    }}
+                                    className="text-[10px] bg-[#D4AF37] text-[#800020] px-2 py-0.5 rounded font-bold hover:bg-white transition-colors"
+                                  >
+                                    Copy Link
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <div className="profile-panel-group">
+                            <button
+                              type="button"
+                              onClick={() => goProtected("/profile")}
+                            >
+                              <iconify-icon icon="lucide:user" style={{marginRight:'6px'}}></iconify-icon>
+                              My Profile
+                            </button>
                             <button
                               type="button"
                               onClick={() => goProtected("/my-orders")}
@@ -528,6 +556,14 @@ const Header = ({ activeItem }) => {
             <span className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider">
               Account
             </span>
+            <button
+              onClick={() => { setMobileMenuOpen(false); goProtected("/profile"); }}
+              className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
+              style={{ backgroundColor: "#ffffff" }}
+            >
+              <iconify-icon icon="lucide:user" className="text-lg"></iconify-icon>
+              My Profile
+            </button>
             <button
               onClick={() => { setMobileMenuOpen(false); goProtected("/my-orders"); }}
               className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
