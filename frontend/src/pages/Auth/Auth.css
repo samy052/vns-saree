@@ -103,7 +103,7 @@
   box-shadow: 0 0 0 4px rgba(91, 7, 16, 0.06);
 }
 
-.auth-input-wrap iconify-icon {
+.auth-input-wrap svg {
   color: #806f62;
   font-size: 18px;
 }
@@ -362,3 +362,4 @@
     gap: 10px;
   }
 }
+

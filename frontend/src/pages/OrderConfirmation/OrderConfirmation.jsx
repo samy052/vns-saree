@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import "./OrderConfirmation.css";
@@ -65,10 +66,10 @@ const OrderConfirmation = () => {
               {/* Order Timeline */}
               <div className="bg-white p-8 rounded-2xl shadow-sm border border-[#D4AF37]/10 reveal-up">
                 <h3 className="text-xl font-bold mb-8 flex items-center gap-2 brand-font">
-                  <iconify-icon
+                  <Icon
                     icon="lucide:truck"
                     className="text-[#D4AF37]"
-                  ></iconify-icon>
+                  ></Icon>
                   Shipment Tracking
                 </h3>
                 <div className="relative">
@@ -78,10 +79,10 @@ const OrderConfirmation = () => {
                   <div className="space-y-8 relative">
                     <div className="flex items-start gap-6 timeline-step active">
                       <div className="step-icon w-12 h-12 rounded-full border-2 border-gray-100 bg-white flex items-center justify-center z-10">
-                        <iconify-icon
+                        <Icon
                           icon="lucide:check-circle-2"
                           className="text-xl text-[#800020]"
-                        ></iconify-icon>
+                        ></Icon>
                       </div>
                       <div>
                         <h4 className="font-bold text-[#800020] uppercase tracking-wider text-sm">
@@ -94,10 +95,10 @@ const OrderConfirmation = () => {
                     </div>
                     <div className="flex items-start gap-6 timeline-step">
                       <div className="step-icon w-12 h-12 rounded-full border-2 border-gray-100 bg-white flex items-center justify-center z-10 text-gray-400">
-                        <iconify-icon
+                        <Icon
                           icon="lucide:box"
                           className="text-xl"
-                        ></iconify-icon>
+                        ></Icon>
                       </div>
                       <div>
                         <h4 className="font-bold text-gray-400 uppercase tracking-wider text-sm">
@@ -110,10 +111,10 @@ const OrderConfirmation = () => {
                     </div>
                     <div className="flex items-start gap-6 timeline-step">
                       <div className="step-icon w-12 h-12 rounded-full border-2 border-gray-100 bg-white flex items-center justify-center z-10 text-gray-400">
-                        <iconify-icon
+                        <Icon
                           icon="lucide:ship"
                           className="text-xl"
-                        ></iconify-icon>
+                        ></Icon>
                       </div>
                       <div>
                         <h4 className="font-bold text-gray-400 uppercase tracking-wider text-sm">
@@ -156,10 +157,10 @@ const OrderConfirmation = () => {
                         <p className="font-bold text-[#3D2817]">₹42,500</p>
                       </div>
                       <div className="mt-4 text-xs text-[#D4AF37] font-bold flex items-center gap-2 uppercase tracking-widest">
-                        <iconify-icon
+                        <Icon
                           icon="lucide:tag"
                           className="text-sm"
-                        ></iconify-icon>
+                        ></Icon>
                         Gift Wrapped: Yes
                       </div>
                     </div>
@@ -238,10 +239,10 @@ const OrderConfirmation = () => {
                         Payment Method
                       </p>
                       <div className="flex items-center gap-3">
-                        <iconify-icon
+                        <Icon
                           icon="logos:visa"
                           className="text-2xl"
-                        ></iconify-icon>
+                        ></Icon>
                         <span className="font-bold text-sm">•••• 9823</span>
                       </div>
                     </div>
@@ -300,10 +301,10 @@ const OrderConfirmation = () => {
                     href="mailto:support@banarasikala.com"
                     className="flex items-center gap-4 p-4 rounded-lg bg-[#F5F1E8] hover:bg-[#D4AF37]/10 transition-colors group"
                   >
-                    <iconify-icon
+                    <Icon
                       icon="lucide:mail"
                       className="text-xl text-[#800020]"
-                    ></iconify-icon>
+                    ></Icon>
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#800020]">
                         Email Us
@@ -312,19 +313,19 @@ const OrderConfirmation = () => {
                         support@banarasikala.com
                       </p>
                     </div>
-                    <iconify-icon
+                    <Icon
                       icon="lucide:chevron-right"
                       className="ml-auto text-gray-300 group-hover:text-[#800020] transition-transform group-hover:translate-x-1"
-                    ></iconify-icon>
+                    ></Icon>
                   </a>
                   <a
                     href="tel:+912212345678"
                     className="flex items-center gap-4 p-4 rounded-lg bg-[#F5F1E8] hover:bg-[#D4AF37]/10 transition-colors group"
                   >
-                    <iconify-icon
+                    <Icon
                       icon="lucide:phone"
                       className="text-xl text-[#800020]"
-                    ></iconify-icon>
+                    ></Icon>
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#800020]">
                         Call Us
@@ -333,10 +334,10 @@ const OrderConfirmation = () => {
                         +91 22 1234 5678
                       </p>
                     </div>
-                    <iconify-icon
+                    <Icon
                       icon="lucide:chevron-right"
                       className="ml-auto text-gray-300 group-hover:text-[#800020] transition-transform group-hover:translate-x-1"
-                    ></iconify-icon>
+                    ></Icon>
                   </a>
                 </div>
               </div>
@@ -348,7 +349,7 @@ const OrderConfirmation = () => {
                   id="continue-shopping-btn"
                   className="w-full flex items-center justify-center gap-3 py-5 bg-[#800020] text-[#D4AF37] font-bold rounded-xl shadow-2xl hover:scale-[1.02] transition-all uppercase tracking-[0.2em] text-sm"
                 >
-                  <iconify-icon icon="lucide:shopping-bag"></iconify-icon>
+                  <Icon icon="lucide:shopping-bag"></Icon>
                   CONTINUE SHOPPING
                 </Link>
               </div>
@@ -361,3 +362,4 @@ const OrderConfirmation = () => {
 };
 
 export default OrderConfirmation;
+

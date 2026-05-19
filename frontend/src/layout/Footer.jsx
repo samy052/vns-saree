@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
 import {
   ChevronRight,
@@ -68,16 +69,16 @@ const Footer = () => {
           </p>
           <div className="bk-footer-socials" aria-label="Social links">
             <a href="#" aria-label="Instagram">
-              <iconify-icon icon="mdi:instagram"></iconify-icon>
+              <Icon icon="mdi:instagram"></Icon>
             </a>
             <a href="#" aria-label="Facebook">
-              <iconify-icon icon="mdi:facebook"></iconify-icon>
+              <Icon icon="mdi:facebook"></Icon>
             </a>
             <a href="#" aria-label="Pinterest">
-              <iconify-icon icon="mdi:pinterest"></iconify-icon>
+              <Icon icon="mdi:pinterest"></Icon>
             </a>
             <a href="#" aria-label="YouTube">
-              <iconify-icon icon="mdi:youtube"></iconify-icon>
+              <Icon icon="mdi:youtube"></Icon>
             </a>
           </div>
         </div>
@@ -157,7 +158,7 @@ const Footer = () => {
           <div className="bk-footer-payment-row" aria-label="Accepted payments">
             {payments.map(([icon, label]) => (
               <span key={label} title={label}>
-                <iconify-icon icon={icon}></iconify-icon>
+                <Icon icon={icon}></Icon>
               </span>
             ))}
           </div>
@@ -170,7 +171,7 @@ const Footer = () => {
           <div className="bk-footer-market-row">
             {marketplaces.map(([icon, label]) => (
               <span key={label} className={`bk-footer-market-${label.toLowerCase()}`} title={label}>
-                <iconify-icon icon={icon}></iconify-icon>
+                <Icon icon={icon}></Icon>
               </span>
             ))}
           </div>
@@ -186,3 +187,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

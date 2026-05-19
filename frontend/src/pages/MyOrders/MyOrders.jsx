@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -21,7 +22,7 @@ const TrackingTimeline = ({ activities = [] }) => {
   if (!activities.length) {
     return (
       <div className="tracking-empty">
-        <iconify-icon icon="lucide:map-pin-off" className="text-3xl text-gray-300"></iconify-icon>
+        <Icon icon="lucide:map-pin-off" className="text-3xl text-gray-300"></Icon>
         <p>Tracking updates will appear once shipment is dispatched.</p>
       </div>
     );
@@ -88,14 +89,14 @@ const OrderCard = ({ order }) => {
       <div className="order-card-header">
         <div className="order-meta">
           <div className="order-id-wrap">
-            <iconify-icon icon="lucide:receipt-text" className="text-[#800020]"></iconify-icon>
+            <Icon icon="lucide:receipt-text" className="text-[#800020]"></Icon>
             <span className="order-id">Order #{order.id}</span>
           </div>
           <span className="order-date">{orderDate}</span>
         </div>
 
         <div className="order-status-badge" style={{ color: cfg.color, backgroundColor: cfg.bg }}>
-          <iconify-icon icon={cfg.icon}></iconify-icon>
+          <Icon icon={cfg.icon}></Icon>
           {cfg.label}
         </div>
       </div>
@@ -121,21 +122,21 @@ const OrderCard = ({ order }) => {
           <span className="total-amount">₹{Number(order.total_amount).toLocaleString('en-IN')}</span>
           {Number(order.discount_amount) > 0 && (
             <span className="discount-saved">
-              <iconify-icon icon="lucide:tag"></iconify-icon>
+              <Icon icon="lucide:tag"></Icon>
               Saved ₹{Number(order.discount_amount).toLocaleString('en-IN')}
             </span>
           )}
         </div>
 
         <button className={`track-btn ${expanded ? 'active' : ''}`} onClick={handleExpand}>
-          <iconify-icon icon={expanded ? 'lucide:chevron-up' : 'lucide:map-pin'}></iconify-icon>
+          <Icon icon={expanded ? 'lucide:chevron-up' : 'lucide:map-pin'}></Icon>
           {expanded ? 'Hide Tracking' : 'Track Order'}
         </button>
       </div>
 
       {/* ── Shipping Address ── */}
       <div className="order-address">
-        <iconify-icon icon="lucide:map-pin" className="text-[#800020]"></iconify-icon>
+        <Icon icon="lucide:map-pin" className="text-[#800020]"></Icon>
         <span>{order.address}, {order.city} – {order.pincode}</span>
       </div>
 
@@ -143,7 +144,7 @@ const OrderCard = ({ order }) => {
       {expanded && (
         <div className="tracking-panel">
           <div className="tracking-panel-header">
-            <h4><iconify-icon icon="lucide:truck"></iconify-icon> Live Shipment Tracking</h4>
+            <h4><Icon icon="lucide:truck"></Icon> Live Shipment Tracking</h4>
             {courierName && <span className="courier-badge">{courierName}</span>}
           </div>
 
@@ -156,7 +157,7 @@ const OrderCard = ({ order }) => {
 
           {etd && (
             <div className="etd-row">
-              <iconify-icon icon="lucide:calendar-check"></iconify-icon>
+              <Icon icon="lucide:calendar-check"></Icon>
               <span>Expected Delivery: <strong>{etd}</strong></span>
             </div>
           )}
@@ -170,7 +171,7 @@ const OrderCard = ({ order }) => {
 
           {trackError && (
             <div className="track-error">
-              <iconify-icon icon="lucide:alert-circle"></iconify-icon>
+              <Icon icon="lucide:alert-circle"></Icon>
               {trackError}
             </div>
           )}
@@ -214,7 +215,7 @@ export default function MyOrders() {
       {/* Hero Banner */}
       <div className="orders-hero">
         <div className="orders-hero-content">
-          <iconify-icon icon="lucide:package-search" className="hero-icon"></iconify-icon>
+          <Icon icon="lucide:package-search" className="hero-icon"></Icon>
           <div>
             <h1>My Orders</h1>
             <p>Track your Banarasi sarees from our loom to your doorstep</p>
@@ -237,7 +238,7 @@ export default function MyOrders() {
 
         {error && (
           <div className="orders-error">
-            <iconify-icon icon="lucide:wifi-off" className="text-4xl text-red-400"></iconify-icon>
+            <Icon icon="lucide:wifi-off" className="text-4xl text-red-400"></Icon>
             <h3>Could not load orders</h3>
             <p>{error}</p>
             <button onClick={() => window.location.reload()}>Try Again</button>
@@ -246,11 +247,11 @@ export default function MyOrders() {
 
         {!loading && !error && orders.length === 0 && (
           <div className="orders-empty">
-            <iconify-icon icon="lucide:shopping-bag" className="empty-icon"></iconify-icon>
+            <Icon icon="lucide:shopping-bag" className="empty-icon"></Icon>
             <h3>No Orders Yet</h3>
             <p>Your orders will appear here once you place your first order.</p>
             <Link to="/collection" className="shop-now-btn">
-              <iconify-icon icon="lucide:sparkles"></iconify-icon>
+              <Icon icon="lucide:sparkles"></Icon>
               Explore Collection
             </Link>
           </div>
@@ -259,7 +260,7 @@ export default function MyOrders() {
         {!loading && !error && orders.length > 0 && (
           <div className="orders-list">
             <div className="orders-count">
-              <iconify-icon icon="lucide:layers"></iconify-icon>
+              <Icon icon="lucide:layers"></Icon>
               {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
             </div>
             {orders.map(order => (
@@ -271,3 +272,4 @@ export default function MyOrders() {
     </div>
   );
 }
+

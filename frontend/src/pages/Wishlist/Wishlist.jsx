@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
@@ -18,10 +19,10 @@ const Wishlist = () => {
 
         {wishlist.length === 0 ? (
           <div className="bg-white border border-[#D4AF37]/10 rounded-lg py-20 px-4 text-center">
-            <iconify-icon
+            <Icon
               icon="lucide:heart"
               className="text-6xl text-[#D4AF37]/30 mb-6"
-            ></iconify-icon>
+            ></Icon>
             <h2 className="brand-font text-2xl text-[#800020] mb-3">
               Your wishlist is empty
             </h2>
@@ -81,3 +82,4 @@ const Wishlist = () => {
 };
 
 export default Wishlist;
+

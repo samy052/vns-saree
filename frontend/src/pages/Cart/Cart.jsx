@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
@@ -58,7 +59,7 @@ const Cart = () => {
 
           {cart.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-lg shadow-sm border border-[#D4AF37]/10">
-              <iconify-icon icon="lucide:shopping-bag" className="text-6xl text-[#D4AF37]/30 mb-6" />
+              <Icon icon="lucide:shopping-bag" className="text-6xl text-[#D4AF37]/30 mb-6" />
               <h3 className="brand-font text-2xl text-[#800020] mb-4">Your bag is currently empty</h3>
               <p className="text-gray-500 mb-8">Explore our heritage collection to add items.</p>
               <Link to="/collection" className="inline-block px-10 py-4 bg-[#800020] text-[#D4AF37] font-bold uppercase tracking-widest hover:bg-[#3D2817] transition-all">
@@ -89,20 +90,20 @@ const Cart = () => {
                     <div className="flex flex-col items-center sm:items-end gap-4">
                       <span className="text-xl font-bold text-[#3D2817]">₹{Number(item.price).toLocaleString("en-IN")}</span>
                       <div className="flex items-center border border-[#D4AF37]/30 rounded-sm bg-white overflow-hidden">
-                        <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.colorId)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#800020] transition-colors"><iconify-icon icon="lucide:minus" /></button>
+                        <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.colorId)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#800020] transition-colors"><Icon icon="lucide:minus" /></button>
                         <input type="number" value={item.quantity} readOnly className="w-10 text-center text-sm font-bold bg-transparent outline-none border-none" />
-                        <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.colorId)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#800020] transition-colors"><iconify-icon icon="lucide:plus" /></button>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.colorId)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#800020] transition-colors"><Icon icon="lucide:plus" /></button>
                       </div>
                     </div>
                   </div>
                 ))}
                 <div className="pt-8 flex flex-col sm:flex-row gap-6 border-t border-[#D4AF37]/20">
                   <div className="flex items-center space-x-3 opacity-60">
-                    <iconify-icon icon="lucide:truck" className="text-2xl text-[#800020]" />
+                    <Icon icon="lucide:truck" className="text-2xl text-[#800020]" />
                     <span className="text-xs font-semibold tracking-wider uppercase">Complimentary Worldwide Shipping</span>
                   </div>
                   <div className="flex items-center space-x-3 opacity-60">
-                    <iconify-icon icon="lucide:lock" className="text-2xl text-[#800020]" />
+                    <Icon icon="lucide:lock" className="text-2xl text-[#800020]" />
                     <span className="text-xs font-semibold tracking-wider uppercase">100% Secure Checkout</span>
                   </div>
                 </div>
@@ -125,12 +126,12 @@ const Cart = () => {
                     {appliedCoupon && (
                       <div className="flex justify-between text-emerald-600 font-bold items-center py-2 px-3 bg-emerald-50 rounded-lg border border-emerald-100">
                         <div className="flex items-center gap-2">
-                          <iconify-icon icon="lucide:ticket" />
+                          <Icon icon="lucide:ticket" />
                           <span className="text-xs uppercase">{appliedCoupon.code}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-sm">-₹{discountAmount.toLocaleString()}</span>
-                          <button onClick={removeCoupon} className="text-gray-400 hover:text-red-500"><iconify-icon icon="lucide:x" /></button>
+                          <button onClick={removeCoupon} className="text-gray-400 hover:text-red-500"><Icon icon="lucide:x" /></button>
                         </div>
                       </div>
                     )}
@@ -143,11 +144,11 @@ const Cart = () => {
                       
                       <div className="flex flex-col gap-1.5 mt-4 pt-4 border-t border-dashed border-[#D4AF37]/20">
                         <div className="flex items-center space-x-2 text-emerald-700">
-                          <iconify-icon icon="lucide:check-circle" className="text-xs" />
+                          <Icon icon="lucide:check-circle" className="text-xs" />
                           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Price Inclusive of 5% GST</span>
                         </div>
                         <div className="flex items-center space-x-2 text-[#B8860B]">
-                          <iconify-icon icon="lucide:globe" className="text-xs" />
+                          <Icon icon="lucide:globe" className="text-xs" />
                           <span className="text-[10px] font-black uppercase tracking-[0.2em]">Complimentary Worldwide Shipping</span>
                         </div>
                       </div>
@@ -161,17 +162,17 @@ const Cart = () => {
                         className="w-full flex items-center justify-between px-4 py-4 border-2 border-dashed border-[#D4AF37]/40 rounded-lg text-[#800020] hover:border-[#800020] transition-all group"
                       >
                         <div className="flex items-center gap-3">
-                          <iconify-icon icon="lucide:ticket" className="text-xl group-hover:animate-bounce" />
+                          <Icon icon="lucide:ticket" className="text-xl group-hover:animate-bounce" />
                           <span className="text-xs font-black uppercase tracking-widest">Apply Coupon Code</span>
                         </div>
-                        <iconify-icon icon="lucide:chevron-right" />
+                        <Icon icon="lucide:chevron-right" />
                       </button>
                     </div>
                   )}
 
                   <Link to="/checkout" className="checkout-btn-3d w-full py-5 bg-[#800020] text-[#D4AF37] font-bold text-lg uppercase tracking-[0.2em] shadow-lg border border-[#800020] flex items-center justify-center space-x-3 rounded-sm hover:-translate-y-1 transition-transform">
                     <span>Proceed to Checkout</span>
-                    <iconify-icon icon="lucide:arrow-right" className="text-xl" />
+                    <Icon icon="lucide:arrow-right" className="text-xl" />
                   </Link>
                 </div>
               </aside>
@@ -186,7 +187,7 @@ const Cart = () => {
           <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col animate-slide-left">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-[#800020] text-[#D4AF37]">
               <h3 className="brand-font text-xl font-bold uppercase tracking-widest">Available Offers</h3>
-              <button onClick={() => setShowCouponDrawer(false)} className="text-2xl"><iconify-icon icon="lucide:x" /></button>
+              <button onClick={() => setShowCouponDrawer(false)} className="text-2xl"><Icon icon="lucide:x" /></button>
             </div>
             <div className="flex-grow overflow-y-auto p-6 space-y-6">
               {availableCoupons.length === 0 ? (
@@ -202,12 +203,12 @@ const Cart = () => {
                       <button onClick={() => handleApplyCoupon(coupon)} className="bg-[#800020] text-[#D4AF37] text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest hover:scale-105 transition-transform">Apply</button>
                     </div>
                     <div className="space-y-2 pt-4 border-t border-dashed border-gray-100">
-                      <div className="flex items-center gap-2 text-[10px] font-bold text-[#3D2817]/60 uppercase tracking-tighter"><iconify-icon icon="lucide:info" /><span>Save {coupon.discount_type === 'percentage' ? `${coupon.discount_percent}%` : `₹${coupon.discount_amount}`} on this order</span></div>
-                      <div className="flex items-center gap-2 text-[10px] font-bold text-[#3D2817]/60 uppercase tracking-tighter"><iconify-icon icon="lucide:shopping-cart" /><span>Min purchase: ₹{Number(coupon.min_purchase_amount).toLocaleString()}</span></div>
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-[#3D2817]/60 uppercase tracking-tighter"><Icon icon="lucide:info" /><span>Save {coupon.discount_type === 'percentage' ? `${coupon.discount_percent}%` : `₹${coupon.discount_amount}`} on this order</span></div>
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-[#3D2817]/60 uppercase tracking-tighter"><Icon icon="lucide:shopping-cart" /><span>Min purchase: ₹{Number(coupon.min_purchase_amount).toLocaleString()}</span></div>
                       {/* Restore the 3rd line for applicability */}
                       {(coupon.applicable_variety_id?.length > 0 || coupon.applicable_product_id?.length > 0) && (
                         <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-tighter">
-                          <iconify-icon icon="lucide:check-circle" />
+                          <Icon icon="lucide:check-circle" />
                           <span>Valid on specific Saree Collections</span>
                         </div>
                       )}
@@ -226,3 +227,4 @@ const Cart = () => {
 };
 
 export default Cart;
+

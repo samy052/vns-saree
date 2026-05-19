@@ -1,4 +1,5 @@
 const Coupon = require('../models/Coupon');
+const { Op } = require('sequelize');
 const Category = require('../models/Category');
 const Product = require('../models/Product');
 const Variety = require('../models/Variety');
@@ -11,11 +12,30 @@ class CouponService {
   }
 
   async getHomepageCoupons() {
+    const now = new Date();
+
     return await Coupon.findAll({
       where: {
         is_active: true,
-        display_on_homepage: true
-      }
+        display_on_homepage: true,
+        [Op.and]: [
+          {
+            [Op.or]: [
+              { valid_from: null },
+              { valid_from: { [Op.lte]: now } }
+            ]
+          },
+          {
+            [Op.or]: [
+              { valid_until: null },
+              { valid_until: { [Op.gte]: now } }
+            ]
+          }
+        ]
+      },
+      attributes: ['code', 'discount_percent', 'banner_text'],
+      order: [['valid_until', 'ASC'], ['id', 'ASC']],
+      raw: true
     });
   }
 

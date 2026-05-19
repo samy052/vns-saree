@@ -1,6 +1,5 @@
+import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
-
-
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
@@ -10,8 +9,11 @@ import "./Collection.css";
 
 const PAGE_SIZE = 40;
 
-
-
+const getIdListParam = (params, key) =>
+  (params.get(key) || "")
+    .split(",")
+    .map((value) => Number(value))
+    .filter(Number.isFinite);
 
 const Collection = () => {
   const [searchParams] = useSearchParams();
@@ -45,7 +47,13 @@ const Collection = () => {
 
   useEffect(() => {
     const urlSearch = searchParams.get("search") || "";
-    setFilters((prev) => ({ ...prev, search: urlSearch }));
+    const urlVarieties = getIdListParam(searchParams, "variety");
+    setFilters((prev) => ({
+      ...prev,
+      search: urlSearch,
+      variety: urlVarieties,
+    }));
+    setCurrentPage(1);
   }, [searchParams]);
 
   const totalPaginationPages = Math.ceil(totalItems / PAGE_SIZE);
@@ -229,6 +237,22 @@ const Collection = () => {
           </div>
 
           <div className="filter-section">
+            <h3 className="filter-title">Variety</h3>
+            <div className="filter-list">
+              {varieties.map((v) => (
+                <label key={v.id} className="filter-item">
+                  <input
+                    type="checkbox"
+                    checked={filters.variety.includes(v.id)}
+                    onChange={() => handleCheckboxChange("variety", v.id)}
+                  />
+                  {v.name}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-section">
             <h3 className="filter-title">Collections</h3>
             <div className="filter-list">
               <label className="filter-item">
@@ -253,22 +277,6 @@ const Collection = () => {
                     onChange={() => handleCheckboxChange("occasion", occ.id)}
                   />
                   {occ.name}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h3 className="filter-title">Variety</h3>
-            <div className="filter-list">
-              {varieties.map((v) => (
-                <label key={v.id} className="filter-item">
-                  <input
-                    type="checkbox"
-                    checked={filters.variety.includes(v.id)}
-                    onChange={() => handleCheckboxChange("variety", v.id)}
-                  />
-                  {v.name}
                 </label>
               ))}
             </div>
@@ -375,14 +383,14 @@ const Collection = () => {
                         className={`wishlist-btn ${isInWishlist(product.id) ? "active" : ""}`}
                         onClick={(e) => handleWishlist(e, product)}
                       >
-                        <iconify-icon
+                        <Icon
                           className="wishlist-icon"
                           icon={
                             isInWishlist(product.id)
                               ? "mdi:heart"
                               : "lucide:heart"
                           }
-                        ></iconify-icon>
+                        ></Icon>
                         {isInWishlist(product.id) ? "WISHLISTED" : "WISHLIST"}
                       </button>
                     </div>
@@ -432,7 +440,7 @@ const Collection = () => {
                 onClick={() => setCurrentPage(currentPage - 1)}
                 className="page-btn"
               >
-                <iconify-icon icon="lucide:chevron-left" className="mr-1"></iconify-icon>
+                <Icon icon="lucide:chevron-left" className="mr-1"></Icon>
                 Prev
               </button>
               {[...Array(totalPaginationPages)].map((_, i) => (
@@ -450,7 +458,7 @@ const Collection = () => {
                 className="page-btn"
               >
                 Next
-                <iconify-icon icon="lucide:chevron-right" className="ml-1"></iconify-icon>
+                <Icon icon="lucide:chevron-right" className="ml-1"></Icon>
               </button>
             </div>
           )}
@@ -463,3 +471,4 @@ const Collection = () => {
 };
 
 export default Collection;
+

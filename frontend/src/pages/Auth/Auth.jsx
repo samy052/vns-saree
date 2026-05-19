@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import headerBackground from "../../assets/header_backgroung.png";
@@ -23,7 +24,7 @@ const AuthField = ({
   <label className="auth-field">
     <span className="auth-label">{label}</span>
     <span className="auth-input-wrap">
-      <iconify-icon icon={icon}></iconify-icon>
+      <Icon icon={icon}></Icon>
       <input
         type={type}
         name={name}
@@ -339,7 +340,7 @@ const Auth = () => {
                   aria-label={showLoginPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowLoginPassword((visible) => !visible)}
                 >
-                  <iconify-icon icon={showLoginPassword ? "lucide:eye-off" : "lucide:eye"} />
+                  <Icon icon={showLoginPassword ? "lucide:eye-off" : "lucide:eye"} />
                 </button>
               }
             />
@@ -374,7 +375,7 @@ const Auth = () => {
               className="auth-secondary"
               onClick={() => switchMode("signup")}
             >
-              <iconify-icon icon="lucide:user-plus" />
+              <Icon icon="lucide:user-plus" />
               Create New Account
             </button>
 
@@ -431,7 +432,7 @@ const Auth = () => {
                   aria-label={showSignupPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowSignupPassword((visible) => !visible)}
                 >
-                  <iconify-icon icon={showSignupPassword ? "lucide:eye-off" : "lucide:eye"} />
+                  <Icon icon={showSignupPassword ? "lucide:eye-off" : "lucide:eye"} />
                 </button>
               }
             />
@@ -471,7 +472,7 @@ const Auth = () => {
               className="auth-secondary"
               onClick={() => switchMode("login")}
             >
-              <iconify-icon icon="lucide:user" />
+              <Icon icon="lucide:user" />
               Login To Your Account
             </button>
 
@@ -545,7 +546,7 @@ const Auth = () => {
                   aria-label={showResetPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowResetPassword((visible) => !visible)}
                 >
-                  <iconify-icon icon={showResetPassword ? "lucide:eye-off" : "lucide:eye"} />
+                  <Icon icon={showResetPassword ? "lucide:eye-off" : "lucide:eye"} />
                 </button>
               }
             />
@@ -573,3 +574,4 @@ const Auth = () => {
 };
 
 export default Auth;
+

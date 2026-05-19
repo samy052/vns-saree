@@ -1,9 +1,12 @@
 const VarietyService = require('../services/VarietyService');
+const { uploadBufferToCloudinary } = require("../config/cloudinary");
 
 class VarietyController {
   async getAll(req, res) {
     try {
-      const varieties = await VarietyService.getAllVarieties();
+      const varieties = await VarietyService.getAllVarieties({
+        category: req.query.category,
+      });
       res.status(200).json(varieties);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -22,7 +25,17 @@ class VarietyController {
 
   async create(req, res) {
     try {
-      const variety = await VarietyService.createVariety(req.body);
+      const data = { ...req.body };
+      if (req.file) {
+        const uploadResult = await uploadBufferToCloudinary(req.file.buffer);
+        data.image = uploadResult.secure_url;
+      }
+
+      if (!data.image) {
+        return res.status(400).json({ message: "Image is mandatory for Variety" });
+      }
+
+      const variety = await VarietyService.createVariety(data);
       res.status(201).json(variety);
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -31,7 +44,12 @@ class VarietyController {
 
   async update(req, res) {
     try {
-      const variety = await VarietyService.updateVariety(req.params.id, req.body);
+      const data = { ...req.body };
+      if (req.file) {
+        const uploadResult = await uploadBufferToCloudinary(req.file.buffer);
+        data.image = uploadResult.secure_url;
+      }
+      const variety = await VarietyService.updateVariety(req.params.id, data);
       res.status(200).json(variety);
     } catch (error) {
       res.status(400).json({ message: error.message });

@@ -23,6 +23,8 @@ export default function Occasions() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOccasion, setEditingOccasion] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Unified modal system
@@ -81,10 +83,13 @@ export default function Occasions() {
     if (occasion) {
       setEditingOccasion(occasion);
       setFormData({ name: occasion.name, description: occasion.description || "" });
+      setImagePreview(occasion.image || null);
     } else {
       setEditingOccasion(null);
       setFormData(INITIAL_FORM);
+      setImagePreview(null);
     }
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -109,21 +114,29 @@ export default function Occasions() {
         setSubmitting(true);
         closeModal();
 
-        const payload = {
-          name: formData.name,
-          description: formData.description,
-          slug: editingOccasion ? editingOccasion.slug : slug,
-        };
-
         try {
           const url = editingOccasion
             ? `${API_ENDPOINTS.occasions}/${editingOccasion.id}`
             : API_ENDPOINTS.occasions;
           const method = editingOccasion ? "PUT" : "POST";
+          const token = localStorage.getItem("accessToken");
+
+          const formDataToSend = new FormData();
+          formDataToSend.append("name", formData.name);
+          if (formData.description) {
+            formDataToSend.append("description", formData.description);
+          }
+          formDataToSend.append("slug", editingOccasion ? editingOccasion.slug : slug);
+          if (imageFile) {
+            formDataToSend.append("image", imageFile);
+          }
+
           const res = await fetch(url, {
             method,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formDataToSend,
           });
 
           if (res.ok) {
@@ -289,6 +302,9 @@ export default function Occasions() {
                 ID
               </th>
               <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                Image
+              </th>
+              <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                 Occasion Name
               </th>
               <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
@@ -320,6 +336,13 @@ export default function Occasions() {
                     <span className="font-mono text-xs text-[#800020] bg-[#800020]/10 px-2 py-1 rounded font-bold">
                       #{occasion.id}
                     </span>
+                  </td>
+                  <td className="px-4 py-4">
+                    {occasion.image ? (
+                      <img src={occasion.image} alt={occasion.name} className="w-10 h-10 rounded object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No img</div>
+                    )}
                   </td>
                   <td className="px-4 py-4">
                     <span className="font-bold text-[#4A3F35]">{occasion.name}</span>
@@ -402,6 +425,27 @@ export default function Occasions() {
                   placeholder="Describe this occasion..."
                 />
               </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Image {editingOccasion ? "" : "*"}
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                      setImagePreview(URL.createObjectURL(e.target.files[0]));
+                    }
+                  }}
+                  className="w-full mt-1.5 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                />
+                {imagePreview && (
+                  <div className="mt-2">
+                    <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded" />
+                  </div>
+                )}
+              </div>
               <div className="flex justify-end gap-3 pt-4 border-t mt-6">
                 <button
                   type="button"
@@ -412,7 +456,7 @@ export default function Occasions() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting || !formData.name.trim()}
+                  disabled={submitting || !formData.name.trim() || (!editingOccasion && !imageFile)}
                   className="px-5 py-2 bg-[#800020] text-white font-bold rounded-lg flex items-center gap-2 hover:bg-[#6b001a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}

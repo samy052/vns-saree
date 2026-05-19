@@ -22,41 +22,32 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   },
 });
 
+const runSchemaSync = async () => {
+  const syncMode = (process.env.DB_SYNC || "none").trim().toLowerCase();
+  if (syncMode === "alter") {
+    console.log("Database schema sync started in alter mode.");
+    await sequelize.sync({ alter: true });
+    console.log("Database schema synchronized with alter mode.");
+    return;
+  }
+
+  if (syncMode === "create" || syncMode === "true") {
+    console.log("Database schema sync started in create-only mode.");
+    await sequelize.sync();
+    console.log("Database schema synchronized in create-only mode.");
+    return;
+  }
+
+  console.log("Database schema sync skipped. Set DB_SYNC=alter only when schema changes need to be applied.");
+};
+
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log("PostgreSQL connected successfully.");
 
-    // Schema has been updated manually. sync() will create tables if they don't exist.
-    // await sequelize.sync(); 
-    await sequelize.sync({ alter: true });
-
-    console.log("Database schema synchronized.");
-
-    // Keep schema compatible when new optional product columns are introduced.
-    await sequelize.query(`
-      ALTER TABLE "vns_saree"."products"
-      ADD COLUMN IF NOT EXISTS "product_images_by_color" JSONB DEFAULT '{}'::jsonb
-    `);
-    await sequelize.query(`
-      ALTER TABLE "vns_saree"."products"
-      ADD COLUMN IF NOT EXISTS "cover_image_url" VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS "badge" VARCHAR(50) DEFAULT 'New Arrival'
-    `);
-    await sequelize.query(`
-      ALTER TABLE "vns_saree"."carts"
-      ADD COLUMN IF NOT EXISTS "colorId" INTEGER REFERENCES "vns_saree"."colors"("id")
-    `);
-    await sequelize.query(`
-      ALTER TABLE "vns_saree"."customers"
-      ADD COLUMN IF NOT EXISTS "reset_otp" VARCHAR(6),
-      ADD COLUMN IF NOT EXISTS "reset_otp_expiry" TIMESTAMP
-    `);
-    await sequelize.query(`
-      ALTER TABLE "vns_saree"."admins"
-      ADD COLUMN IF NOT EXISTS "reset_otp" VARCHAR(6),
-      ADD COLUMN IF NOT EXISTS "reset_otp_expiry" TIMESTAMP
-    `);
+    await runSchemaSync();
+  
   } catch (error) {
     console.error("Unable to connect to the database:", error);
     process.exit(1);

@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { Component } from 'react';
 
 class ErrorBoundary extends Component {
@@ -29,11 +30,11 @@ class ErrorBoundary extends Component {
         <div className="min-h-screen flex items-center justify-center bg-[#F5F1E8] px-4">
           <div className="text-center max-w-md">
             <div className="mb-6">
-              <iconify-icon 
+              <Icon 
                 icon="lucide:alert-triangle" 
                 className="text-6xl text-[#800020]"
                 aria-label="Error icon"
-              ></iconify-icon>
+              ></Icon>
             </div>
             <h1 className="text-3xl font-bold text-[#800020] mb-4 brand-font">
               Something Went Wrong
@@ -74,3 +75,4 @@ class ErrorBoundary extends Component {
 }
 
 export default ErrorBoundary;
+

@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
@@ -226,9 +227,9 @@ const ProductDetail = () => {
         <nav className="flex text-[10px] uppercase tracking-widest text-[#3D2817]/60 mb-6" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li><Link to="/" className="hover:text-[#800020]">Home</Link></li>
-            <iconify-icon icon="lucide:chevron-right"></iconify-icon>
+            <Icon icon="lucide:chevron-right"></Icon>
             <li><Link to="/collection" className="hover:text-[#800020]">Collections</Link></li>
-            <iconify-icon icon="lucide:chevron-right"></iconify-icon>
+            <Icon icon="lucide:chevron-right"></Icon>
             <li className="text-[#800020] font-bold">{product.name}</li>
           </ol>
         </nav>
@@ -239,7 +240,7 @@ const ProductDetail = () => {
               <div className="product-3d-frame relative bg-white rounded-xl shadow-2xl overflow-hidden border border-[#D4AF37]/20 group zoom-container" ref={frameRef}>
                 <img src={mainImage} alt={product.name} className="w-full h-full object-contain zoom-image" />
                 <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-md p-2 rounded-full text-white pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                  <iconify-icon icon="lucide:rotate-3d" className="text-xl"></iconify-icon>
+                  <Icon icon="lucide:rotate-3d" className="text-xl"></Icon>
                 </div>
                 {product.discount_percent > 0 && (
                   <div className="absolute top-6 left-6 bg-[#800020] text-[#D4AF37] px-4 py-1 font-bold text-sm tracking-widest shadow-lg">
@@ -275,11 +276,11 @@ const ProductDetail = () => {
               </p>
               <div className="flex items-center space-x-2">
                 <div className="flex text-[#D4AF37]">
-                  <iconify-icon icon="mdi:star"></iconify-icon>
-                  <iconify-icon icon="mdi:star"></iconify-icon>
-                  <iconify-icon icon="mdi:star"></iconify-icon>
-                  <iconify-icon icon="mdi:star"></iconify-icon>
-                  <iconify-icon icon="mdi:star-half"></iconify-icon>
+                  <Icon icon="mdi:star"></Icon>
+                  <Icon icon="mdi:star"></Icon>
+                  <Icon icon="mdi:star"></Icon>
+                  <Icon icon="mdi:star"></Icon>
+                  <Icon icon="mdi:star-half"></Icon>
                 </div>
                 <span className="text-xs font-semibold text-gray-500">4.8 (124 Reviews)</span>
               </div>
@@ -324,15 +325,15 @@ const ProductDetail = () => {
             <div className="space-y-4 mb-8">
               <div className="flex flex-col md:flex-row gap-4 items-center">
                 <div className="flex items-center border border-[#800020]/20 rounded-sm bg-white overflow-hidden">
-                  <button onClick={decrementQty} className="w-10 h-12 flex items-center justify-center hover:bg-[#800020] hover:text-white transition-colors"><iconify-icon icon="lucide:minus"></iconify-icon></button>
+                  <button onClick={decrementQty} className="w-10 h-12 flex items-center justify-center hover:bg-[#800020] hover:text-white transition-colors"><Icon icon="lucide:minus"></Icon></button>
                   <input type="number" value={quantity} readOnly className="w-12 h-12 text-center bg-transparent font-bold focus:ring-0 border-none" />
-                  <button onClick={incrementQty} className="w-10 h-12 flex items-center justify-center hover:bg-[#800020] hover:text-white transition-colors"><iconify-icon icon="lucide:plus"></iconify-icon></button>
+                  <button onClick={incrementQty} className="w-10 h-12 flex items-center justify-center hover:bg-[#800020] hover:text-white transition-colors"><Icon icon="lucide:plus"></Icon></button>
                 </div>
                 <button
                   onClick={handleAddToCart}
                   className="flex-1 h-12 bg-[#800020] text-[#D4AF37] flex items-center justify-center font-bold tracking-[0.2em] rounded-sm shadow-xl hover:bg-[#3D2817] transition-all transform hover:-translate-y-1 active:scale-95 group w-full md:w-auto"
                 >
-                  <iconify-icon icon="lucide:shopping-bag" className="text-xl mr-3 group-hover:scale-110 transition-transform"></iconify-icon>
+                  <Icon icon="lucide:shopping-bag" className="text-xl mr-3 group-hover:scale-110 transition-transform"></Icon>
                   ADD TO BAG
                 </button>
               </div>
@@ -342,11 +343,11 @@ const ProductDetail = () => {
                   onClick={handleWishlist}
                   className={`flex items-center text-sm font-semibold transition-colors ${isInWishlist(product?.id) ? 'text-red-600' : 'hover:text-[#800020]'}`}
                 >
-                  <iconify-icon icon={isInWishlist(product?.id) ? "mdi:heart" : "lucide:heart"} className="text-lg mr-2"></iconify-icon>
+                  <Icon icon={isInWishlist(product?.id) ? "mdi:heart" : "lucide:heart"} className="text-lg mr-2"></Icon>
                   {isInWishlist(product?.id) ? 'In Wishlist' : 'Save to Wishlist'}
                 </button>
                 <button className="flex items-center text-sm font-semibold hover:text-[#800020] transition-colors">
-                  <iconify-icon icon="lucide:share-2" className="text-lg mr-2"></iconify-icon>
+                  <Icon icon="lucide:share-2" className="text-lg mr-2"></Icon>
                   Share Piece
                 </button>
               </div>
@@ -368,7 +369,7 @@ const ProductDetail = () => {
                 <div key={item.id} className={`border-b border-[#D4AF37]/20 py-4 ${activeAccordion === item.id ? "active" : ""}`}>
                   <button onClick={() => toggleAccordion(item.id)} className="w-full flex items-center justify-between text-left">
                     <span className="brand-font font-bold text-lg tracking-wider uppercase">{item.title}</span>
-                    <iconify-icon icon="lucide:chevron-down" className={`transition-transform duration-300 ${activeAccordion === item.id ? "rotate-180" : ""}`}></iconify-icon>
+                    <Icon icon="lucide:chevron-down" className={`transition-transform duration-300 ${activeAccordion === item.id ? "rotate-180" : ""}`}></Icon>
                   </button>
                   <div className={`accordion-content overflow-hidden transition-all duration-400 ${activeAccordion === item.id ? "max-h-[500px] mt-4" : "max-h-0"}`}>
                     <div className="text-sm text-gray-600 leading-relaxed">{item.content}</div>
@@ -401,3 +402,4 @@ const ProductDetail = () => {
 };
 
 export default ProductDetail;
+

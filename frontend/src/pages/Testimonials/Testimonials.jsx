@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { useEffect } from "react";
 import "./Testimonials.css";
 
@@ -137,10 +138,10 @@ const Testimonials = () => {
                     {/* Play Button */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg animate-pulse-slow">
-                        <iconify-icon
+                        <Icon
                           icon="lucide:play"
                           className="text-xl text-[#800020] ml-0.5"
-                        ></iconify-icon>
+                        ></Icon>
                       </div>
                     </div>
 
@@ -154,17 +155,17 @@ const Testimonials = () => {
                       </p>
                       <div className="flex items-center gap-3 mt-2 text-white/80 text-xs">
                         <span className="flex items-center gap-1">
-                          <iconify-icon
+                          <Icon
                             icon="lucide:heart"
                             className="text-[10px]"
-                          ></iconify-icon>
+                          ></Icon>
                           {video.likes}
                         </span>
                         <span className="flex items-center gap-1">
-                          <iconify-icon
+                          <Icon
                             icon="lucide:eye"
                             className="text-[10px]"
-                          ></iconify-icon>
+                          ></Icon>
                           {video.views}
                         </span>
                       </div>
@@ -195,10 +196,10 @@ const Testimonials = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#800020] via-transparent to-transparent opacity-80"></div>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg animate-pulse-slow">
-                        <iconify-icon
+                        <Icon
                           icon="lucide:play"
                           className="text-xl text-[#800020] ml-0.5"
-                        ></iconify-icon>
+                        ></Icon>
                       </div>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -210,17 +211,17 @@ const Testimonials = () => {
                       </p>
                       <div className="flex items-center gap-3 mt-2 text-white/80 text-xs">
                         <span className="flex items-center gap-1">
-                          <iconify-icon
+                          <Icon
                             icon="lucide:heart"
                             className="text-[10px]"
-                          ></iconify-icon>
+                          ></Icon>
                           {video.likes}
                         </span>
                         <span className="flex items-center gap-1">
-                          <iconify-icon
+                          <Icon
                             icon="lucide:eye"
                             className="text-[10px]"
-                          ></iconify-icon>
+                          ></Icon>
                           {video.views}
                         </span>
                       </div>
@@ -239,10 +240,10 @@ const Testimonials = () => {
           {/* Click Hint */}
           <div className="text-center mt-8">
             <p className="text-gray-500 text-sm flex items-center justify-center gap-2">
-              <iconify-icon
+              <Icon
                 icon="lucide:hand"
                 className="animate-bounce"
-              ></iconify-icon>
+              ></Icon>
               Click any video to watch full story
             </p>
           </div>
@@ -265,10 +266,10 @@ const Testimonials = () => {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#800020] text-[#D4AF37] font-bold rounded-full hover:bg-[#3D2817] transition-colors"
           >
-            <iconify-icon
+            <Icon
               icon="lucide:youtube"
               className="text-xl"
-            ></iconify-icon>
+            ></Icon>
             Subscribe to Our Channel
           </a>
         </div>
@@ -278,3 +279,4 @@ const Testimonials = () => {
 };
 
 export default Testimonials;
+

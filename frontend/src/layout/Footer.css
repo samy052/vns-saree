@@ -231,7 +231,7 @@
   line-height: 1;
 }
 
-.bk-footer-payment-row iconify-icon {
+.bk-footer-payment-row svg {
   font-size: 31px;
 }
 
@@ -250,15 +250,15 @@
   filter: drop-shadow(0 4px 6px rgba(70, 35, 13, 0.16));
 }
 
-.bk-footer-market-row iconify-icon {
+.bk-footer-market-row svg {
   font-size: 38px;
 }
 
-.bk-footer-market-flipkart iconify-icon {
+.bk-footer-market-flipkart svg {
   color: #2874f0;
 }
 
-.bk-footer-market-myntra iconify-icon {
+.bk-footer-market-myntra svg {
   color: #ff3f6c;
 }
 
@@ -343,3 +343,4 @@
     width: min(260px, 72vw);
   }
 }
+

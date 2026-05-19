@@ -1,6 +1,32 @@
 import { Link } from "react-router-dom";
+import "./CraftSection.css";
 
-const CraftSection = ({ panels }) => (
+const craftSectionImages = import.meta.glob(
+  "../../../assets/craft/*.{png,jpg,jpeg,webp}",
+  { eager: true, import: "default" },
+);
+
+const getSectionImage = (images, name) => {
+  const entry = Object.entries(images).find(([path]) =>
+    path.toLowerCase().includes(name),
+  );
+  return entry?.[1] || "";
+};
+
+const CRAFT_PANELS = [
+  {
+    title: "Handloom",
+    text: "Woven by skilled artisans with love and heritage.",
+    image: getSectionImage(craftSectionImages, "handloom"),
+  },
+  {
+    title: "Powerloom",
+    text: "Crafted with precision for elegance and value.",
+    image: getSectionImage(craftSectionImages, "powerloom"),
+  },
+];
+
+const CraftSection = () => (
   <section className="bk-craft-section" aria-labelledby="craft-title">
     <div className="bk-craft-shell">
       <div className="bk-craft-copy">
@@ -20,7 +46,7 @@ const CraftSection = ({ panels }) => (
       </div>
 
       <div className="bk-craft-panels">
-        {panels.map((panel) => (
+        {CRAFT_PANELS.map((panel) => (
           <article className="bk-craft-panel" key={panel.title}>
             <div className="bk-craft-panel-head">
               <span className="bk-craft-loom-icon" aria-hidden="true">

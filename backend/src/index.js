@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const { config } = require("./config/env");
 
 const CategoryRoutes = require("./routes/CategoryRoutes");
 const VarietyRoutes = require("./routes/VarietyRoutes");
@@ -17,7 +18,7 @@ const FeedbackRoutes = require("./routes/FeedbackRoutes");
 const ShipRocketRoutes = require("./routes/ShipRocketRoutes");
 
 const parseCorsOrigins = () => {
-  const origins = process.env.CORS_ORIGINS;
+  const origins = config.corsOrigins;
   if (!origins || origins === "*") return true;
   return origins.split(",").map((origin) => origin.trim()).filter(Boolean);
 };
@@ -31,7 +32,7 @@ app.get("/", (req, res) => {
   res.json({
     name: "VNS Saree API",
     status: "ok",
-    environment: process.env.NODE_ENV || "development",
+    environment: config.nodeEnv,
   });
 });
 
@@ -78,7 +79,7 @@ app.use((req, res) => {
 app.use((error, req, res, next) => {
   console.error("Unhandled API error:", error);
   res.status(error.status || 500).json({
-    message: process.env.NODE_ENV === "production"
+    message: config.isProduction
       ? "Internal server error"
       : error.message,
   });

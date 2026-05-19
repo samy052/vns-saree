@@ -1,4 +1,17 @@
 import { useState } from "react";
+import "./FaqSection.css";
+
+const storySectionImages = import.meta.glob(
+  "../../../assets/story/*.{png,jpg,jpeg,webp}",
+  { eager: true, import: "default" },
+);
+
+const getSectionImage = (name) => {
+  const entry = Object.entries(storySectionImages).find(([path]) =>
+    path.toLowerCase().includes(name),
+  );
+  return entry?.[1] || "";
+};
 
 const FAQ_ITEMS = [
   ["How long does delivery take?", "Orders usually arrive within 5-7 business days."],
@@ -9,8 +22,9 @@ const FAQ_ITEMS = [
   ["Do you ship internationally?", "International shipping is available for selected locations."],
 ];
 
-const FaqSection = ({ background }) => {
+const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState(null);
+  const background = getSectionImage("banaras-ghat");
 
   const toggleItem = (index) => {
     setOpenIndex((current) => (current === index ? null : index));

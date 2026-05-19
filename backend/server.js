@@ -1,11 +1,11 @@
 const dns = require("dns");
 const cron = require("node-cron");
-require("dotenv").config();
 
 const app = require("./src");
 const { connectDB } = require("./src/config/db");
+const { config } = require("./src/config/env");
 
-const PORT = process.env.PORT || 5003;
+const PORT = config.port;
 
 if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder("ipv4first");
@@ -44,7 +44,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log(`Environment: ${config.nodeEnv}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);

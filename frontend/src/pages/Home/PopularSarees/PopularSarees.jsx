@@ -1,15 +1,49 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { API_ENDPOINTS } from "../../../config/api";
+import "./PopularSarees.css";
 
-const PopularSarees = ({
-  loading,
-  products,
-  wishlist,
-  onToggleWishlist,
-  calcDiscount,
-  getCoverImage,
-}) => {
+const calcDiscount = (mrp, sell) => {
+  if (!mrp || !sell || Number(mrp) <= Number(sell)) return 0;
+  return Math.round(((Number(mrp) - Number(sell)) / Number(mrp)) * 100);
+};
+
+const getCoverImage = (product) => {
+  const imgs = [...(product.images || []), ...(product.productImages || [])];
+  if (!imgs.length) return product.image_url || product.image || "";
+  return (imgs.find((img) => img.is_cover || img.is_primary) || imgs[0]).url;
+};
+
+const PopularSarees = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [wishlist, setWishlist] = useState({});
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(`${API_ENDPOINTS.products}?specialCollection=true&limit=20`, {
+      signal: controller.signal,
+    })
+      .then((response) => response.json())
+      .then((data) => setProducts((data.items || data).slice(0, 8)))
+      .catch((error) => {
+        if (error.name !== "AbortError") setProducts([]);
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, []);
+
+  const toggleWishlist = (id) => {
+    setWishlist((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   if (!loading && products.length === 0) return null;
 
   return (
@@ -112,7 +146,7 @@ const PopularSarees = ({
                         type="button"
                         onClick={(e) => {
                           e.preventDefault();
-                          onToggleWishlist(product.id);
+                          toggleWishlist(product.id);
                         }}
                         className="bk-popular-wishlist"
                         aria-label="Wishlist"

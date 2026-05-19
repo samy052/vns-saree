@@ -16,11 +16,18 @@ const Layout = () => {
     location.pathname === "/contact" ||
     isEmptyWishlistPage ||
     isUnauthedCartPage;
+  const isHomePage = location.pathname === "/";
 
   return (
     <>
       <Header />
-      <Outlet />
+      <div
+        className={`bk-layout-content ${
+          isHomePage ? "bk-layout-content-home" : ""
+        }`}
+      >
+        <Outlet />
+      </div>
       {!hideFooter && <Footer />}
     </>
   );

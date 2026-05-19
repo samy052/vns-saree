@@ -118,11 +118,11 @@
     gap: 2px;
 }
 
-.star-rating iconify-icon {
+.star-rating svg {
     transition: transform 0.2s ease;
 }
 
-.star-rating:hover iconify-icon {
+.star-rating:hover svg {
     transform: scale(1.2);
 }
 
@@ -276,3 +276,4 @@ html {
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(to bottom, #D4AF37, #800020);
 }
+

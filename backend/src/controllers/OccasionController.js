@@ -1,4 +1,5 @@
 const OccasionService = require('../services/OccasionService');
+const { uploadBufferToCloudinary } = require("../config/cloudinary");
 
 class OccasionController {
   async getAll(req, res) {
@@ -32,7 +33,14 @@ class OccasionController {
 
   async create(req, res) {
     try {
-      const occasion = await OccasionService.createOccasion(req.body);
+      let data = req.body;
+      if (req.file) {
+        const uploadResult = await uploadBufferToCloudinary(req.file.buffer);
+        data = { ...data, image: uploadResult.secure_url };
+      } else {
+        return res.status(400).json({ message: "Image is mandatory for Occasion" });
+      }
+      const occasion = await OccasionService.createOccasion(data);
       res.status(201).json(occasion);
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -41,7 +49,12 @@ class OccasionController {
 
   async update(req, res) {
     try {
-      const occasion = await OccasionService.updateOccasion(req.params.id, req.body);
+      let data = req.body;
+      if (req.file) {
+        const uploadResult = await uploadBufferToCloudinary(req.file.buffer);
+        data = { ...data, image: uploadResult.secure_url };
+      }
+      const occasion = await OccasionService.updateOccasion(req.params.id, data);
       res.status(200).json(occasion);
     } catch (error) {
       res.status(400).json({ message: error.message });

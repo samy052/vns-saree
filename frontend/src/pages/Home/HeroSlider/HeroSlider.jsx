@@ -1,7 +1,42 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "./HeroSlider.css";
 
-const HeroSlider = ({ slides }) => (
+const heroDesktopSlides = import.meta.glob(
+  "../../../assets/hero/desktop/slide*.png",
+  { eager: true, import: "default" },
+);
+const heroPhoneSlides = import.meta.glob(
+  "../../../assets/hero/phone/slide*.png",
+  { eager: true, import: "default" },
+);
+
+const getSlideNumber = (path) => Number(path.match(/slide(\d+)\.png$/)?.[1]);
+const getSlideMap = (slides) =>
+  Object.fromEntries(
+    Object.entries(slides)
+      .map(([path, image]) => [getSlideNumber(path), image])
+      .filter(([id]) => Number.isFinite(id)),
+  );
+
+const desktopSlideMap = getSlideMap(heroDesktopSlides);
+const phoneSlideMap = getSlideMap(heroPhoneSlides);
+
+const HERO_SAREES = Object.keys(desktopSlideMap)
+  .map(Number)
+  .filter((id) => phoneSlideMap[id])
+  .sort((a, b) => a - b)
+  .map((id) => ({
+    id,
+    name: `Hero slide ${id}`,
+    image: desktopSlideMap[id],
+    mobileImage: phoneSlideMap[id],
+  }));
+
+const HeroSlider = () => (
   <div className="bk-hero-wrap">
     <Swiper
       modules={[Autoplay, Pagination, Navigation]}
@@ -15,7 +50,7 @@ const HeroSlider = ({ slides }) => (
       pagination={{ clickable: true }}
       className="hero-swiper bk-hero-swiper"
     >
-      {slides.map((slide) => (
+      {HERO_SAREES.map((slide) => (
         <SwiperSlide key={slide.id}>
           <picture>
             <source media="(max-width: 768px)" srcSet={slide.mobileImage} />

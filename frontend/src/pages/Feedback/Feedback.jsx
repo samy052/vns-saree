@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./Feedback.css";
 import { Star, Send, MessageSquare, Quote } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { API_ENDPOINTS } from "../../config/api";
 
 const Feedback = () => {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ const Feedback = () => {
     setMessage({ type: "", text: "" });
 
     try {
-      const response = await fetch("http://localhost:5003/api/feedback/submit", {
+      const response = await fetch(API_ENDPOINTS.feedbackSubmit, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

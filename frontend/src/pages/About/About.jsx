@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import "./About.css";
 
 const About = () => {
@@ -155,17 +156,17 @@ const About = () => {
           </h2>
           <div className="flex flex-col md:flex-row justify-center items-center gap-8 text-gray-700">
             <div className="flex items-center gap-3">
-              <iconify-icon
+              <Icon
                 icon="lucide:mail"
                 className="text-[#800020] text-xl"
-              ></iconify-icon>
+              ></Icon>
               <span>support@banarasikala.com</span>
             </div>
             <div className="flex items-center gap-3">
-              <iconify-icon
+              <Icon
                 icon="lucide:phone"
                 className="text-[#800020] text-xl"
-              ></iconify-icon>
+              ></Icon>
               <span>+91 98765 43210</span>
             </div>
           </div>
@@ -179,3 +180,4 @@ const About = () => {
 };
 
 export default About;
+

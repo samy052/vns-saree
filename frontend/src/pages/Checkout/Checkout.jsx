@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
@@ -131,7 +132,7 @@ const Checkout = () => {
         <div className="w-full px-4 lg:px-12">
           <div className="flex items-center justify-center mb-16 space-x-4 md:space-x-12 animate-slide-up">
             <div className="flex items-center space-x-3">
-              <span className="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-sm border border-green-200"><iconify-icon icon="lucide:check" /></span>
+              <span className="w-10 h-10 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-sm border border-green-200"><Icon icon="lucide:check" /></span>
               <span className="text-sm font-bold uppercase tracking-widest text-gray-500 hidden md:block">Cart</span>
             </div>
             <div className="w-12 h-px bg-gray-300"></div>
@@ -152,7 +153,7 @@ const Checkout = () => {
               <section className="bg-white rounded-2xl p-8 shadow-sm border border-[#D4AF37]/10 checkout-section">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-2xl font-bold text-[#3D2817] flex items-center brand-font">
-                    <iconify-icon icon="lucide:truck" className="mr-3 text-[#D4AF37]"></iconify-icon>
+                    <Icon icon="lucide:truck" className="mr-3 text-[#D4AF37]"></Icon>
                     Shipping Details
                   </h2>
                 </div>
@@ -198,12 +199,12 @@ const Checkout = () => {
               </section>
 
               <section className="bg-white rounded-2xl p-8 shadow-sm border border-[#D4AF37]/10 checkout-section">
-                <h2 className="text-2xl font-bold text-[#3D2817] mb-8 flex items-center brand-font"><iconify-icon icon="lucide:credit-card" className="mr-3 text-[#D4AF37]" />Payment Options</h2>
+                <h2 className="text-2xl font-bold text-[#3D2817] mb-8 flex items-center brand-font"><Icon icon="lucide:credit-card" className="mr-3 text-[#D4AF37]" />Payment Options</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {["card", "upi", "net"].map(method => (
                     <div key={method} className={`payment-card cursor-pointer group`} onClick={() => setActivePayment(method)}>
                       <div className={`p-6 border-2 rounded-xl flex flex-col items-center transition-all ${activePayment === method ? "border-[#800020] bg-white shadow-lg" : "border-[#D4AF37]/10 bg-[#F5F1E8]/30"}`}>
-                        <iconify-icon icon={method === 'card' ? "lucide:credit-card" : method === 'upi' ? "simple-icons:phonepe" : "lucide:landmark"} className={`text-3xl mb-4 ${activePayment === method ? "text-[#800020]" : "text-[#D4AF37]"}`} />
+                        <Icon icon={method === 'card' ? "lucide:credit-card" : method === 'upi' ? "simple-icons:phonepe" : "lucide:landmark"} className={`text-3xl mb-4 ${activePayment === method ? "text-[#800020]" : "text-[#D4AF37]"}`} />
                         <span className="font-bold text-[#3D2817] capitalize">{method} Payment</span>
                       </div>
                     </div>
@@ -236,7 +237,7 @@ const Checkout = () => {
 
                     {appliedCoupon && (
                       <div className="flex justify-between items-center text-xs text-emerald-600 font-bold">
-                        <div className="flex items-center gap-1"><iconify-icon icon="lucide:ticket" /><span>COUPON ({appliedCoupon.code})</span></div>
+                        <div className="flex items-center gap-1"><Icon icon="lucide:ticket" /><span>COUPON ({appliedCoupon.code})</span></div>
                         <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
                       </div>
                     )}
@@ -272,3 +273,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+

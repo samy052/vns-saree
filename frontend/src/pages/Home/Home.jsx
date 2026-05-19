@@ -1,203 +1,107 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Award,
-  HandHeart,
-  Landmark,
-  RotateCcw,
-  ShieldCheck,
-  Truck,
-} from "lucide-react";
-import chiffonImg from "../../assets/fabric/chiffon.png";
-import cottonSilkImg from "../../assets/fabric/cotton_silk.png";
-import georgetteImg from "../../assets/fabric/georgette.png";
-import katanSilkImg from "../../assets/fabric/katan_silk.png";
-import khaddiImg from "../../assets/fabric/khaddi.png";
-import organzaImg from "../../assets/fabric/organza.png";
-import satinSilkImg from "../../assets/fabric/satan_silk.png";
-import tissueImg from "../../assets/fabric/tissue.png";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import headerBackground from "../../assets/header_backgroung.png";
-import flatOfferBackground from "../../assets/flat/image.png";
-import { API_ENDPOINTS } from "../../config/api";
-import CategoryStrip from "./sections/CategoryStrip";
-import CraftSection from "./sections/CraftSection";
-import FaqSection from "./sections/FaqSection";
-import HeroSlider from "./sections/HeroSlider";
-import OfferBand from "./sections/OfferBand";
-import PopularSarees from "./sections/PopularSarees";
-import ReviewsStory from "./sections/ReviewsStory";
-import WhyChooseUs from "./sections/WhyChooseUs";
+import CategoryStrip from "./CategoryStrip/CategoryStrip";
+import HeroSlider from "./HeroSlider/HeroSlider";
+import OfferBand from "./OfferBand/OfferBand";
 import "./Home.css";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
-const heroDesktopSlides = import.meta.glob(
-  "../../assets/hero/desktop/slide*.png",
-  { eager: true, import: "default" },
-);
-const heroPhoneSlides = import.meta.glob("../../assets/hero/phone/slide*.png", {
-  eager: true,
-  import: "default",
-});
-const craftSectionImages = import.meta.glob(
-  "../../assets/craft/*.{png,jpg,jpeg,webp}",
-  { eager: true, import: "default" },
-);
-const storySectionImages = import.meta.glob(
-  "../../assets/story/*.{png,jpg,jpeg,webp}",
-  { eager: true, import: "default" },
-);
+const WhyChooseUs = lazy(() => import("./WhyChooseUs/WhyChooseUs"));
+const PopularSarees = lazy(() => import("./PopularSarees/PopularSarees"));
+const CraftSection = lazy(() => import("./CraftSection/CraftSection"));
+const ReviewsStory = lazy(() => import("./ReviewsStory/ReviewsStory"));
+const FaqSection = lazy(() => import("./FaqSection/FaqSection"));
 
-const getSlideNumber = (path) => Number(path.match(/slide(\d+)\.png$/)?.[1]);
-const getSlideMap = (slides) =>
-  Object.fromEntries(
-    Object.entries(slides)
-      .map(([path, image]) => [getSlideNumber(path), image])
-      .filter(([id]) => Number.isFinite(id)),
-  );
-
-const desktopSlideMap = getSlideMap(heroDesktopSlides);
-const phoneSlideMap = getSlideMap(heroPhoneSlides);
-
-const HERO_SAREES = Object.keys(desktopSlideMap)
-  .map(Number)
-  .filter((id) => phoneSlideMap[id])
-  .sort((a, b) => a - b)
-  .map((id) => ({
-    id,
-    name: `Hero slide ${id}`,
-    image: desktopSlideMap[id],
-    mobileImage: phoneSlideMap[id],
-  }));
-
-const FABRIC_CATEGORIES = [
-  { name: "Katan Silk", image: katanSilkImg },
-  { name: "Organza", image: organzaImg },
-  { name: "Tissue", image: tissueImg },
-  { name: "Chiffon", image: chiffonImg },
-  { name: "Georgette", image: georgetteImg },
-  { name: "Khaddi", image: khaddiImg },
-  { name: "Cotton Silk", image: cottonSilkImg },
-  { name: "Satin Silk", image: satinSilkImg },
-];
-
-const WHY_CHOOSE_US = [
-  { title: "100% Authentic", subtitle: "Banarasi Sarees", icon: Award },
-  { title: "Handpicked", subtitle: "Premium Quality", icon: HandHeart },
-  { title: "Secure", subtitle: "Payments", icon: ShieldCheck },
-  { title: "Easy", subtitle: "Returns", icon: RotateCcw },
-  { title: "Direct From", subtitle: "Banaras", icon: Landmark },
-  { title: "Fast & Reliable", subtitle: "Delivery", icon: Truck },
-];
-
-const getSectionImage = (images, name) => {
-  const entry = Object.entries(images).find(([path]) =>
-    path.toLowerCase().includes(name),
-  );
-  return entry?.[1] || "";
-};
-
-const CRAFT_PANELS = [
-  {
-    title: "Handloom",
-    text: "Woven by skilled artisans with love and heritage.",
-    image: getSectionImage(craftSectionImages, "handloom"),
-  },
-  {
-    title: "Powerloom",
-    text: "Crafted with precision for elegance and value.",
-    image: getSectionImage(craftSectionImages, "powerloom"),
-  },
-];
-
-const BANARAS_STORY_IMAGES = {
-  weave: getSectionImage(storySectionImages, "banaras-weave"),
-  ghat: getSectionImage(storySectionImages, "banaras-ghat"),
-};
-
-const Home = () => {
-  const navigate = useNavigate();
-
-  const [products, setProducts] = useState([]);
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [coupons, setCoupons] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [wishlist, setWishlist] = useState({});
+const DeferredSection = ({ children, minHeight = 240, canObserve = false }) => {
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_ENDPOINTS.coupons}/homepage`)
-      .then((r) => r.json())
-      .then((d) => setCoupons(Array.isArray(d) ? d : []))
-      .catch(() => {});
+    const section = sectionRef.current;
+    if (!section || isVisible || !canObserve) return undefined;
 
-    fetch(`${API_ENDPOINTS.products}?specialCollection=true&limit=20`)
-      .then((r) => r.json())
-      .then((d) => setProducts((d.items || d).slice(0, 8)))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "80px 0px", threshold: 0.01 },
+    );
 
-    fetch(`${API_ENDPOINTS.feedback}/approved`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setFeedbacks(d.data || []);
-      })
-      .catch(() => {});
-  }, []);
-
-  const selectFabric = (name) => {
-    navigate(`/collection?fabric=${encodeURIComponent(name)}`);
-  };
-
-  const toggleWishlist = (id) => {
-    setWishlist((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const calcDiscount = (mrp, sell) => {
-    if (!mrp || !sell || Number(mrp) <= Number(sell)) return 0;
-    return Math.round(((Number(mrp) - Number(sell)) / Number(mrp)) * 100);
-  };
-
-  const getCoverImage = (product) => {
-    const imgs = [...(product.images || []), ...(product.productImages || [])];
-    if (!imgs.length) return product.image_url || product.image || "";
-    return (imgs.find((img) => img.is_cover || img.is_primary) || imgs[0]).url;
-  };
-
-  const coupon = coupons[0] || null;
-  const fabricMarqueeCategories = [...FABRIC_CATEGORIES, ...FABRIC_CATEGORIES];
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [canObserve, isVisible]);
 
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden bg-[#F5ECD7]"
+      ref={sectionRef}
+      className="home-deferred-section"
+      style={{ minHeight: isVisible ? undefined : minHeight }}
+    >
+      {isVisible && (
+        <Suspense fallback={<div className="home-section-loader" />}>
+          {children}
+        </Suspense>
+      )}
+    </div>
+  );
+};
+
+const Home = () => {
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  useEffect(() => {
+    const enableDeferredSections = () => setHasScrolled(true);
+
+    window.addEventListener("scroll", enableDeferredSections, {
+      passive: true,
+      once: true,
+    });
+    window.addEventListener("wheel", enableDeferredSections, {
+      passive: true,
+      once: true,
+    });
+    window.addEventListener("touchmove", enableDeferredSections, {
+      passive: true,
+      once: true,
+    });
+
+    return () => {
+      window.removeEventListener("scroll", enableDeferredSections);
+      window.removeEventListener("wheel", enableDeferredSections);
+      window.removeEventListener("touchmove", enableDeferredSections);
+    };
+  }, []);
+
+  return (
+    <div
+      className="home-page"
       style={{
         "--bk-section-bg": `url(${headerBackground})`,
         "--bk-header-bg": `url(${headerBackground})`,
       }}
     >
-      <main>
-        <CategoryStrip
-          categories={FABRIC_CATEGORIES}
-          marqueeCategories={fabricMarqueeCategories}
-          onSelectFabric={selectFabric}
-        />
-        <OfferBand coupon={coupon} background={flatOfferBackground} />
-        <HeroSlider slides={HERO_SAREES} />
-        <WhyChooseUs items={WHY_CHOOSE_US} />
-        <PopularSarees
-          loading={loading}
-          products={products}
-          wishlist={wishlist}
-          onToggleWishlist={toggleWishlist}
-          calcDiscount={calcDiscount}
-          getCoverImage={getCoverImage}
-        />
-        <CraftSection panels={CRAFT_PANELS} />
-        <ReviewsStory
-          storyImages={BANARAS_STORY_IMAGES}
-          reviews={feedbacks}
-        />
-        <FaqSection background={BANARAS_STORY_IMAGES.ghat} />
+      <main className="bk-home-main">
+        <CategoryStrip />
+        <OfferBand />
+        <HeroSlider />
+
+        <DeferredSection minHeight={150} canObserve={hasScrolled}>
+          <WhyChooseUs />
+        </DeferredSection>
+        <DeferredSection minHeight={360} canObserve={hasScrolled}>
+          <PopularSarees />
+        </DeferredSection>
+        <DeferredSection minHeight={420} canObserve={hasScrolled}>
+          <CraftSection />
+        </DeferredSection>
+        <DeferredSection minHeight={520} canObserve={hasScrolled}>
+          <ReviewsStory />
+        </DeferredSection>
+        <DeferredSection minHeight={220} canObserve={hasScrolled}>
+          <FaqSection />
+        </DeferredSection>
       </main>
     </div>
   );

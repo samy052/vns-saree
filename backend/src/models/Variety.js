@@ -31,6 +31,10 @@ const Variety = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: "varieties",

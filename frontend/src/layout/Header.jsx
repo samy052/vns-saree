@@ -3,20 +3,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+import { API_ENDPOINTS, CATALOG_CATEGORY_SLUGS } from "../config/api";
 import verticalLogo from "../assets/vertical_logo.png";
 import headerBackground from "../assets/header_backgroung.png";
 import "./Header.css";
-
-const SAREE_TYPES = [
-  "Katan Silk",
-  "Organza",
-  "Tissue",
-  "Chiffon",
-  "Georgette",
-  "Khaddi",
-  "Cotton Silk",
-  "Satin Silk",
-];
 
 const Header = () => {
   const navigate = useNavigate();
@@ -30,6 +20,8 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState("");
   const [footerVisible, setFooterVisible] = useState(false);
+  const [sareeVarieties, setSareeVarieties] = useState([]);
+  const [sareeVarietiesStatus, setSareeVarietiesStatus] = useState("idle");
   const sareeMenuRef = useRef(null);
   const profileMenuRef = useRef(null);
 
@@ -49,6 +41,47 @@ const Header = () => {
 
     observer.observe(footer);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchSareeVarieties = async () => {
+      setSareeVarietiesStatus("loading");
+
+      try {
+        const response = await fetch(
+          API_ENDPOINTS.varietiesByCategory(CATALOG_CATEGORY_SLUGS.banarasiSaree),
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          throw new Error("Unable to load saree varieties");
+        }
+
+        const data = await response.json();
+        const varieties = Array.isArray(data)
+          ? data
+              .filter((item) => item?.id && item?.name)
+              .map((item) => ({
+                id: item.id,
+                name: item.name,
+              }))
+          : [];
+
+        setSareeVarieties(varieties);
+        setSareeVarietiesStatus("success");
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setSareeVarieties([]);
+          setSareeVarietiesStatus("error");
+        }
+      }
+    };
+
+    fetchSareeVarieties();
+
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -160,15 +193,26 @@ const Header = () => {
             </button>
             {sareeOpen && (
               <div className="bk-dropdown">
-                {SAREE_TYPES.map((name) => (
-                  <Link
-                    key={name}
-                    to={`/collection?fabric=${encodeURIComponent(name)}`}
-                    onClick={closeMenus}
-                  >
-                    {name}
-                  </Link>
-                ))}
+                {sareeVarietiesStatus === "loading" && (
+                  <span className="bk-dropdown-status">Loading sarees...</span>
+                )}
+                {sareeVarietiesStatus === "error" && (
+                  <span className="bk-dropdown-status">Unable to load sarees</span>
+                )}
+                {sareeVarietiesStatus === "success" &&
+                  sareeVarieties.map((variety) => (
+                    <Link
+                      key={variety.id}
+                      to={`/collection?variety=${variety.id}`}
+                      onClick={closeMenus}
+                    >
+                      {variety.name}
+                    </Link>
+                  ))}
+                {sareeVarietiesStatus === "success" &&
+                  sareeVarieties.length === 0 && (
+                    <span className="bk-dropdown-status">No sarees found</span>
+                  )}
               </div>
             )}
           </div>

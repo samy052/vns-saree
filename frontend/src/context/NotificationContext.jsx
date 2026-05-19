@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { createContext, useContext, useState, useCallback } from 'react';
 
 const NotificationContext = createContext();
@@ -25,10 +26,10 @@ export const NotificationProvider = ({ children }) => {
               : 'bg-[#800020] text-[#D4AF37] border-[#D4AF37]/30 shadow-red-900/40'
           }`}>
             <div className="flex-shrink-0 bg-white/20 p-2 rounded-full">
-              <iconify-icon 
+              <Icon 
                 icon={notification.type === 'success' ? "lucide:sparkles" : "lucide:info"} 
                 className="text-2xl animate-pulse"
-              ></iconify-icon>
+              ></Icon>
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-black uppercase tracking-[0.15em] drop-shadow-md">
@@ -39,7 +40,7 @@ export const NotificationProvider = ({ children }) => {
               onClick={() => setNotification(null)}
               className="ml-4 p-1 hover:bg-white/10 rounded-full transition-colors"
             >
-              <iconify-icon icon="lucide:x" className="text-lg"></iconify-icon>
+              <Icon icon="lucide:x" className="text-lg"></Icon>
             </button>
           </div>
         </div>
@@ -47,3 +48,4 @@ export const NotificationProvider = ({ children }) => {
     </NotificationContext.Provider>
   );
 };
+

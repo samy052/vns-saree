@@ -1,6 +1,43 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { API_ENDPOINTS } from "../../../config/api";
+import "./ReviewsStory.css";
 
-const ReviewsStory = ({ storyImages, reviews }) => {
+const storySectionImages = import.meta.glob(
+  "../../../assets/story/*.{png,jpg,jpeg,webp}",
+  { eager: true, import: "default" },
+);
+
+const getSectionImage = (images, name) => {
+  const entry = Object.entries(images).find(([path]) =>
+    path.toLowerCase().includes(name),
+  );
+  return entry?.[1] || "";
+};
+
+const STORY_IMAGES = {
+  weave: getSectionImage(storySectionImages, "banaras-weave"),
+  ghat: getSectionImage(storySectionImages, "banaras-ghat"),
+};
+
+const ReviewsStory = () => {
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(`${API_ENDPOINTS.feedback}/approved`, { signal: controller.signal })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) setReviews(data.data || []);
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") setReviews([]);
+      });
+
+    return () => controller.abort();
+  }, []);
+
   const hasReviews = reviews.length > 0;
 
   return (
@@ -8,14 +45,14 @@ const ReviewsStory = ({ storyImages, reviews }) => {
       <div
         className="bk-banaras-story"
         style={{
-          "--bk-story-ghat": storyImages.ghat
-            ? `url(${storyImages.ghat})`
+          "--bk-story-ghat": STORY_IMAGES.ghat
+            ? `url(${STORY_IMAGES.ghat})`
             : "none",
         }}
       >
         <div className="bk-story-image">
-          {storyImages.weave && (
-            <img src={storyImages.weave} alt="Banarasi artisan weaving saree" />
+          {STORY_IMAGES.weave && (
+            <img src={STORY_IMAGES.weave} alt="Banarasi artisan weaving saree" />
           )}
         </div>
         <div className="bk-story-copy">
