@@ -46,10 +46,10 @@ api.interceptors.response.use(
           // Refresh token expired or invalid
           localStorage.clear();
           sessionStorage.clear();
-          window.location.href = '/login';
+          window.location.href = "/login?refresh=session";
         }
       } else {
-        window.location.href = '/login';
+        window.location.href = "/login?refresh=session";
       }
     }
     return Promise.reject(error);

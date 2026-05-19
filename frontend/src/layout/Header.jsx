@@ -1,579 +1,395 @@
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
-import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
-import { useState, useEffect } from "react";
+import verticalLogo from "../assets/vertical_logo.png";
+import headerBackground from "../assets/header_backgroung.png";
 import "./Header.css";
 
-const Header = ({ activeItem }) => {
-  const { getCartCount } = useCart();
-  const { getWishlistCount } = useWishlist();
-  const { user, logout } = useAuth();
+const SAREE_TYPES = [
+  "Katan Silk",
+  "Organza",
+  "Tissue",
+  "Chiffon",
+  "Georgette",
+  "Khaddi",
+  "Cotton Silk",
+  "Satin Silk",
+];
+
+const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [policyOpen, setPolicyOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const { getCartCount } = useCart();
+  const { getWishlistCount } = useWishlist();
 
-  // Lock body scroll when mobile menu is open
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [mobileMenuOpen]);
+  const [sareeOpen, setSareeOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState("");
+  const [footerVisible, setFooterVisible] = useState(false);
+  const sareeMenuRef = useRef(null);
+  const profileMenuRef = useRef(null);
 
   const isAuthPage = location.pathname === "/login";
   const userName = user?.name || "User";
   const firstName = userName.split(" ")[0];
   const userPhone = user?.phone || "Welcome to Banarasi Kala";
 
-  const isPolicyPage = [
-    "/privacy-policy",
-    "/refund-policy",
-    "/return-exchange",
-    "/shipping-policy",
-    "/terms-conditions",
-  ].includes(location.pathname);
+  useEffect(() => {
+    const footer = document.querySelector(".bk-footer");
+    if (!footer) return;
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const q = searchQuery.trim();
-    if (q) {
-      navigate(`/collection?search=${encodeURIComponent(q)}`);
-    } else {
-      navigate("/collection");
-    }
-    setSearchQuery("");
+    const observer = new IntersectionObserver(
+      ([entry]) => setFooterVisible(entry.isIntersecting),
+      { threshold: 0.02 },
+    );
+
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const closeFloatingMenus = (event) => {
+      if (
+        sareeMenuRef.current &&
+        !sareeMenuRef.current.contains(event.target)
+      ) {
+        setSareeOpen(false);
+      }
+
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", closeFloatingMenus);
+    document.addEventListener("touchstart", closeFloatingMenus);
+
+    return () => {
+      document.removeEventListener("mousedown", closeFloatingMenus);
+      document.removeEventListener("touchstart", closeFloatingMenus);
+    };
+  }, []);
+
+  const closeMenus = () => {
+    setMobileMenuOpen(false);
+    setProfileOpen(false);
+    setSareeOpen(false);
   };
 
-  const closeProfile = () => setProfileOpen(false);
+  const handleHeaderSearch = (e) => {
+    e.preventDefault();
+    const q = headerSearch.trim();
+    navigate(q ? `/collection?search=${encodeURIComponent(q)}` : "/collection");
+    setHeaderSearch("");
+    closeMenus();
+  };
 
   const handleLogout = () => {
     logout();
-    closeProfile();
+    closeMenus();
     navigate("/");
   };
 
   const goProtected = (path) => {
-    closeProfile();
+    closeMenus();
     if (user) {
       navigate(path);
-    } else {
-      navigate("/login", { state: { from: { pathname: path } } });
+      return;
     }
+    navigate(path);
+  };
+
+  const openLogin = (event) => {
+    event.preventDefault();
+    closeMenus();
+    window.dispatchEvent(new Event("auth:refresh"));
+    navigate("/login?refresh=login");
   };
 
   return (
-    <>
-      {/* Top Notification Bar with Marquee */}
-      <div className="bg-gradient-to-r from-[#800020] via-[#B8860B] to-[#800020] text-[#FFD700] text-[11px] py-3 px-4 lg:px-12 text-center tracking-[0.15em] uppercase font-bold overflow-hidden relative">
-        <div className="marquee-wrapper">
-          <span className="marquee-content">
-            Premium Banarasi Sarees at Best Prices | Free Shipping | Pure Silk |
-            Handcrafted with Love | Premium Quality Guaranteed | Shop Now
-          </span>
-          <span className="marquee-content">
-            Premium Banarasi Sarees at Best Prices | Free Shipping | Pure Silk |
-            Handcrafted with Love | Premium Quality Guaranteed | Shop Now
-          </span>
+    <header
+      className={`bk-header ${footerVisible ? "bk-header-footer-hidden" : ""}`}
+      style={{ "--bk-header-bg": `url(${headerBackground})` }}
+    >
+      <div className="bk-topline" aria-hidden="true">
+        <div className="bk-topline-track">
+          {[...Array(4)].map((_, index) => (
+            <p key={index}>Timeless Weaves. Unmatched Quality. Pure Banarasi.</p>
+          ))}
         </div>
       </div>
 
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b-2 border-[#D4AF37]/40 shadow-[0_4px_30px_rgba(128,0,32,0.15)] transition-all duration-500 relative">
-        <nav className="w-full px-4 lg:px-12 h-20 flex items-center justify-between">
-          {/* Left: Hamburger + Logo */}
-          <div className="flex items-center gap-3">
-            {/* Hamburger Menu Button - Mobile Only */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`lg:hidden flex flex-col items-center justify-center w-11 h-11 border-2 rounded-lg shadow-md space-y-1.5 focus:outline-none active:scale-95 transition-all ${mobileMenuOpen ? "bg-[#800020] border-white" : "bg-white border-[#D4AF37]"}`}
-              aria-label="Toggle menu"
-            >
-              <span
-                className={`block w-5 h-0.5 rounded-full transition-all duration-300 ${mobileMenuOpen ? "bg-white rotate-45 translate-y-2" : "bg-[#800020]"}`}
-              ></span>
-              <span
-                className={`block w-5 h-0.5 rounded-full transition-all duration-300 ${mobileMenuOpen ? "bg-white opacity-0" : "bg-[#800020]"}`}
-              ></span>
-              <span
-                className={`block w-5 h-0.5 rounded-full transition-all duration-300 ${mobileMenuOpen ? "bg-white -rotate-45 -translate-y-2" : "bg-[#800020]"}`}
-              ></span>
-            </button>
-
-            {/* Logo */}
-            <Link
-              to="/"
-              id="nav-logo-link"
-              className="flex items-center gap-2 group"
-            >
-              <div className="w-20 h-20 flex items-center justify-center group-hover:scale-105 transition-all duration-300 overflow-hidden">
-                <img
-                  src={logo}
-                  alt="VNS Saree Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </Link>
-          </div>
-
-          {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center space-x-10">
-            <Link
-              to="/"
-              className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "home" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
-            >
-              Home
-              <span
-                className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "home" ? "w-full" : "w-0 group-hover:w-full"}`}
-              ></span>
-            </Link>
-            <Link
-              to="/collection"
-              className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "collections" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
-            >
-              Shop
-              <span
-                className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "collections" ? "w-full" : "w-0 group-hover:w-full"}`}
-              ></span>
-            </Link>
-            <Link
-              to="/about"
-              className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "about" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
-            >
-              About
-              <span
-                className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "about" ? "w-full" : "w-0 group-hover:w-full"}`}
-              ></span>
-            </Link>
-            <Link
-              to="/contact"
-              className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "contact" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
-            >
-              Contact
-              <span
-                className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "contact" ? "w-full" : "w-0 group-hover:w-full"}`}
-              ></span>
-            </Link>
-            {/* Policy Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => setPolicyOpen(true)}
-              onMouseLeave={() => setPolicyOpen(false)}
-            >
-              <button
-                className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group flex items-center gap-1 ${isPolicyPage ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
-              >
-                Policy
-                <iconify-icon
-                  icon="lucide:chevron-down"
-                  className="text-sm"
-                ></iconify-icon>
-                <span
-                  className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${isPolicyPage ? "w-full" : "w-0 group-hover:w-full"}`}
-                ></span>
-              </button>
-
-              {policyOpen && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-[#D4AF37]/20 py-2 z-50">
-                  <Link
-                    to="/privacy-policy"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
-                  >
-                    Privacy Policy
-                  </Link>
-                  <Link
-                    to="/refund-policy"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
-                  >
-                    Refund Policy
-                  </Link>
-                  <Link
-                    to="/return-exchange"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
-                  >
-                    Return & Exchange
-                  </Link>
-                  <Link
-                    to="/shipping-policy"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
-                  >
-                    Shipping Policy
-                  </Link>
-                  <Link
-                    to="/terms-conditions"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#FFF8F0] hover:text-[#800020] transition-colors"
-                  >
-                    Terms & Conditions
-                  </Link>
-                </div>
-              )}
-            </div>
-            <Link
-              to="/testimonials"
-              className={`text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300 relative group ${activeItem === "blogs" ? "text-[#800020]" : "text-gray-600 hover:text-[#800020]"}`}
-            >
-              Blogs
-              <span
-                className={`absolute -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-[#D4AF37] transition-all duration-300 ${activeItem === "blogs" ? "w-full" : "w-0 group-hover:w-full"}`}
-              ></span>
-            </Link>
-          </div>
-
-          {/* Search & Actions */}
-          <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Search Form */}
-            <form
-              onSubmit={handleSearch}
-              className={`hidden md:flex items-center rounded-full border-2 transition-all duration-300 overflow-hidden ${
-                searchFocused
-                  ? "border-[#800020] bg-white shadow-lg shadow-[#800020]/10 w-72"
-                  : "border-[#D4AF37]/40 bg-white w-56"
-              }`}
-            >
-              <button
-                type="submit"
-                className={`pl-4 pr-2 flex items-center justify-center transition-colors ${
-                  searchFocused ? "text-[#800020]" : "text-gray-400"
-                }`}
-              >
-                <iconify-icon
-                  icon="lucide:search"
-                  className="text-base"
-                ></iconify-icon>
-              </button>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                placeholder="Search sarees, silk, wedding..."
-                className="bg-transparent border-none focus:ring-0 text-xs tracking-wider pr-4 py-2.5 w-full text-gray-700 placeholder:text-gray-400 outline-none"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="pr-3 text-gray-400 hover:text-[#800020] transition-colors"
-                >
-                  <iconify-icon
-                    icon="lucide:x"
-                    className="text-sm"
-                  ></iconify-icon>
-                </button>
-              )}
-            </form>
-
-            <div className="header-actions flex items-stretch text-gray-700">
-              {/* Mobile search icon */}
-              <button
-                onClick={() => navigate("/collection")}
-                className="md:hidden header-action-item hover:text-[#D4AF37]"
-              >
-                <iconify-icon
-                  icon="lucide:search"
-                  className="text-xl"
-                ></iconify-icon>
-                <span>Search</span>
-              </button>
-
-              {!isAuthPage && (
-                <div
-                  className="profile-hover-wrap"
-                  onMouseEnter={() => setProfileOpen(true)}
-                  onMouseLeave={() => setProfileOpen(false)}
-                >
-                  <button
-                    type="button"
-                    className={`header-action-item ${profileOpen ? "is-active" : ""}`}
-                    aria-expanded={profileOpen}
-                    aria-label="Profile menu"
-                  >
-                    <iconify-icon
-                      icon="lucide:user"
-                      className="text-xl"
-                    ></iconify-icon>
-                    <span>Profile</span>
-                  </button>
-
-                  {profileOpen && (
-                    <div className="profile-hover-panel">
-                      {user ? (
-                        <>
-                          <div className="profile-panel-head">
-                            <p className="profile-hello">Hello {firstName}</p>
-                            <p className="profile-phone">{userPhone}</p>
-                          </div>
-
-                          <div className="profile-panel-group">
-                            <button
-                              type="button"
-                              onClick={() => goProtected("/my-orders")}
-                            >
-                              <iconify-icon icon="lucide:package-search" style={{marginRight:'6px'}}></iconify-icon>
-                              My Orders
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => goProtected("/wishlist")}
-                            >
-                              Wishlist
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => goProtected("/feedback")}
-                            >
-                              Feedback
-                            </button>
-                            <Link to="/contact" onClick={closeProfile}>
-                              Contact Us
-                            </Link>
-                          </div>
-
-                          <div className="profile-panel-group">
-                            <button type="button" onClick={handleLogout}>
-                              Logout
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="profile-panel-head">
-                            <p className="profile-hello">Welcome</p>
-                            <p className="profile-phone">
-                              Login to see orders and wishlist
-                            </p>
-                          </div>
-                          <Link
-                            to="/login"
-                            onClick={closeProfile}
-                            className="profile-login-btn"
-                          >
-                            Login / Signup
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <button
-                onClick={() => goProtected("/wishlist")}
-                className="header-action-item"
-              >
-                <span className="relative flex">
-                  <iconify-icon
-                    icon="lucide:heart"
-                    className="text-xl"
-                  ></iconify-icon>
-                  {getWishlistCount() > 0 && (
-                    <span className="cart-badge">{getWishlistCount()}</span>
-                  )}
-                </span>
-                <span>Wishlist</span>
-              </button>
-
-              <button
-                onClick={() => goProtected("/cart")}
-                className="header-action-item relative"
-              >
-                <span className="relative flex">
-                  <iconify-icon
-                    icon="lucide:shopping-bag"
-                    className="text-xl"
-                  ></iconify-icon>
-                  {getCartCount() > 0 && (
-                    <span className="cart-badge">{getCartCount()}</span>
-                  )}
-                </span>
-                <span>Bag</span>
-              </button>
-            </div>
-          </div>
-        </nav>
-      </header>
-
-      {/* Mobile Menu Drawer - Outside Header */}
-      <div
-        className={`lg:hidden fixed inset-0 z-[100] transition-all duration-300 ${mobileMenuOpen ? "visible" : "invisible"}`}
-      >
-        {/* Backdrop */}
-        <div
-          className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${mobileMenuOpen ? "opacity-100" : "opacity-0"}`}
-          onClick={() => setMobileMenuOpen(false)}
-        ></div>
-
-        {/* Drawer Panel - RIGHT side slide-in, full height scrollable */}
-        <div
-          className={`fixed top-0 left-0 h-full w-[280px] shadow-2xl transform transition-transform duration-300 flex flex-col ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
-          style={{ backgroundColor: "#ffffff" }}
+      <div className="bk-header-shell">
+        <button
+          type="button"
+          className="bk-mobile-menu"
+          aria-label="Open menu"
+          onClick={() => setMobileMenuOpen((open) => !open)}
         >
-          {/* Header — fixed at top, never scrolls away */}
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <nav className="bk-nav" aria-label="Primary navigation">
+          <Link to="/">Home</Link>
           <div
-            className="flex items-center justify-between p-4 border-b border-[#D4AF37]/20 flex-shrink-0"
-            style={{ backgroundColor: "#ffffff" }}
+            ref={sareeMenuRef}
+            className="bk-saree-menu"
+            onMouseEnter={() => setSareeOpen(true)}
           >
-            <span className="text-[#800020] font-bold text-lg">Menu</span>
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-[#800020] transition-colors"
-              aria-label="Close menu"
-            >
-              <iconify-icon icon="lucide:x" className="text-2xl"></iconify-icon>
+            <button type="button">
+              Sarees
+              <svg
+                width="10"
+                height="10"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
             </button>
+            {sareeOpen && (
+              <div className="bk-dropdown">
+                {SAREE_TYPES.map((name) => (
+                  <Link
+                    key={name}
+                    to={`/collection?fabric=${encodeURIComponent(name)}`}
+                    onClick={closeMenus}
+                  >
+                    {name}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
+          <Link to="/collection">Collections</Link>
+          <Link to="/collection?sort=new">New Arrivals</Link>
+          <Link to="/about">About Us</Link>
+          <Link to="/contact">Contact Us</Link>
+        </nav>
 
-          {/* Scrollable nav content */}
-          <nav
-            className="flex flex-col py-4 overflow-y-auto flex-1"
-            style={{ backgroundColor: "#ffffff", WebkitOverflowScrolling: "touch" }}
+        <Link to="/" className="bk-logo-link" aria-label="Banarasi Kala home">
+          <img src={verticalLogo} alt="Banarasi Kala" className="bk-logo" />
+        </Link>
+
+        <div className="bk-actions">
+          <form
+            className="bk-search bk-search-desktop"
+            onSubmit={handleHeaderSearch}
           >
-            <Link
-              to="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "home" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{ backgroundColor: activeItem === "home" ? "#FFF8F0" : "#ffffff" }}
-            >
-              Home
-            </Link>
-            <Link
-              to="/collection"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "collections" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{ backgroundColor: activeItem === "collections" ? "#FFF8F0" : "#ffffff" }}
-            >
-              Shop
-            </Link>
-            <Link
-              to="/about"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "about" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{ backgroundColor: activeItem === "about" ? "#FFF8F0" : "#ffffff" }}
-            >
-              About
-            </Link>
-            <Link
-              to="/contact"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "contact" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{ backgroundColor: activeItem === "contact" ? "#FFF8F0" : "#ffffff" }}
-            >
-              Contact
-            </Link>
-            <Link
-              to="/testimonials"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`px-6 py-3 text-sm font-bold tracking-[0.15em] uppercase transition-colors ${activeItem === "blogs" ? "text-[#800020]" : "text-gray-700 hover:text-[#800020]"}`}
-              style={{ backgroundColor: activeItem === "blogs" ? "#FFF8F0" : "#ffffff" }}
-            >
-              Blogs
-            </Link>
-
-            {/* Divider */}
-            <div className="my-4 border-t border-[#D4AF37]/20"></div>
-
-            {/* Policy Section */}
-            <span className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider">
-              Policies
-            </span>
-            <Link
-              to="/privacy-policy"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              to="/refund-policy"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-            >
-              Refund Policy
-            </Link>
-            <Link
-              to="/return-exchange"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-            >
-              Return & Exchange
-            </Link>
-            <Link
-              to="/shipping-policy"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-            >
-              Shipping Policy
-            </Link>
-            <Link
-              to="/terms-conditions"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-6 py-2 text-sm text-gray-600 hover:text-[#800020] transition-colors"
-            >
-              Terms & Conditions
-            </Link>
-
-            {/* Divider */}
-            <div className="my-4 border-t border-[#D4AF37]/20"></div>
-
-            {/* Account Section */}
-            <span className="px-6 py-2 text-xs text-gray-500 uppercase tracking-wider">
-              Account
-            </span>
-            <button
-              onClick={() => { setMobileMenuOpen(false); goProtected("/my-orders"); }}
-              className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
-              style={{ backgroundColor: "#ffffff" }}
-            >
-              <iconify-icon icon="lucide:package-search" className="text-lg"></iconify-icon>
-              My Orders
+            <input
+              type="search"
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
+              placeholder="Search for Banarasi Sarees"
+            />
+            <button type="submit" aria-label="Search">
+              <svg
+                width="19"
+                height="19"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
             </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); goProtected("/wishlist"); }}
-              className="px-6 py-3 text-left text-sm font-bold tracking-[0.15em] uppercase text-gray-700 hover:text-[#800020] transition-colors flex items-center gap-3"
-              style={{ backgroundColor: "#ffffff" }}
-            >
-              <iconify-icon icon="lucide:heart" className="text-lg"></iconify-icon>
-              Wishlist
-              {getWishlistCount() > 0 && (
-                <span className="ml-auto bg-[#800020] text-[#D4AF37] text-xs font-bold px-2 py-0.5 rounded-full">
-                  {getWishlistCount()}
-                </span>
-              )}
-            </button>
+          </form>
 
-            {/* LOGIN / LOGOUT — always visible, padded at bottom for iPhone safe area */}
-            <div className="px-4 pt-2 pb-8">
+          {!isAuthPage && (
+            <div
+              ref={profileMenuRef}
+              className="bk-profile-menu"
+              onMouseEnter={() => setProfileOpen(true)}
+            >
               {user ? (
                 <button
-                  onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
-                  className="w-full py-3 text-sm font-bold tracking-[0.15em] uppercase text-white bg-[#800020] rounded-lg flex items-center justify-center gap-2"
+                  type="button"
+                  className="bk-icon-link bk-profile-trigger"
+                  aria-expanded={profileOpen}
+                  aria-label="Profile menu"
                 >
-                  <iconify-icon icon="lucide:log-out" className="text-lg"></iconify-icon>
-                  Logout
+                  <span className="bk-icon-wrap">
+                    <svg
+                      width="29"
+                      height="29"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M20 21a8 8 0 0 0-16 0" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </span>
+                  <span>Profile</span>
                 </button>
               ) : (
                 <Link
                   to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full py-3 text-sm font-bold tracking-[0.15em] uppercase text-center text-white bg-[#800020] rounded-lg"
+                  onClick={openLogin}
+                  className="bk-icon-link"
+                  aria-label="Login"
                 >
-                  Login / Signup
+                  <span className="bk-icon-wrap">
+                    <svg
+                      width="29"
+                      height="29"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                      <path d="M10 17l5-5-5-5" />
+                      <path d="M15 12H3" />
+                    </svg>
+                  </span>
+                  <span>Login</span>
                 </Link>
               )}
+
+              {profileOpen && user && (
+                <div className="bk-profile-panel">
+                  <div className="bk-profile-head">
+                    <p>Hello {firstName}</p>
+                    <span>{userPhone}</span>
+                  </div>
+                  <button type="button" onClick={() => goProtected("/my-orders")}>
+                    My Orders
+                  </button>
+                  <button type="button" onClick={() => goProtected("/wishlist")}>
+                    Wishlist
+                  </button>
+                  <button type="button" onClick={() => goProtected("/feedback")}>
+                    Feedback
+                  </button>
+                  <button type="button" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
-          </nav>
+          )}
+
+          <button
+            type="button"
+            onClick={() => goProtected("/wishlist")}
+            className="bk-icon-link"
+            aria-label="Wishlist"
+          >
+            <span className="bk-icon-wrap">
+              <svg
+                width="29"
+                height="29"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                viewBox="0 0 24 24"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z" />
+              </svg>
+              {getWishlistCount() > 0 && (
+                <span className="bk-count">{getWishlistCount()}</span>
+              )}
+            </span>
+            <span>Wishlist</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => goProtected("/cart")}
+            className="bk-icon-link"
+            aria-label="Cart"
+          >
+            <span className="bk-icon-wrap">
+              <svg
+                width="29"
+                height="29"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <path d="M3 6h18" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+              {getCartCount() > 0 && (
+                <span className="bk-count">{getCartCount()}</span>
+              )}
+            </span>
+            <span>Cart</span>
+          </button>
         </div>
+
+        <form className="bk-search bk-search-mobile" onSubmit={handleHeaderSearch}>
+          <button type="submit" aria-label="Search">
+            <svg
+              width="22"
+              height="22"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </button>
+          <input
+            type="search"
+            value={headerSearch}
+            onChange={(e) => setHeaderSearch(e.target.value)}
+            placeholder="Search for Banarasi Sarees"
+          />
+        </form>
       </div>
-    </>
+
+      {mobileMenuOpen && (
+        <nav className="bk-mobile-panel" aria-label="Mobile navigation">
+          <Link to="/" onClick={closeMenus}>
+            Home
+          </Link>
+          <Link to="/collection" onClick={closeMenus}>
+            Sarees
+          </Link>
+          <Link to="/collection" onClick={closeMenus}>
+            Collections
+          </Link>
+          <Link to="/collection?sort=new" onClick={closeMenus}>
+            New Arrivals
+          </Link>
+          <Link to="/about" onClick={closeMenus}>
+            About Us
+          </Link>
+          <Link to="/contact" onClick={closeMenus}>
+            Contact Us
+          </Link>
+          {user ? (
+            <button type="button" onClick={handleLogout}>
+              Logout
+            </button>
+          ) : (
+            <Link to="/login" onClick={openLogin}>
+              Login / Signup
+            </Link>
+          )}
+        </nav>
+      )}
+    </header>
   );
 };
 

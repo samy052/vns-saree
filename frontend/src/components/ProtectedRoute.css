@@ -1,0 +1,224 @@
+.auth-required-page {
+  min-height: 62vh;
+  display: grid;
+  place-items: center;
+  padding: 56px 18px;
+  background: #fffaf2;
+}
+
+.auth-required-card {
+  width: min(100%, 520px);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  color: #32241c;
+}
+
+.auth-required-visual {
+  position: relative;
+  width: 178px;
+  height: 190px;
+  margin-bottom: 18px;
+}
+
+.auth-required-thread {
+  position: absolute;
+  left: 8px;
+  top: 78px;
+  width: 58px;
+  height: 28px;
+  border-top: 6px solid #9c7b52;
+  border-radius: 50%;
+  transform: rotate(-10deg);
+}
+
+.auth-required-thread::after {
+  content: "";
+  position: absolute;
+  right: -18px;
+  top: 12px;
+  width: 44px;
+  height: 5px;
+  background: #9c7b52;
+  border-radius: 99px;
+}
+
+.auth-required-saree {
+  position: absolute;
+  left: 74px;
+  top: 18px;
+  width: 88px;
+  height: 128px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #800020 0%, #b23b4c 100%);
+  border-radius: 18px 18px 10px 10px;
+  box-shadow: 0 18px 28px rgba(91, 7, 16, 0.18);
+  transform: rotate(-7deg);
+}
+
+.auth-required-saree::before,
+.auth-required-saree::after {
+  content: "";
+  position: absolute;
+  top: -39px;
+  width: 23px;
+  height: 58px;
+  border: 6px solid #7a6d63;
+  border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+}
+
+.auth-required-saree::before {
+  left: 18px;
+}
+
+.auth-required-saree::after {
+  right: 18px;
+}
+
+.auth-required-saree span {
+  width: 44px;
+  height: 42px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 28% 62%, transparent 0 10px, #fff8ed 11px 15px, transparent 16px),
+    radial-gradient(circle at 72% 62%, transparent 0 10px, #fff8ed 11px 15px, transparent 16px),
+    linear-gradient(90deg, transparent 0 18%, #fff8ed 18% 30%, transparent 31% 69%, #fff8ed 70% 82%, transparent 83%);
+  opacity: 0.96;
+}
+
+.auth-required-contact .auth-required-thread {
+  left: 12px;
+  top: 98px;
+  width: 58px;
+  height: 5px;
+  border-top: 0;
+  background: #b9862a;
+  border-radius: 99px;
+  transform: rotate(0);
+}
+
+.auth-required-contact .auth-required-thread::before,
+.auth-required-contact .auth-required-thread::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 5px;
+  background: #b9862a;
+  border-radius: 99px;
+}
+
+.auth-required-contact .auth-required-thread::before {
+  left: 7px;
+  top: -16px;
+}
+
+.auth-required-contact .auth-required-thread::after {
+  right: 7px;
+  top: 16px;
+}
+
+.auth-required-contact .auth-required-saree {
+  width: 104px;
+  height: 92px;
+  top: 46px;
+  left: 72px;
+  border-radius: 18px;
+  transform: rotate(-3deg);
+}
+
+.auth-required-contact .auth-required-saree::before {
+  top: -28px;
+  left: 22px;
+  width: 60px;
+  height: 48px;
+  border-width: 5px;
+  border-color: #7a6d63;
+}
+
+.auth-required-contact .auth-required-saree::after {
+  display: none;
+}
+
+.auth-required-contact .auth-required-saree span {
+  width: 54px;
+  height: 32px;
+  border-radius: 0;
+  background:
+    linear-gradient(140deg, transparent 0 48%, #fff8ed 49% 53%, transparent 54%),
+    linear-gradient(40deg, transparent 0 48%, #fff8ed 49% 53%, transparent 54%),
+    linear-gradient(#fff8ed, #fff8ed);
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+}
+
+.auth-required-visual::after {
+  content: "";
+  position: absolute;
+  left: 72px;
+  right: 4px;
+  bottom: 6px;
+  height: 12px;
+  background: rgba(91, 55, 28, 0.09);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.auth-required-card h1 {
+  margin: 0;
+  color: #5b0710;
+  font-family: "Cinzel", Georgia, "Times New Roman", serif;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.auth-required-card p {
+  max-width: 430px;
+  margin: 12px 0 30px;
+  color: #70645b;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.auth-required-action {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  color: #800020;
+  background: #fff;
+  border: 1px solid #b9862a;
+  border-radius: 4px;
+  font-family: "Cinzel", Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.auth-required-action:hover {
+  color: #d7a13f;
+  background: #800020;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .auth-required-page {
+    min-height: 58vh;
+    padding: 38px 16px;
+  }
+
+  .auth-required-visual {
+    transform: scale(0.86);
+    margin-bottom: 0;
+  }
+
+  .auth-required-card p {
+    font-size: 15px;
+  }
+}

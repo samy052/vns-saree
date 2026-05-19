@@ -193,7 +193,7 @@ export default function MyOrders() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user?.email) { navigate('/login'); return; }
+    if (!user?.email) { navigate("/login?refresh=my-orders"); return; }
 
     (async () => {
       try {

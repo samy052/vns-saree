@@ -1,13 +1,27 @@
 import Header from "./Header";
 import Footer from "./Footer";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useWishlist } from "../context/WishlistContext";
 
 const Layout = () => {
+  const location = useLocation();
+  const { user } = useAuth();
+  const { wishlist } = useWishlist();
+  const isEmptyWishlistPage =
+    location.pathname === "/wishlist" && wishlist.length === 0;
+  const isUnauthedCartPage = location.pathname === "/cart" && !user;
+  const hideFooter =
+    location.pathname === "/login" ||
+    location.pathname === "/contact" ||
+    isEmptyWishlistPage ||
+    isUnauthedCartPage;
+
   return (
     <>
-      {/* <Header /> */}
+      <Header />
       <Outlet />
-      <Footer />
+      {!hideFooter && <Footer />}
     </>
   );
 };

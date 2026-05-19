@@ -1,201 +1,185 @@
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.png";
+import {
+  ChevronRight,
+  Mail,
+  MapPin,
+  Send,
+  Phone,
+} from "lucide-react";
+import logo from "../assets/vertical_logo.png";
+import footerBackground from "../assets/header_backgroung.png";
 import "./Footer.css";
+
+const quickLinks = [
+  ["Home", "/"],
+  ["Sarees", "/collection"],
+  ["Collections", "/collection"],
+  ["New Arrivals", "/collection?sort=new"],
+  ["Best Sellers", "/collection?sort=popular"],
+  ["About Us", "/about"],
+  ["Contact Us", "/contact"],
+];
+
+const supportLinks = [
+  ["FAQs", "/contact"],
+  ["Track Order", "/my-orders"],
+  ["Shipping Policy", "/shipping-policy"],
+  ["Return & Exchange", "/return-exchange"],
+  ["Cancellation Policy", "/refund-policy"],
+  ["Size Guide", "/collection"],
+  ["Care Instructions", "/about"],
+];
+
+const policyLinks = [
+  ["Terms & Conditions", "/terms-conditions"],
+  ["Privacy Policy", "/privacy-policy"],
+  ["Refund Policy", "/refund-policy"],
+  ["Secure Payments", "/terms-conditions"],
+  ["Disclaimer", "/privacy-policy"],
+];
+
+const payments = [
+  ["logos:visa", "Visa"],
+  ["logos:mastercard", "Mastercard"],
+  ["simple-icons:upi", "UPI"],
+  ["simple-icons:paytm", "Paytm"],
+];
+
+const marketplaces = [
+  ["logos:amazon", "Amazon"],
+  ["simple-icons:flipkart", "Flipkart"],
+  ["simple-icons:myntra", "Myntra"],
+];
 
 const Footer = () => {
   return (
-    <footer className="bg-[#800020] text-white pt-16 pb-8">
-      <div className="w-full px-6 lg:px-16">
-        {/* Main Footer Grid - 3 Columns like reference */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-          {/* Column 1: About Us */}
-          <div>
-            <h4 className="text-white/80 uppercase tracking-wider text-sm font-medium mb-6">
-              About Us
-            </h4>
-            <p className="text-white/70 text-sm leading-relaxed mb-6">
-              At Banarasi Kala, we believe a saree is more than just attire - it
-              is a symbol of grace, pride, and cultural richness. Our brand was
-              built with the idea of bringing India's weaving traditions closer
-              to today's generation, blending timeless elegance with a
-              refreshing modern edge.
-            </p>
-            {/* Social Icons */}
-            <div className="flex items-center gap-4">
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
-              >
-                <iconify-icon
-                  icon="mdi:facebook"
-                  className="text-white"
-                ></iconify-icon>
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
-              >
-                <iconify-icon
-                  icon="mdi:instagram"
-                  className="text-white"
-                ></iconify-icon>
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
-              >
-                <iconify-icon
-                  icon="mdi:twitter"
-                  className="text-white"
-                ></iconify-icon>
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all duration-300"
-              >
-                <iconify-icon
-                  icon="mdi:youtube"
-                  className="text-white"
-                ></iconify-icon>
-              </a>
-            </div>
-          </div>
-
-          {/* Column 2: Quick Links (replacing Our Collections) */}
-          <div>
-            <h4 className="text-white/80 uppercase tracking-wider text-sm font-medium mb-6">
-              Quick Links
-            </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  to="/"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/collection"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Shop All Sarees
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/about"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/testimonials"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Customer Reviews
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/feedback"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Share Feedback
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/wishlist"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  My Wishlist
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Policies */}
-          <div>
-            <h4 className="text-white/80 uppercase tracking-wider text-sm font-medium mb-6">
-              Policies
-            </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link
-                  to="/privacy-policy"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/contact"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/refund-policy"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Refund Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/return-exchange"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Return & Exchange Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shipping-policy"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Shipping Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/terms-conditions"
-                  className="text-white/70 text-sm hover:text-[#D4AF37] transition-colors"
-                >
-                  Terms & Conditions
-                </Link>
-              </li>
-            </ul>
+    <footer
+      className="bk-footer"
+      style={{ "--bk-footer-bg": `url(${footerBackground})` }}
+    >
+      <div className="bk-footer-main">
+        <div className="bk-footer-brand">
+          <Link to="/" className="bk-footer-logo" aria-label="Banarasi Kala home">
+            <img src={logo} alt="Banarasi Kala" />
+          </Link>
+          <p>
+            Timeless weaves. Unmatched quality.
+            <span>Pure Banarasi.</span>
+          </p>
+          <div className="bk-footer-socials" aria-label="Social links">
+            <a href="#" aria-label="Instagram">
+              <iconify-icon icon="mdi:instagram"></iconify-icon>
+            </a>
+            <a href="#" aria-label="Facebook">
+              <iconify-icon icon="mdi:facebook"></iconify-icon>
+            </a>
+            <a href="#" aria-label="Pinterest">
+              <iconify-icon icon="mdi:pinterest"></iconify-icon>
+            </a>
+            <a href="#" aria-label="YouTube">
+              <iconify-icon icon="mdi:youtube"></iconify-icon>
+            </a>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <img
-                src={logo}
-                alt="Banarasi Kala"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            {/* <div>
-              <span className="text-[#D4AF37] font-bold text-sm tracking-wider">
-                BANARASI KALA
-              </span>
-            </div> */}
-          </div>
-          <p className="text-white/40 text-xs tracking-wider">
-            © 2026 BANARASI KALA. ALL RIGHTS RESERVED.
+        <nav className="bk-footer-column" aria-label="Quick links">
+          <h3>Quick Links</h3>
+          <span className="bk-footer-rule" aria-hidden="true" />
+          <ul>
+            {quickLinks.map(([label, path]) => (
+              <li key={label}>
+                <Link to={path}>
+                  {label}
+                  {label === "Sarees" && <ChevronRight size={12} />}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <nav className="bk-footer-column" aria-label="Help and support">
+          <h3>Help &amp; Support</h3>
+          <span className="bk-footer-rule" aria-hidden="true" />
+          <ul>
+            {supportLinks.map(([label, path]) => (
+              <li key={label}>
+                <Link to={path}>{label}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <nav className="bk-footer-column" aria-label="Policies">
+          <h3>Policies</h3>
+          <span className="bk-footer-rule" aria-hidden="true" />
+          <ul>
+            {policyLinks.map(([label, path]) => (
+              <li key={label}>
+                <Link to={path}>{label}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="bk-footer-updates">
+          <h3>Stay Updated</h3>
+          <form className="bk-footer-subscribe">
+            <input type="email" placeholder="Enter your email" aria-label="Email" />
+            <button type="submit" aria-label="Subscribe">
+              <Send size={20} />
+            </button>
+          </form>
+          <div className="bk-footer-ornament" aria-hidden="true" />
+        </div>
+      </div>
+
+      <div className="bk-footer-info">
+        <div className="bk-footer-contact">
+          <h3>Contact Us</h3>
+          <span className="bk-footer-rule" aria-hidden="true" />
+          <p>
+            <Phone size={15} />
+            +91 98765 43210
+          </p>
+          <p>
+            <Mail size={15} />
+            support@banarasikala.com
+          </p>
+          <p>
+            <MapPin size={15} />
+            Bhadohi, Varanasi, Uttar Pradesh, India
           </p>
         </div>
+
+        <div className="bk-footer-payments">
+          <h3>We Accept</h3>
+          <span className="bk-footer-rule" aria-hidden="true" />
+          <div className="bk-footer-payment-row" aria-label="Accepted payments">
+            {payments.map(([icon, label]) => (
+              <span key={label} title={label}>
+                <iconify-icon icon={icon}></iconify-icon>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="bk-footer-marketplaces">
+          <h3>Also Available On</h3>
+          <span className="bk-footer-rule" aria-hidden="true" />
+          <p>We are also available on Amazon, Flipkart &amp; Myntra.</p>
+          <div className="bk-footer-market-row">
+            {marketplaces.map(([icon, label]) => (
+              <span key={label} className={`bk-footer-market-${label.toLowerCase()}`} title={label}>
+                <iconify-icon icon={icon}></iconify-icon>
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="bk-footer-bottom">
+        <p>© 2026 Banarasi Kala. All Rights Reserved.</p>
+        <span aria-hidden="true" />
       </div>
     </footer>
   );

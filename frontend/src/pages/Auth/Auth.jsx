@@ -1,11 +1,55 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import headerBackground from "../../assets/header_backgroung.png";
 import { API_ENDPOINTS } from "../../config/api";
+import { useAuth } from "../../context/AuthContext";
 import "./Auth.css";
+
+const strengthLabels = ["Weak", "Moderate", "Strong", "Very Strong"];
+
+const AuthField = ({
+  icon,
+  label,
+  name,
+  type = "text",
+  value,
+  placeholder,
+  onChange,
+  required = true,
+  rightAction,
+  maxLength,
+  inputMode,
+}) => (
+  <label className="auth-field">
+    <span className="auth-label">{label}</span>
+    <span className="auth-input-wrap">
+      <iconify-icon icon={icon}></iconify-icon>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        maxLength={maxLength}
+        inputMode={inputMode}
+      />
+      {rightAction}
+    </span>
+  </label>
+);
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState("login");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [animationKey, setAnimationKey] = useState(0);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+
   const { login, signup, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,10 +65,6 @@ const Auth = () => {
     email: "",
     password: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [passwordStrength, setPasswordStrength] = useState(0);
   const [forgotPasswordData, setForgotPasswordData] = useState({
     email: "",
     otp: "",
@@ -39,6 +79,70 @@ const Auth = () => {
     }
   }, [user, navigate, location]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.has("refresh")) {
+      setActiveTab("login");
+      setError("");
+      setSuccess("");
+      setAnimationKey((key) => key + 1);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    const refreshAuthCard = () => {
+      setActiveTab("login");
+      setError("");
+      setSuccess("");
+      setAnimationKey((key) => key + 1);
+    };
+
+    window.addEventListener("auth:refresh", refreshAuthCard);
+    return () => window.removeEventListener("auth:refresh", refreshAuthCard);
+  }, []);
+
+  const authCopy = useMemo(() => {
+    if (activeTab === "signup") {
+      return {
+        title: "Create New Account",
+        subtitle: "Join us and discover the finest Banarasi sarees.",
+      };
+    }
+
+    if (activeTab === "forgotPassword") {
+      return {
+        title: "Forgot Password",
+        subtitle: "Enter your registered email to receive an OTP.",
+      };
+    }
+
+    if (activeTab === "verifyOTP") {
+      return {
+        title: "Verify OTP",
+        subtitle: "Enter the OTP sent to your email address.",
+      };
+    }
+
+    if (activeTab === "resetPassword") {
+      return {
+        title: "Reset Password",
+        subtitle: "Create a new password for your account.",
+      };
+    }
+
+    return {
+      title: "Welcome Back",
+      subtitle: "Login to continue shopping",
+    };
+  }, [activeTab]);
+
+  const switchMode = (mode) => {
+    setActiveTab(mode);
+    setError("");
+    setSuccess("");
+    setAnimationKey((key) => key + 1);
+  };
+
   const handleLoginChange = (e) => {
     const { name, value, type, checked } = e.target;
     setLoginData((prev) => ({
@@ -50,14 +154,11 @@ const Auth = () => {
   const handleSignupChange = (e) => {
     const { name, value } = e.target;
     setSignupData((prev) => ({ ...prev, [name]: value }));
-
-    if (name === "password") {
-      updateStrength(value);
-    }
+    if (name === "password") updateStrength(value);
   };
 
   const updateStrength = (val) => {
-    if (val.length === 0) {
+    if (!val) {
       setPasswordStrength(0);
       return;
     }
@@ -107,6 +208,7 @@ const Auth = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
       const res = await fetch(`${API_ENDPOINTS.auth}/forgot-password`, {
         method: "POST",
@@ -121,7 +223,7 @@ const Auth = () => {
       }
       if (!res.ok) throw new Error(data.message || "Request failed");
       setSuccess("OTP sent to your email.");
-      setActiveTab("verifyOTP");
+      switchMode("verifyOTP");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -133,14 +235,15 @@ const Auth = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
       const res = await fetch(`${API_ENDPOINTS.auth}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: forgotPasswordData.email, 
+        body: JSON.stringify({
+          email: forgotPasswordData.email,
           otp: forgotPasswordData.otp,
-          role: "customer" 
+          role: "customer",
         }),
       });
       let data;
@@ -151,7 +254,7 @@ const Auth = () => {
       }
       if (!res.ok) throw new Error(data.message || "Verification failed");
       setSuccess("OTP verified. Set your new password.");
-      setActiveTab("resetPassword");
+      switchMode("resetPassword");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -166,16 +269,17 @@ const Auth = () => {
       setError("Passwords do not match");
       return;
     }
+
     setLoading(true);
     try {
       const res = await fetch(`${API_ENDPOINTS.auth}/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: forgotPasswordData.email, 
+        body: JSON.stringify({
+          email: forgotPasswordData.email,
           otp: forgotPasswordData.otp,
           newPassword: forgotPasswordData.newPassword,
-          role: "customer"
+          role: "customer",
         }),
       });
       let data;
@@ -186,7 +290,7 @@ const Auth = () => {
       }
       if (!res.ok) throw new Error(data.message || "Reset failed");
       setSuccess("Password reset successfully. You can now login.");
-      setActiveTab("login");
+      switchMode("login");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -194,390 +298,277 @@ const Auth = () => {
     }
   };
 
-  const texts = ["Weak", "Moderate", "Strong", "Very Strong"];
-
   return (
-    <div className="min-h-screen relative flex flex-col overflow-x-hidden bg-[#F6F0E4]">
-      <main className="flex-grow relative flex items-center justify-center px-4 py-10 lg:py-16">
-        <div className="absolute inset-0 bg-pattern"></div>
-        <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#800020]/10 to-transparent pointer-events-none"></div>
+    <main
+      className="auth-page"
+      style={{ "--auth-bg": `url(${headerBackground})` }}
+    >
+      <section className="auth-panel" key={animationKey}>
+        <header className="auth-heading">
+          <h1>{authCopy.title}</h1>
+          <p>{authCopy.subtitle}</p>
+        </header>
 
-        <div className="auth-card w-full max-w-[520px] bg-white overflow-hidden animate-card-3d relative z-10">
-          <div className="relative min-h-36 bg-[#2D1B0E] px-7 py-8 text-white overflow-hidden">
-            <img
-              src="https://images.unsplash.com/photo-1610189330278-4a6b8fd08b78?auto=format&fit=crop&q=80&w=900"
-              className="absolute inset-0 w-full h-full object-cover opacity-20"
-              alt=""
+        {error && <div className="auth-alert auth-alert-error">{error}</div>}
+        {success && <div className="auth-alert auth-alert-success">{success}</div>}
+
+        {activeTab === "login" && (
+          <form className="auth-form" onSubmit={onLogin}>
+            <AuthField
+              icon="lucide:mail"
+              label="Email Address"
+              name="email"
+              type="email"
+              value={loginData.email}
+              placeholder="Enter your email"
+              onChange={handleLoginChange}
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-[#800020]/90 via-[#3D2817]/86 to-[#111]/70"></div>
-            <div className="relative z-10">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 text-[#D4AF37] text-xs font-bold uppercase tracking-[0.18em] mb-7"
-              >
-                <iconify-icon icon="lucide:arrow-left"></iconify-icon>
-                Back to store
-              </Link>
-              <h1 className="brand-font text-3xl sm:text-4xl font-bold text-[#D4AF37] leading-tight">
-                {activeTab === "login" ? "Welcome Back" : "Create Account"}
-              </h1>
-              <p className="mt-3 max-w-sm text-sm leading-6 text-white/80">
-                {activeTab === "login"
-                  ? "Login to manage your orders, wishlist, and checkout faster."
-                  : "Sign up once and enjoy a smoother shopping experience."}
-              </p>
-            </div>
-          </div>
 
-          <div className="p-5 sm:p-7 lg:p-8">
-            <div className="grid grid-cols-2 gap-2 mb-7 rounded-xl bg-[#F5F1E8] p-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("login");
-                  setError("");
-                }}
-                className={`rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] transition-all ${
-                  activeTab === "login"
-                    ? "bg-white text-[#800020] shadow-sm"
-                    : "text-[#3D2817]/65 hover:text-[#800020]"
-                }`}
-              >
+            <AuthField
+              icon="lucide:lock"
+              label="Password"
+              name="password"
+              type={showLoginPassword ? "text" : "password"}
+              value={loginData.password}
+              placeholder="Enter your password"
+              onChange={handleLoginChange}
+              rightAction={
+                <button
+                  type="button"
+                  className="auth-eye"
+                  aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowLoginPassword((visible) => !visible)}
+                >
+                  <iconify-icon icon={showLoginPassword ? "lucide:eye-off" : "lucide:eye"} />
+                </button>
+              }
+            />
+
+            <div className="auth-row">
+              <label className="auth-remember">
+                <input
+                  type="checkbox"
+                  name="keepLoggedIn"
+                  checked={loginData.keepLoggedIn}
+                  onChange={handleLoginChange}
+                />
+                <span>Keep me logged in</span>
+              </label>
+              <button type="button" onClick={() => switchMode("forgotPassword")}>
+                Forgot Password?
+              </button>
+            </div>
+
+            <button type="submit" disabled={loading} className="auth-primary">
+              {loading ? "Please wait..." : "Login"}
+            </button>
+
+            <div className="auth-divider">
+              <span />
+              <em>or</em>
+              <span />
+            </div>
+
+            <button
+              type="button"
+              className="auth-secondary"
+              onClick={() => switchMode("signup")}
+            >
+              <iconify-icon icon="lucide:user-plus" />
+              Create New Account
+            </button>
+
+            <p className="auth-terms">
+              By continuing, you agree to our{" "}
+              <Link to="/terms-conditions">Terms &amp; Conditions</Link>
+            </p>
+          </form>
+        )}
+
+        {activeTab === "signup" && (
+          <form className="auth-form auth-form-compact" onSubmit={onSignup}>
+            <AuthField
+              icon="lucide:user"
+              label="Full Name"
+              name="name"
+              value={signupData.name}
+              placeholder="Enter your full name"
+              onChange={handleSignupChange}
+            />
+
+            <AuthField
+              icon="lucide:mail"
+              label="Email Address"
+              name="email"
+              type="email"
+              value={signupData.email}
+              placeholder="Enter your email"
+              onChange={handleSignupChange}
+            />
+
+            <AuthField
+              icon="lucide:phone"
+              label="Phone Number"
+              name="phone"
+              value={signupData.phone}
+              placeholder="Enter your phone number"
+              onChange={handleSignupChange}
+              inputMode="tel"
+            />
+
+            <AuthField
+              icon="lucide:lock"
+              label="Password"
+              name="password"
+              type={showSignupPassword ? "text" : "password"}
+              value={signupData.password}
+              placeholder="Create a password"
+              onChange={handleSignupChange}
+              rightAction={
+                <button
+                  type="button"
+                  className="auth-eye"
+                  aria-label={showSignupPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowSignupPassword((visible) => !visible)}
+                >
+                  <iconify-icon icon={showSignupPassword ? "lucide:eye-off" : "lucide:eye"} />
+                </button>
+              }
+            />
+
+            <div className="auth-strength" aria-label="Password strength">
+              {[1, 2, 3, 4].map((level) => (
+                <span
+                  key={level}
+                  className={level <= passwordStrength ? `is-level-${passwordStrength}` : ""}
+                />
+              ))}
+              <strong>
+                {passwordStrength ? strengthLabels[passwordStrength - 1] : "Enter Password"}
+              </strong>
+            </div>
+
+            <label className="auth-consent">
+              <input type="checkbox" required />
+              <span>
+                I agree to the <Link to="/terms-conditions">Terms &amp; Conditions</Link>
+                {" "}and <Link to="/privacy-policy">Privacy Policy</Link>
+              </span>
+            </label>
+
+            <button type="submit" disabled={loading} className="auth-primary">
+              {loading ? "Creating..." : "Sign Up"}
+            </button>
+
+            <div className="auth-divider">
+              <span />
+              <em>or</em>
+              <span />
+            </div>
+
+            <button
+              type="button"
+              className="auth-secondary"
+              onClick={() => switchMode("login")}
+            >
+              <iconify-icon icon="lucide:user" />
+              Login To Your Account
+            </button>
+
+            <p className="auth-terms">
+              Already have an account?{" "}
+              <button type="button" onClick={() => switchMode("login")}>
                 Login
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab("signup");
-                  setError("");
-                }}
-                className={`rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] transition-all ${
-                  activeTab === "signup"
-                    ? "bg-white text-[#800020] shadow-sm"
-                    : "text-[#3D2817]/65 hover:text-[#800020]"
-                }`}
-              >
-                Sign Up
-              </button>
-            </div>
+            </p>
+          </form>
+        )}
 
-            {error && (
-              <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm font-semibold animate-shake">
-                {error}
-              </div>
-            )}
+        {activeTab === "forgotPassword" && (
+          <form className="auth-form" onSubmit={handleForgotPassword}>
+            <AuthField
+              icon="lucide:mail"
+              label="Registered Email"
+              type="email"
+              value={forgotPasswordData.email}
+              placeholder="Enter your email"
+              onChange={(e) =>
+                setForgotPasswordData((prev) => ({ ...prev, email: e.target.value }))
+              }
+            />
+            <button type="submit" disabled={loading} className="auth-primary">
+              {loading ? "Sending..." : "Send Reset OTP"}
+            </button>
+            <button type="button" className="auth-text-button" onClick={() => switchMode("login")}>
+              Back to Login
+            </button>
+          </form>
+        )}
 
-            {success && (
-              <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-700 text-sm font-semibold">
-                {success}
-              </div>
-            )}
+        {activeTab === "verifyOTP" && (
+          <form className="auth-form" onSubmit={handleVerifyOTP}>
+            <AuthField
+              icon="lucide:key-round"
+              label="Enter OTP"
+              value={forgotPasswordData.otp}
+              placeholder="Enter 6 digit OTP"
+              onChange={(e) =>
+                setForgotPasswordData((prev) => ({ ...prev, otp: e.target.value }))
+              }
+              maxLength="6"
+              inputMode="numeric"
+            />
+            <button type="submit" disabled={loading} className="auth-primary">
+              {loading ? "Verifying..." : "Verify OTP"}
+            </button>
+          </form>
+        )}
 
-            {activeTab === "login" && (
-              <div className="form-content animate-fade-in">
-                <form className="space-y-5" onSubmit={onLogin}>
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                      Email Address
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2817]/70 flex items-center">
-                        <iconify-icon icon="lucide:mail"></iconify-icon>
-                      </span>
-                      <input
-                        type="email"
-                        name="email"
-                        required
-                        placeholder="Enter your email address"
-                        value={loginData.email}
-                        onChange={handleLoginChange}
-                        className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-11 py-3.5 outline-none focus:border-[#800020] text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                        Password
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveTab("forgotPassword");
-                          setError("");
-                          setSuccess("");
-                        }}
-                        className="text-[10px] font-bold text-[#800020] hover:underline uppercase tracking-[0.12em]"
-                      >
-                        Forgot?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#3D2817]/70 flex items-center">
-                        <iconify-icon icon="lucide:lock"></iconify-icon>
-                      </span>
-                      <input
-                        type="password"
-                        name="password"
-                        required
-                        placeholder="Enter your password"
-                        value={loginData.password}
-                        onChange={handleLoginChange}
-                        className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-11 py-3.5 outline-none focus:border-[#800020] text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="keepLoggedIn"
-                      name="keepLoggedIn"
-                      checked={loginData.keepLoggedIn}
-                      onChange={handleLoginChange}
-                      className="w-4 h-4 text-[#800020] border-[#D4AF37]/30 rounded focus:ring-[#800020] cursor-pointer"
-                    />
-                    <label
-                      htmlFor="keepLoggedIn"
-                      className="ml-3 text-xs text-gray-600 uppercase tracking-[0.12em] font-bold cursor-pointer"
-                    >
-                      Keep me logged in
-                    </label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="auth-submit w-full py-4 rounded-xl text-[#D4AF37] bg-[#800020] font-bold text-xs uppercase tracking-[0.2em] shadow-lg transform transition-all active:scale-[0.98] hover:bg-[#3D2817] disabled:opacity-50"
-                  >
-                    {loading ? "Loading..." : "Login"}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {activeTab === "forgotPassword" && (
-              <div className="form-content animate-fade-in">
-                <form className="space-y-5" onSubmit={handleForgotPassword}>
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                      Enter Registered Email
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="email@example.com"
-                      value={forgotPasswordData.email}
-                      onChange={(e) => setForgotPasswordData({...forgotPasswordData, email: e.target.value})}
-                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="auth-submit w-full py-4 rounded-xl text-[#D4AF37] bg-[#800020] font-bold text-xs uppercase tracking-[0.2em] shadow-lg transform transition-all active:scale-[0.98] hover:bg-[#3D2817] disabled:opacity-50"
-                  >
-                    {loading ? "Sending..." : "Send Reset OTP"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("login")}
-                    className="w-full text-center text-xs font-bold text-[#3D2817]/60 uppercase tracking-widest mt-2 hover:text-[#800020]"
-                  >
-                    Back to Login
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {activeTab === "verifyOTP" && (
-              <div className="form-content animate-fade-in">
-                <form className="space-y-5" onSubmit={handleVerifyOTP}>
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                      Enter 6-Digit OTP
-                    </label>
-                    <input
-                      type="text"
-                      maxLength="6"
-                      required
-                      placeholder="123456"
-                      value={forgotPasswordData.otp}
-                      onChange={(e) => setForgotPasswordData({...forgotPasswordData, otp: e.target.value})}
-                      className="premium-input w-full text-center tracking-[1em] font-bold bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-lg"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="auth-submit w-full py-4 rounded-xl text-[#D4AF37] bg-[#800020] font-bold text-xs uppercase tracking-[0.2em] shadow-lg transform transition-all active:scale-[0.98] hover:bg-[#3D2817] disabled:opacity-50"
-                  >
-                    {loading ? "Verifying..." : "Verify OTP"}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {activeTab === "resetPassword" && (
-              <div className="form-content animate-fade-in">
-                <form className="space-y-5" onSubmit={handleResetPassword}>
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                      New Password
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={forgotPasswordData.newPassword}
-                      onChange={(e) => setForgotPasswordData({...forgotPasswordData, newPassword: e.target.value})}
-                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                      Confirm New Password
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={forgotPasswordData.confirmPassword}
-                      onChange={(e) => setForgotPasswordData({...forgotPasswordData, confirmPassword: e.target.value})}
-                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="auth-submit w-full py-4 rounded-xl text-[#D4AF37] bg-[#800020] font-bold text-xs uppercase tracking-[0.2em] shadow-lg transform transition-all active:scale-[0.98] hover:bg-[#3D2817] disabled:opacity-50"
-                  >
-                    {loading ? "Resetting..." : "Reset Password"}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {activeTab === "signup" && (
-              <div className="form-content animate-fade-in">
-                <form className="space-y-5" onSubmit={onSignup}>
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      placeholder="Ananya Verma"
-                      value={signupData.name}
-                      onChange={handleSignupChange}
-                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                        Phone Number
-                      </label>
-                      <input
-                        type="text"
-                        name="phone"
-                        required
-                        placeholder="9876543210"
-                        value={signupData.phone}
-                        onChange={handleSignupChange}
-                        className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        required
-                        placeholder="ananya@example.com"
-                        value={signupData.email}
-                        onChange={handleSignupChange}
-                        className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#3D2817]/65">
-                      Create Password
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      required
-                      placeholder="Create a strong password"
-                      value={signupData.password}
-                      onChange={handleSignupChange}
-                      className="premium-input w-full bg-[#FBF9F6] border border-[#D4AF37]/30 rounded-xl px-4 py-3.5 outline-none focus:border-[#800020] text-sm"
-                    />
-
-                    <div className="flex gap-1 mt-2">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div
-                          key={i}
-                          className={`strength-bar h-1 w-1/4 rounded-full transition-all duration-300 ${
-                            i <= passwordStrength ? `strength-level-${passwordStrength}` : "strength-empty"
-                          }`}
-                        ></div>
-                      ))}
-                    </div>
-                    <p
-                      className={`password-strength-label text-[10px] uppercase font-bold tracking-widest mt-1 ${
-                        passwordStrength > 0 ? `strength-text-${passwordStrength}` : "strength-text-empty"
-                      }`}
-                    >
-                      {passwordStrength > 0
-                        ? texts[passwordStrength - 1]
-                        : "Enter Password"}
-                    </p>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="auth-submit w-full py-4 rounded-xl text-[#D4AF37] bg-[#800020] font-bold text-xs uppercase tracking-[0.2em] shadow-lg transform transition-all active:scale-[0.98] hover:bg-[#3D2817] disabled:opacity-50"
-                  >
-                    {loading ? "Creating..." : "Create Account"}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            <div className="mt-7 grid grid-cols-2 gap-3 border-t border-[#D4AF37]/20 pt-5">
-              <div className="flex items-center space-x-2 text-[#3D2817]/70">
-                <iconify-icon
-                  icon="lucide:shield-check"
-                  className="text-2xl text-[#800020]"
-                ></iconify-icon>
-                <span className="text-[10px] font-bold uppercase tracking-[0.16em]">
-                  Secure Login
-                </span>
-              </div>
-              <div className="flex items-center justify-end space-x-2 text-[#3D2817]/70">
-                <iconify-icon
-                  icon="lucide:package-check"
-                  className="text-xl text-[#D4AF37]"
-                ></iconify-icon>
-                <span className="text-[10px] font-bold uppercase tracking-[0.16em]">
-                  Order Access
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+        {activeTab === "resetPassword" && (
+          <form className="auth-form" onSubmit={handleResetPassword}>
+            <AuthField
+              icon="lucide:lock"
+              label="New Password"
+              type={showResetPassword ? "text" : "password"}
+              value={forgotPasswordData.newPassword}
+              placeholder="Enter new password"
+              onChange={(e) =>
+                setForgotPasswordData((prev) => ({
+                  ...prev,
+                  newPassword: e.target.value,
+                }))
+              }
+              rightAction={
+                <button
+                  type="button"
+                  className="auth-eye"
+                  aria-label={showResetPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowResetPassword((visible) => !visible)}
+                >
+                  <iconify-icon icon={showResetPassword ? "lucide:eye-off" : "lucide:eye"} />
+                </button>
+              }
+            />
+            <AuthField
+              icon="lucide:lock"
+              label="Confirm Password"
+              type={showResetPassword ? "text" : "password"}
+              value={forgotPasswordData.confirmPassword}
+              placeholder="Confirm new password"
+              onChange={(e) =>
+                setForgotPasswordData((prev) => ({
+                  ...prev,
+                  confirmPassword: e.target.value,
+                }))
+              }
+            />
+            <button type="submit" disabled={loading} className="auth-primary">
+              {loading ? "Resetting..." : "Reset Password"}
+            </button>
+          </form>
+        )}
+      </section>
+    </main>
   );
 };
 

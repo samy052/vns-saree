@@ -157,7 +157,7 @@ const ProductDetail = () => {
   const handleAddToCart = async () => {
     if (!user) {
       showNotification("Please login first", "info");
-      navigate("/login");
+      navigate("/cart");
       return;
     }
 
@@ -179,7 +179,7 @@ const ProductDetail = () => {
   const handleWishlist = async () => {
     if (!user) {
       showNotification("Please login first", "info");
-      navigate("/login");
+      navigate("/wishlist");
       return;
     }
     await toggleWishlist(product);

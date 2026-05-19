@@ -192,7 +192,7 @@ const Collection = () => {
     e.stopPropagation();
     if (!user) {
       showNotification("Please login first", "info");
-      navigate("/login");
+      navigate("/wishlist");
       return;
     }
     await toggleWishlist(product);
