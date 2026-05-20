@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
-import { API_ENDPOINTS, CATALOG_CATEGORY_SLUGS } from "../config/api";
+import { API_ENDPOINTS } from "../config/api";
 import verticalLogo from "../assets/vertical_logo.png";
 import headerBackground from "../assets/header_backgroung.png";
 import "./Header.css";
@@ -19,29 +19,17 @@ const Header = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState("");
-  const [footerVisible, setFooterVisible] = useState(false);
   const [sareeVarieties, setSareeVarieties] = useState([]);
   const [sareeVarietiesStatus, setSareeVarietiesStatus] = useState("idle");
   const sareeMenuRef = useRef(null);
   const profileMenuRef = useRef(null);
+  const mobilePanelRef = useRef(null);
+  const mobileMenuButtonRef = useRef(null);
 
   const isAuthPage = location.pathname === "/login";
   const userName = user?.name || "User";
   const firstName = userName.split(" ")[0];
   const userPhone = user?.phone || "Welcome to Banarasi Kala";
-
-  useEffect(() => {
-    const footer = document.querySelector(".bk-footer");
-    if (!footer) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setFooterVisible(entry.isIntersecting),
-      { threshold: 0.02 },
-    );
-
-    observer.observe(footer);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -51,7 +39,7 @@ const Header = () => {
 
       try {
         const response = await fetch(
-          API_ENDPOINTS.varietiesByCategory(CATALOG_CATEGORY_SLUGS.banarasiSaree),
+          API_ENDPOINTS.varieties,
           { signal: controller.signal },
         );
 
@@ -85,6 +73,34 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const closeOnOutsideTap = (event) => {
+      const target = event.target;
+      if (
+        mobilePanelRef.current?.contains(target) ||
+        mobileMenuButtonRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      setMobileMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", closeOnOutsideTap);
+    document.addEventListener("touchstart", closeOnOutsideTap, { passive: true });
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("mousedown", closeOnOutsideTap);
+      document.removeEventListener("touchstart", closeOnOutsideTap);
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
     const closeFloatingMenus = (event) => {
       if (
         sareeMenuRef.current &&
@@ -101,14 +117,30 @@ const Header = () => {
       }
     };
 
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+        setProfileOpen(false);
+        setSareeOpen(false);
+      }
+    };
+
     document.addEventListener("mousedown", closeFloatingMenus);
     document.addEventListener("touchstart", closeFloatingMenus);
+    document.addEventListener("keydown", closeOnEscape);
 
     return () => {
       document.removeEventListener("mousedown", closeFloatingMenus);
       document.removeEventListener("touchstart", closeFloatingMenus);
+      document.removeEventListener("keydown", closeOnEscape);
     };
   }, []);
+
+  const closeMenuWhenFocusLeaves = (event, closeMenu) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      closeMenu(false);
+    }
+  };
 
   const closeMenus = () => {
     setMobileMenuOpen(false);
@@ -119,7 +151,12 @@ const Header = () => {
   const handleHeaderSearch = (e) => {
     e.preventDefault();
     const q = headerSearch.trim();
-    navigate(q ? `/collection?search=${encodeURIComponent(q)}` : "/collection");
+    const targetPath = q ? `/collection?search=${encodeURIComponent(q)}` : "/collection";
+    const currentPath = `${location.pathname}${location.search}`;
+    navigate(targetPath, {
+      replace: currentPath === targetPath,
+      state: currentPath === targetPath ? { refreshKey: Date.now() } : undefined,
+    });
     setHeaderSearch("");
     closeMenus();
   };
@@ -127,16 +164,16 @@ const Header = () => {
   const handleLogout = () => {
     logout();
     closeMenus();
-    navigate("/");
+    navigate("/", { state: { refreshKey: Date.now() } });
   };
 
   const goProtected = (path) => {
     closeMenus();
-    if (user) {
-      navigate(path);
-      return;
-    }
-    navigate(path);
+    const currentPath = `${location.pathname}${location.search}${location.hash}`;
+    navigate(path, {
+      replace: currentPath === path,
+      state: currentPath === path ? { refreshKey: Date.now() } : undefined,
+    });
   };
 
   const openLogin = (event) => {
@@ -146,9 +183,38 @@ const Header = () => {
     navigate("/login?refresh=login");
   };
 
+  const scrollForTarget = (target) => {
+    if (target.hash) {
+      const section = document.querySelector(target.hash);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  };
+
+  const refreshNavClick = (to) => (event) => {
+    closeMenus();
+
+    const target = new URL(to, window.location.origin);
+    const currentPath = `${location.pathname}${location.search}${location.hash}`;
+    const targetPath = `${target.pathname}${target.search}${target.hash}`;
+
+    if (currentPath === targetPath) {
+      event.preventDefault();
+      navigate(to, {
+        replace: true,
+        state: { refreshKey: Date.now() },
+      });
+      window.setTimeout(() => scrollForTarget(target), 40);
+    }
+  };
+
   return (
     <header
-      className={`bk-header ${footerVisible ? "bk-header-footer-hidden" : ""}`}
+      className="bk-header"
       style={{ "--bk-header-bg": `url(${headerBackground})` }}
     >
       <div className="bk-topline" aria-hidden="true">
@@ -161,6 +227,7 @@ const Header = () => {
 
       <div className="bk-header-shell">
         <button
+          ref={mobileMenuButtonRef}
           type="button"
           className="bk-mobile-menu"
           aria-label="Open menu"
@@ -172,11 +239,14 @@ const Header = () => {
         </button>
 
         <nav className="bk-nav" aria-label="Primary navigation">
-          <Link to="/">Home</Link>
+          <Link to="/" onClick={refreshNavClick("/")}>Home</Link>
           <div
             ref={sareeMenuRef}
             className="bk-saree-menu"
             onMouseEnter={() => setSareeOpen(true)}
+            onMouseLeave={() => setSareeOpen(false)}
+            onFocus={() => setSareeOpen(true)}
+            onBlur={(event) => closeMenuWhenFocusLeaves(event, setSareeOpen)}
           >
             <button type="button">
               Sarees
@@ -204,7 +274,7 @@ const Header = () => {
                     <Link
                       key={variety.id}
                       to={`/collection?variety=${variety.id}`}
-                      onClick={closeMenus}
+                      onClick={refreshNavClick(`/collection?variety=${variety.id}`)}
                     >
                       {variety.name}
                     </Link>
@@ -216,13 +286,18 @@ const Header = () => {
               </div>
             )}
           </div>
-          <Link to="/collection">Collections</Link>
-          <Link to="/collection?sort=new">New Arrivals</Link>
-          <Link to="/about">About Us</Link>
-          <Link to="/contact">Contact Us</Link>
+          <Link to="/#new-arrivals" onClick={refreshNavClick("/#new-arrivals")}>New Arrivals</Link>
+          <Link to="/collection" onClick={refreshNavClick("/collection")}>Collections</Link>
+          <Link to="/about" onClick={refreshNavClick("/about")}>About Us</Link>
+          <Link to="/contact" onClick={refreshNavClick("/contact")}>Contact Us</Link>
         </nav>
 
-        <Link to="/" className="bk-logo-link" aria-label="Banarasi Kala home">
+        <Link
+          to="/"
+          className="bk-logo-link"
+          aria-label="Banarasi Kala home"
+          onClick={refreshNavClick("/")}
+        >
           <img src={verticalLogo} alt="Banarasi Kala" className="bk-logo" />
         </Link>
 
@@ -257,6 +332,9 @@ const Header = () => {
               ref={profileMenuRef}
               className="bk-profile-menu"
               onMouseEnter={() => setProfileOpen(true)}
+              onMouseLeave={() => setProfileOpen(false)}
+              onFocus={() => setProfileOpen(true)}
+              onBlur={(event) => closeMenuWhenFocusLeaves(event, setProfileOpen)}
             >
               {user ? (
                 <button
@@ -403,34 +481,85 @@ const Header = () => {
       </div>
 
       {mobileMenuOpen && (
-        <nav className="bk-mobile-panel" aria-label="Mobile navigation">
-          <Link to="/" onClick={closeMenus}>
-            Home
-          </Link>
-          <Link to="/collection" onClick={closeMenus}>
-            Sarees
-          </Link>
-          <Link to="/collection" onClick={closeMenus}>
-            Collections
-          </Link>
-          <Link to="/collection?sort=new" onClick={closeMenus}>
-            New Arrivals
-          </Link>
-          <Link to="/about" onClick={closeMenus}>
-            About Us
-          </Link>
-          <Link to="/contact" onClick={closeMenus}>
-            Contact Us
-          </Link>
-          {user ? (
-            <button type="button" onClick={handleLogout}>
-              Logout
-            </button>
-          ) : (
-            <Link to="/login" onClick={openLogin}>
-              Login / Signup
+        <nav ref={mobilePanelRef} className="bk-mobile-panel" aria-label="Mobile navigation">
+          <div className="bk-mobile-panel-head">
+            <span>{user ? `Hello ${firstName}` : "Welcome"}</span>
+            <p>{user ? userPhone : "Sign in for orders, wishlist and cart"}</p>
+          </div>
+
+          <div className="bk-mobile-panel-section">
+            <span className="bk-mobile-panel-title">Menu</span>
+            <Link to="/" onClick={refreshNavClick("/")}>
+              Home
             </Link>
-          )}
+            <Link to="/#new-arrivals" onClick={refreshNavClick("/#new-arrivals")}>
+              New Arrivals
+            </Link>
+            <Link to="/collection" onClick={refreshNavClick("/collection")}>
+              Collections
+            </Link>
+            <Link to="/about" onClick={refreshNavClick("/about")}>
+              About Us
+            </Link>
+            <Link to="/contact" onClick={refreshNavClick("/contact")}>
+              Contact Us
+            </Link>
+          </div>
+
+          <div className="bk-mobile-panel-section">
+            <span className="bk-mobile-panel-title">Sarees</span>
+            <Link to="/collection" onClick={refreshNavClick("/collection")}>
+              All Sarees
+            </Link>
+            {sareeVarietiesStatus === "loading" && (
+              <span className="bk-mobile-panel-muted">Loading sarees...</span>
+            )}
+            {sareeVarietiesStatus === "success" &&
+              sareeVarieties.slice(0, 8).map((variety) => (
+                <Link
+                  key={variety.id}
+                  to={`/collection?variety=${variety.id}`}
+                  onClick={refreshNavClick(`/collection?variety=${variety.id}`)}
+                >
+                  {variety.name}
+                </Link>
+              ))}
+            {sareeVarietiesStatus === "success" && sareeVarieties.length > 8 && (
+              <Link to="/collection" onClick={refreshNavClick("/collection")}>
+                View All Sarees
+              </Link>
+            )}
+            {sareeVarietiesStatus === "error" && (
+              <span className="bk-mobile-panel-muted">Unable to load sarees</span>
+            )}
+          </div>
+
+          <div className="bk-mobile-panel-section">
+            <span className="bk-mobile-panel-title">Account</span>
+            {user ? (
+              <>
+                <button type="button" onClick={() => goProtected("/my-orders")}>
+                  My Orders
+                </button>
+                <button type="button" onClick={() => goProtected("/wishlist")}>
+                  Wishlist {getWishlistCount() > 0 ? `(${getWishlistCount()})` : ""}
+                </button>
+                <button type="button" onClick={() => goProtected("/cart")}>
+                  Cart {getCartCount() > 0 ? `(${getCartCount()})` : ""}
+                </button>
+                <button type="button" onClick={() => goProtected("/feedback")}>
+                  Feedback
+                </button>
+                <button type="button" className="bk-mobile-logout" onClick={handleLogout}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link className="bk-mobile-login" to="/login" onClick={openLogin}>
+                Login / Sign Up
+              </Link>
+            )}
+          </div>
         </nav>
       )}
     </header>

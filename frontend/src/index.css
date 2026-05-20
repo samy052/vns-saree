@@ -9,4 +9,22 @@ body {
   font-family: 'Poppins', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background:
+    linear-gradient(rgba(255, 246, 232, 0.76), rgba(255, 246, 232, 0.92)),
+    url("./assets/header_backgroung.png"),
+    #fff6e8;
+  background-size: 100% 100%, cover, 100% 100%;
+  background-position: center top;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+#root {
+  min-height: 100vh;
+  overflow-x: hidden;
 }

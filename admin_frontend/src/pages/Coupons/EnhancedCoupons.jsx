@@ -17,7 +17,6 @@ const INITIAL_FORM = {
   max_discount_amount: "",
   usage_limit: "",
   usage_limit_per_user: "1",
-  applicable_category_id: [],
   applicable_product_id: [],
   applicable_variety_id: [],
   applicable_color_id: [],
@@ -33,7 +32,6 @@ const INITIAL_FORM = {
 
 export default function EnhancedCoupons() {
   const [coupons, setCoupons] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [varieties, setVarieties] = useState([]);
   const [colors, setColors] = useState([]);
@@ -67,7 +65,6 @@ export default function EnhancedCoupons() {
       setLoading(true);
       const endpoints = [
         API_ENDPOINTS.coupons,
-        API_ENDPOINTS.categories,
         API_ENDPOINTS.products,
         API_ENDPOINTS.varieties,
         API_ENDPOINTS.colors,
@@ -84,12 +81,11 @@ export default function EnhancedCoupons() {
       const data = await Promise.all(responses.map(res => res.json()));
       
       setCoupons(Array.isArray(data[0]) ? data[0] : []);
-      setCategories(data[1]);
-      setProducts(data[2]);
-      setVarieties(data[3]);
-      setColors(data[4]);
-      setOccasions(data[5]);
-      setMaterials(data[6]);
+      setProducts(Array.isArray(data[1]) ? data[1] : data[1]?.items || data[1]?.rows || []);
+      setVarieties(Array.isArray(data[2]) ? data[2] : []);
+      setColors(Array.isArray(data[3]) ? data[3] : []);
+      setOccasions(Array.isArray(data[4]) ? data[4] : []);
+      setMaterials(Array.isArray(data[5]) ? data[5] : []);
     } catch {
       showModal("error", "Error", "Failed to load data from server");
     } finally {
@@ -111,7 +107,6 @@ export default function EnhancedCoupons() {
       setEditingCoupon(coupon);
       let mType = "all";
       if (coupon.applicable_product_id?.length > 0) mType = "product";
-      else if (coupon.applicable_category_id?.length > 0) mType = "category";
       else if (coupon.applicable_variety_id?.length > 0) mType = "variety";
       else if (coupon.applicable_color_id?.length > 0) mType = "color";
       else if (coupon.applicable_material_id?.length > 0) mType = "material";
@@ -123,7 +118,6 @@ export default function EnhancedCoupons() {
         ...coupon,
         valid_from: coupon.valid_from ? new Date(coupon.valid_from).toISOString().split('T')[0] : "",
         valid_until: coupon.valid_until ? new Date(coupon.valid_until).toISOString().split('T')[0] : "",
-        applicable_category_id: coupon.applicable_category_id || [],
         applicable_product_id: coupon.applicable_product_id || [],
         applicable_variety_id: coupon.applicable_variety_id || [],
         applicable_color_id: coupon.applicable_color_id || [],
@@ -148,12 +142,11 @@ export default function EnhancedCoupons() {
     }
     if (currentStep === 2) {
       if (mappingType === "product") {
-        if (formData.applicable_product_id.length === 0 && selectedCats.length === 0) {
-          showModal("warning", "Target Required", "Please select at least one Category or specific Products");
+        if (formData.applicable_product_id.length === 0) {
+          showModal("warning", "Target Required", "Please select at least one Product");
           return false;
         }
       }
-      if (mappingType === "category" && (!formData.applicable_category_id || formData.applicable_category_id.length === 0)) { showModal("warning", "Target Required", "Please select at least one Category"); return false; }
       if (mappingType === "variety" && (!formData.applicable_variety_id || formData.applicable_variety_id.length === 0)) { showModal("warning", "Target Required", "Please select at least one Variety"); return false; }
       if (mappingType === "color" && (!formData.applicable_color_id || formData.applicable_color_id.length === 0)) { showModal("warning", "Target Required", "Please select at least one Color"); return false; }
       if (mappingType === "material" && (!formData.applicable_material_id || formData.applicable_material_id.length === 0)) { showModal("warning", "Target Required", "Please select at least one Material"); return false; }
@@ -187,7 +180,6 @@ export default function EnhancedCoupons() {
       usage_limit: formData.usage_limit ? parseInt(formData.usage_limit) : null,
       usage_limit_per_user: parseInt(formData.usage_limit_per_user) || 1,
       min_delivery_km: formData.min_delivery_km ? parseInt(formData.min_delivery_km) : null,
-      applicable_category_id: mappingType === "category" ? formData.applicable_category_id : [],
       applicable_product_id: mappingType === "product" ? finalProductIds : [],
       applicable_variety_id: mappingType === "variety" ? formData.applicable_variety_id : [],
       applicable_color_id: mappingType === "color" ? formData.applicable_color_id : [],
@@ -316,18 +308,18 @@ export default function EnhancedCoupons() {
     setFormData({ ...formData, [field]: updated });
   };
 
-  // Hierarchy States
-  const [selectedCats, setSelectedCats] = useState([]);
+  // Product targeting filters
   const [selectedVars, setSelectedVars] = useState([]);
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedMats, setSelectedMats] = useState([]);
 
   // Filtered lists based on selections
-  const availableVars = varieties.filter(v => selectedCats.length === 0 || selectedCats.includes(v.category_id));
   const availableProducts = products.filter(p => {
-    if (selectedCats.length > 0 && !selectedCats.includes(p.category_id)) return false;
     if (selectedVars.length > 0 && !selectedVars.includes(p.variety_id)) return false;
-    if (selectedColors.length > 0 && !selectedColors.includes(p.color_id)) return false;
+    if (
+      selectedColors.length > 0 &&
+      !selectedColors.some((colorId) => Number(p.color_stocks?.[String(colorId)] || 0) > 0)
+    ) return false;
     if (selectedMats.length > 0 && !selectedMats.includes(p.material_id)) return false;
     return true;
   });
@@ -520,7 +512,6 @@ export default function EnhancedCoupons() {
                 <p className="text-[10px] text-[#800020]/50 uppercase font-bold">Applicability (Target Items)</p>
                 <div className="text-sm font-medium text-gray-700">
                   {viewingCoupon.applicable_product_id?.length > 0 ? `${viewingCoupon.applicable_product_id.length} Specific Products Selected` :
-                   viewingCoupon.applicable_category_id?.length > 0 ? `${viewingCoupon.applicable_category_id.length} Categories Selected` :
                    viewingCoupon.applicable_variety_id?.length > 0 ? `${viewingCoupon.applicable_variety_id.length} Varieties Selected` :
                    viewingCoupon.applicable_color_id?.length > 0 ? `${viewingCoupon.applicable_color_id.length} Colors Selected` :
                    viewingCoupon.applicable_occasion_id?.length > 0 ? `${viewingCoupon.applicable_occasion_id.length} Occasions Selected` :
@@ -682,7 +673,6 @@ export default function EnhancedCoupons() {
                       {[
                         { id: "all", label: "Store-wide (All Items)", icon: Tag },
                         { id: "product", label: "Specific Products", icon: Target },
-                        { id: "category", label: "Whole Categories", icon: Settings },
                         { id: "variety", label: "Filtered Varieties", icon: Settings },
                         { id: "color", label: "Specific Colors", icon: Settings },
                         { id: "material", label: "By Fabric/Material", icon: Settings },
@@ -693,14 +683,12 @@ export default function EnhancedCoupons() {
                           type="button"
                           onClick={() => {
                             setMappingType(item.id);
-                            setSelectedCats([]);
                             setSelectedVars([]);
                             setSelectedColors([]);
                             setSelectedMats([]);
                             setFormData({
                               ...formData,
                               applicable_product_id: [],
-                              applicable_category_id: [],
                               applicable_variety_id: [],
                               applicable_color_id: [],
                               applicable_occasion_id: []
@@ -718,63 +706,34 @@ export default function EnhancedCoupons() {
                   <div className="animate-in fade-in duration-300 pt-6 border-t border-gray-100 min-h-[350px]">
                     
                     {/* HIERARCHICAL SELECTION WORKFLOW */}
-                    {(mappingType === "product" || mappingType === "category" || mappingType === "variety") && (
+                    {(mappingType === "product" || mappingType === "variety") && (
                       <div className="space-y-6">
-                        {/* Phase 1: Category Selection (Always First) */}
-                        <div className="space-y-3 bg-gray-50 p-5 rounded-3xl border border-gray-100">
-                          <label className="text-[10px] font-bold text-[#800020] uppercase tracking-widest">Step 1: Select Categories *</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            {categories.map(c => (
-                              <label key={c.id} className="flex items-center gap-2 p-2.5 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-[#800020]/30 transition-all">
-                                <input 
-                                  type="checkbox" 
-                                  checked={selectedCats.includes(c.id)}
-                                  onChange={() => {
-                                    const updated = selectedCats.includes(c.id) ? selectedCats.filter(id => id !== c.id) : [...selectedCats, c.id];
-                                    setSelectedCats(updated);
-                                    if (mappingType === "category") setFormData({ ...formData, applicable_category_id: updated });
-                                  }}
-                                  className="w-4 h-4 rounded border-gray-300 text-[#800020]"
-                                />
-                                <span className="text-xs font-bold text-gray-700">{c.name}</span>
-                              </label>
-                            ))}
-                          </div>
+                        <div className="space-y-3 bg-gray-50 p-5 rounded-3xl border border-gray-100 animate-in slide-in-from-top-4">
+                          <label className="text-[10px] font-bold text-[#800020] uppercase tracking-widest">Select Varieties</label>
+                          {varieties.length === 0 ? (
+                            <p className="text-xs text-gray-400 italic">No varieties found.</p>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2">
+                              {varieties.map(v => (
+                                <label key={v.id} className="flex items-center gap-2 p-2.5 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-[#800020]/30 transition-all">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedVars.includes(v.id)}
+                                    onChange={() => {
+                                      const updated = selectedVars.includes(v.id) ? selectedVars.filter(id => id !== v.id) : [...selectedVars, v.id];
+                                      setSelectedVars(updated);
+                                      if (mappingType === "variety") setFormData({ ...formData, applicable_variety_id: updated });
+                                    }}
+                                    className="w-4 h-4 rounded border-gray-300 text-[#800020]"
+                                  />
+                                  <span className="text-xs font-bold text-gray-700">{v.name}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
-                        {/* Phase 2: Variety Selection (Dependent on Category) */}
-                        {(mappingType === "variety" || mappingType === "product") && selectedCats.length > 0 && (
-                          <div className="space-y-3 bg-gray-50 p-5 rounded-3xl border border-gray-100 animate-in slide-in-from-top-4">
-                            <label className="text-[10px] font-bold text-[#800020] uppercase tracking-widest">Step 2: Select Varieties *</label>
-                            {availableVars.length === 0 ? (
-                              <p className="text-xs text-gray-400 italic">No varieties found for selected categories.</p>
-                            ) : (
-                              <div className="grid grid-cols-2 gap-2">
-                                {availableVars.map(v => (
-                                  <label key={v.id} className="flex items-center gap-2 p-2.5 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-[#800020]/30 transition-all">
-                                    <input 
-                                      type="checkbox" 
-                                      checked={selectedVars.includes(v.id)}
-                                      onChange={() => {
-                                        const updated = selectedVars.includes(v.id) ? selectedVars.filter(id => id !== v.id) : [...selectedVars, v.id];
-                                        setSelectedVars(updated);
-                                        if (mappingType === "variety") setFormData({ ...formData, applicable_variety_id: updated });
-                                      }}
-                                      className="w-4 h-4 rounded border-gray-300 text-[#800020]"
-                                    />
-                                    <div className="flex flex-col">
-                                      <span className="text-xs font-bold text-gray-700">{v.name}</span>
-                                      <span className="text-[8px] text-gray-400 uppercase font-bold">{categories.find(cat => cat.id === v.category_id)?.name}</span>
-                                    </div>
-                                  </label>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Phase 3: Additional Filters (For Specific Products Only) */}
-                        {mappingType === "product" && selectedCats.length > 0 && (
+                        {mappingType === "product" && (
                           <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-4">
                             <div className="space-y-3 bg-gray-50 p-5 rounded-3xl border border-gray-100">
                               <label className="text-[10px] font-bold text-[#800020] uppercase tracking-widest text-center block">Filter by Color</label>
@@ -809,19 +768,18 @@ export default function EnhancedCoupons() {
                           </div>
                         )}
 
-                        {/* Phase 4: Final Product Selection */}
-                        {mappingType === "product" && selectedCats.length > 0 && (
+                        {mappingType === "product" && (
                           <div className="space-y-3 bg-white p-6 rounded-3xl border-2 border-[#800020]/10 animate-in slide-in-from-top-4 shadow-inner">
                             <div className="flex justify-between items-center mb-2">
-                              <label className="text-[10px] font-bold text-[#800020] uppercase tracking-widest">Final Step: Select Products ({availableProducts.length} Found) *</label>
+                              <label className="text-[10px] font-bold text-[#800020] uppercase tracking-widest">Select Products ({availableProducts.length} Found) *</label>
                               <button type="button" onClick={() => setFormData({...formData, applicable_product_id: availableProducts.map(p => p.id)})} className="text-[10px] font-bold text-[#800020] hover:underline">Select All Filtered</button>
                             </div>
                             <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                               {availableProducts.map(p => (
                                 <label key={p.id} className="flex items-center justify-between p-3 border border-gray-100 rounded-2xl hover:bg-[#800020]/5 cursor-pointer transition-all group">
                                   <div className="flex items-center gap-3">
-                                    <input 
-                                      type="checkbox" 
+                                    <input
+                                      type="checkbox"
                                       checked={formData.applicable_product_id.includes(p.id)}
                                       onChange={() => toggleSelection(p.id, "applicable_product_id")}
                                       className="w-5 h-5 rounded-lg border-gray-300 text-[#800020]"
@@ -829,31 +787,18 @@ export default function EnhancedCoupons() {
                                     <div className="flex flex-col">
                                       <span className="text-sm font-bold text-gray-700 group-hover:text-[#800020]">{p.name}</span>
                                       <div className="flex gap-2 text-[9px] font-bold uppercase text-gray-400">
-                                        <span>{categories.find(c => c.id === p.category_id)?.name}</span>
-                                        <span>•</span>
-                                        <span>{varieties.find(v => v.id === p.variety_id)?.name}</span>
+                                        <span>{varieties.find(v => v.id === p.variety_id)?.name || "No variety"}</span>
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="flex gap-1">
-                                    <div className="w-4 h-4 rounded-full border border-gray-100" style={{ backgroundColor: colors.find(c => c.id === p.color_id)?.hex_code }} />
-                                    <span className="text-[10px] text-gray-300 font-bold">{materials.find(m => m.id === p.material_id)?.name}</span>
-                                  </div>
+                                  <span className="text-[10px] text-gray-300 font-bold">{materials.find(m => m.id === p.material_id)?.name}</span>
                                 </label>
                               ))}
                             </div>
                           </div>
                         )}
-                        
-                        {selectedCats.length === 0 && (
-                          <div className="p-12 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-gray-400">
-                            <Info className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                            <p className="text-sm font-medium italic">Please select at least one Category above to continue.</p>
-                          </div>
-                        )}
                       </div>
                     )}
-
                     {mappingType === "color" && (
                       <div className="space-y-3">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Select Colors (Multiple Allowed)</label>
@@ -1006,3 +951,4 @@ export default function EnhancedCoupons() {
     </div>
   );
 }
+

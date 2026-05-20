@@ -1,6 +1,11 @@
 import { useState } from "react";
-import { Clock, Headphones, Mail, MapPin, Phone, Send } from "lucide-react";
+import { Icon } from "@iconify/react";
+import { Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import "./Contact.css";
+
+const WHATSAPP_NUMBER = "916307715455";
+const WHATSAPP_TEXT = encodeURIComponent("Hi Banarasi Kala, I need quick help.");
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_TEXT}`;
 
 const Contact = () => {
   const [result, setResult] = useState("");
@@ -120,16 +125,17 @@ const Contact = () => {
 
           <div className="contact-help-card">
             <span>
-              <Headphones size={25} />
+              <Icon icon="logos:whatsapp-icon" />
             </span>
             <div>
               <h2>Looking for quick help?</h2>
               <p>Chat with our support team on WhatsApp.</p>
             </div>
             <a
-              href="https://wa.me/919876543210"
+              href={WHATSAPP_URL}
               target="_blank"
               rel="noreferrer"
+              aria-label="Chat with Banarasi Kala support on WhatsApp"
             >
               Chat on WhatsApp
             </a>

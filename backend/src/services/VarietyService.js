@@ -1,45 +1,24 @@
 const Variety = require('../models/Variety');
-const Category = require('../models/Category');
-const { Op } = require("sequelize");
 
-const getCategoryAliases = (category) => {
-  if (!category) return [];
-
-  const normalized = String(category).trim().toLowerCase();
-  if (!normalized) return [];
-
-  const aliases = new Set([normalized]);
-  aliases.add(normalized.replace(/-/g, " "));
-  aliases.add(normalized.replace(/\s+/g, "-"));
-
-  return [...aliases];
+const pickAttributes = (fields, allowed) => {
+  if (!fields) return undefined;
+  const selected = String(fields)
+    .split(",")
+    .map((field) => field.trim())
+    .filter((field) => allowed.includes(field));
+  return selected.length ? selected : undefined;
 };
 
 class VarietyService {
   async getAllVarieties(filters = {}) {
-    const categoryAliases = getCategoryAliases(filters.category);
-    const categoryInclude = {
-      model: Category,
-      required: categoryAliases.length > 0,
-    };
-
-    if (categoryAliases.length > 0) {
-      categoryInclude.where = {
-        [Op.or]: [
-          { slug: { [Op.in]: categoryAliases } },
-          { name: { [Op.in]: categoryAliases } },
-        ],
-      };
-    }
-
     return await Variety.findAll({
-      include: categoryInclude,
+      attributes: pickAttributes(filters.fields, ["id", "name", "slug", "image", "createdAt", "updatedAt"]),
       order: [["name", "ASC"]],
     });
   }
 
   async getVarietyById(id) {
-    return await Variety.findByPk(id, { include: Category });
+    return await Variety.findByPk(id);
   }
 
   async createVariety(data) {

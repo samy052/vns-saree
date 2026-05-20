@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import api from '../utils/api';
 import { useNotification } from './NotificationContext';
 import { API_ENDPOINTS } from '../config/api';
+import { getProductCoverImage } from '../utils/productMedia';
 
 const WishlistContext = createContext();
 
@@ -31,12 +32,11 @@ export const WishlistProvider = ({ children }) => {
             .filter(item => item.Product)
             .map(item => {
               const product = item.Product;
-              const allImages = [...(product.images || []), ...(product.productImages || [])];
               return {
                 ...product,
                 wishlistItemId: item.id,
                 price: product.selling_price || product.mrp_price || 0,
-                image_url: allImages.find(img => img.is_cover || img.is_primary)?.url || allImages[0]?.url || product.image_url
+                image_url: getProductCoverImage(product)
               };
             });
           setWishlist(formattedWishlist);
@@ -85,12 +85,11 @@ export const WishlistProvider = ({ children }) => {
         .filter(item => item.Product)
         .map(item => {
           const p = item.Product;
-          const allImages = [...(p.images || []), ...(p.productImages || [])];
           return {
             ...p,
             wishlistItemId: item.id,
             price: p.selling_price || p.mrp_price || 0,
-            image_url: allImages.find(img => img.is_cover || img.is_primary)?.url || allImages[0]?.url || p.image_url
+            image_url: getProductCoverImage(p)
           };
         });
       
@@ -110,12 +109,16 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const removeFromWishlist = async (productId) => {
-    if (!user) return;
+    if (!user) return { success: false };
     try {
       await api.delete(`${API_ENDPOINTS.wishlist}/${productId}`);
       setWishlist(prev => prev.filter(item => item.id !== productId));
+      showNotification("Removed from wishlist!");
+      return { success: true };
     } catch (error) {
       console.error("Error removing from wishlist:", error);
+      showNotification("Failed to remove from wishlist", "error");
+      return { success: false };
     }
   };
 

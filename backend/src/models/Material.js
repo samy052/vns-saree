@@ -20,7 +20,7 @@ const Material = sequelize.define('Material', {
     type: DataTypes.TEXT,
     allowNull: true
   },
-  image_url: {
+  image: {
     type: DataTypes.STRING,
     allowNull: true
   }

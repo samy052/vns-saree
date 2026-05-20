@@ -1,9 +1,10 @@
 const MaterialService = require('../services/MaterialService');
+const { uploadBufferToCloudinary } = require("../config/cloudinary");
 
 class MaterialController {
   async getAll(req, res) {
     try {
-      const materials = await MaterialService.getAllMaterials();
+      const materials = await MaterialService.getAllMaterials(req.query);
       res.status(200).json(materials);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -22,7 +23,12 @@ class MaterialController {
 
   async create(req, res) {
     try {
-      const material = await MaterialService.createMaterial(req.body);
+      const data = { ...req.body };
+      if (req.file) {
+        const uploadResult = await uploadBufferToCloudinary(req.file.buffer, "vns-saree/materials");
+        data.image = uploadResult.secure_url;
+      }
+      const material = await MaterialService.createMaterial(data);
       res.status(201).json(material);
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -31,7 +37,12 @@ class MaterialController {
 
   async update(req, res) {
     try {
-      const material = await MaterialService.updateMaterial(req.params.id, req.body);
+      const data = { ...req.body };
+      if (req.file) {
+        const uploadResult = await uploadBufferToCloudinary(req.file.buffer, "vns-saree/materials");
+        data.image = uploadResult.secure_url;
+      }
+      const material = await MaterialService.updateMaterial(req.params.id, data);
       res.status(200).json(material);
     } catch (error) {
       res.status(400).json({ message: error.message });

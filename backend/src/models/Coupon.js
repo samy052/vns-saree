@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/db");
-const Category = require("./Category");
 const Product = require("./Product");
 const Variety = require("./Variety");
 const Color = require("./Color");
@@ -110,11 +109,6 @@ const Coupon = sequelize.define(
     },
 
     // Applicability (Multiple Target Support)
-    applicable_category_id: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      allowNull: true,
-      defaultValue: null
-    },
     applicable_product_id: {
       type: DataTypes.ARRAY(DataTypes.INTEGER),
       allowNull: true,

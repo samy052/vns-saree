@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Users,
   ShoppingBag,
-  Layers,
   GitBranch,
   Palette,
   FileBadge,
@@ -20,15 +19,9 @@ import {
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   {
-    id: "categories",
-    label: "Categories",
-    subtext: "(Saree, Suit, Lehenga)",
-    icon: Layers,
-  },
-  {
     id: "varieties",
     label: "Varieties",
-    subtext: "(Katan, Kadhwa, etc.)",
+    subtext: "(Katan, Kadhwa, Tissue)",
     icon: GitBranch,
   },
   {

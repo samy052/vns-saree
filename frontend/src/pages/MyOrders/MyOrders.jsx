@@ -1,42 +1,44 @@
 import { Icon } from "@iconify/react";
-import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import API_ENDPOINTS from '../../config/api';
-import './MyOrders.css';
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import API_ENDPOINTS from "../../config/api";
+import "./MyOrders.css";
 
-/* ─── Status helpers ─────────────────────────────────────── */
 const STATUS_CONFIG = {
-  Pending:    { color: '#F59E0B', bg: '#FEF3C7', icon: 'lucide:clock',            label: 'Order Placed'   },
-  Processing: { color: '#3B82F6', bg: '#EFF6FF', icon: 'lucide:package',          label: 'Processing'     },
-  Shipped:    { color: '#8B5CF6', bg: '#F5F3FF', icon: 'lucide:truck',             label: 'Shipped'        },
-  Delivered:  { color: '#10B981', bg: '#ECFDF5', icon: 'lucide:check-circle',      label: 'Delivered'      },
-  Cancelled:  { color: '#EF4444', bg: '#FEF2F2', icon: 'lucide:x-circle',         label: 'Cancelled'      },
-  'Out For Delivery': { color: '#F59E0B', bg: '#FEF3C7', icon: 'lucide:navigation', label: 'Out for Delivery' },
+  Pending: { color: "#B7791F", bg: "#FFF7D6", icon: "lucide:clock", label: "Order Placed" },
+  Processing: { color: "#2563EB", bg: "#EFF6FF", icon: "lucide:package", label: "Processing" },
+  Shipped: { color: "#7C3AED", bg: "#F5F3FF", icon: "lucide:truck", label: "Shipped" },
+  Delivered: { color: "#059669", bg: "#ECFDF5", icon: "lucide:check-circle", label: "Delivered" },
+  Cancelled: { color: "#DC2626", bg: "#FEF2F2", icon: "lucide:x-circle", label: "Cancelled" },
+  "Out For Delivery": { color: "#B7791F", bg: "#FFF7D6", icon: "lucide:navigation", label: "Out for Delivery" },
 };
 
-const getStatus = (s) => STATUS_CONFIG[s] || STATUS_CONFIG['Pending'];
+const getStatus = (status) => STATUS_CONFIG[status] || STATUS_CONFIG.Pending;
+const formatPrice = (value) => `Rs. ${Number(value || 0).toLocaleString("en-IN")}`;
+const getItemImage = (item) => item.image_url || item.product_image_url || "";
+const getItemColorLabel = (item) => item.color_name || item.Color?.name || "Selected color";
 
-/* ─── Tracking Timeline ──────────────────────────────────── */
 const TrackingTimeline = ({ activities = [] }) => {
   if (!activities.length) {
     return (
       <div className="tracking-empty">
-        <Icon icon="lucide:map-pin-off" className="text-3xl text-gray-300"></Icon>
+        <Icon icon="lucide:map-pin-off"></Icon>
         <p>Tracking updates will appear once shipment is dispatched.</p>
       </div>
     );
   }
+
   return (
     <div className="tracking-timeline">
-      {activities.map((act, i) => (
-        <div key={i} className={`timeline-item ${i === 0 ? 'active' : ''}`}>
+      {activities.map((activity, index) => (
+        <div key={`${activity.activity || "step"}-${index}`} className={`timeline-item ${index === 0 ? "active" : ""}`}>
           <div className="timeline-dot"></div>
-          {i < activities.length - 1 && <div className="timeline-line"></div>}
+          {index < activities.length - 1 && <div className="timeline-line"></div>}
           <div className="timeline-content">
-            <p className="timeline-status">{act.activity}</p>
-            <p className="timeline-location">{act.location}</p>
-            <p className="timeline-date">{act.date}</p>
+            <p className="timeline-status">{activity.activity}</p>
+            <p className="timeline-location">{activity.location}</p>
+            <p className="timeline-date">{activity.date}</p>
           </div>
         </div>
       ))}
@@ -44,103 +46,139 @@ const TrackingTimeline = ({ activities = [] }) => {
   );
 };
 
-/* ─── Single Order Card ──────────────────────────────────── */
 const OrderCard = ({ order }) => {
   const [expanded, setExpanded] = useState(false);
   const [tracking, setTracking] = useState(null);
   const [trackLoading, setTrackLoading] = useState(false);
   const [trackError, setTrackError] = useState(null);
 
-  const cfg = getStatus(order.status);
-  const orderDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
-    day: 'numeric', month: 'long', year: 'numeric',
+  const statusConfig = getStatus(order.status);
+  const items = order.OrderItems || [];
+  const orderDate = new Date(order.createdAt).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 
   const loadTracking = useCallback(async () => {
     if (tracking || trackLoading) return;
     setTrackLoading(true);
     setTrackError(null);
+
     try {
-      const res = await fetch(API_ENDPOINTS.trackOrder(order.id));
-      const data = await res.json();
+      const response = await fetch(API_ENDPOINTS.trackOrder(order.id));
+      const data = await response.json();
       setTracking(data);
     } catch {
-      setTrackError('Could not load tracking info. Please try again.');
+      setTrackError("Could not load tracking info. Please try again.");
     } finally {
       setTrackLoading(false);
     }
   }, [order.id, tracking, trackLoading]);
 
   const handleExpand = () => {
-    const next = !expanded;
-    setExpanded(next);
-    if (next) loadTracking();
+    const nextState = !expanded;
+    setExpanded(nextState);
+    if (nextState) loadTracking();
   };
 
-  // Extract tracking activities from ShipRocket response
   const activities = tracking?.tracking?.tracking_data?.shipment_track_activities || [];
   const etd = tracking?.tracking?.tracking_data?.etd;
   const courierName = tracking?.tracking?.tracking_data?.shipment_track?.[0]?.courier_name;
   const awbCode = tracking?.tracking?.tracking_data?.shipment_track?.[0]?.awb_code;
 
   return (
-    <div className="order-card">
-      {/* ── Card Header ── */}
+    <article className="order-card">
       <div className="order-card-header">
         <div className="order-meta">
           <div className="order-id-wrap">
-            <Icon icon="lucide:receipt-text" className="text-[#800020]"></Icon>
+            <Icon icon="lucide:receipt-text"></Icon>
             <span className="order-id">Order #{order.id}</span>
           </div>
           <span className="order-date">{orderDate}</span>
         </div>
 
-        <div className="order-status-badge" style={{ color: cfg.color, backgroundColor: cfg.bg }}>
-          <Icon icon={cfg.icon}></Icon>
-          {cfg.label}
+        <div className="order-status-badge" style={{ color: statusConfig.color, backgroundColor: statusConfig.bg }}>
+          <Icon icon={statusConfig.icon}></Icon>
+          {statusConfig.label}
         </div>
       </div>
 
-      {/* ── Items Preview ── */}
-      <div className="order-items-row">
-        {(order.OrderItems || []).slice(0, 3).map((item, i) => (
-          <div key={i} className="order-item-chip">
-            <span className="item-name">{item.product_name || `Product #${item.product_id}`}</span>
-            <span className="item-qty">×{item.quantity}</span>
-            <span className="item-price">₹{Number(item.price).toLocaleString('en-IN')}</span>
+      <div className="order-products">
+        <div className="order-products-title">
+          <span>Ordered Products</span>
+          <small>{items.length} {items.length === 1 ? "item" : "items"}</small>
+        </div>
+
+        {items.map((item, index) => {
+          const imageUrl = getItemImage(item);
+          const colorHex = item.color_hex || item.Color?.hex_code || "#d8b46a";
+          const lineTotal = Number(item.price || 0) * Number(item.quantity || 1);
+
+          return (
+            <div key={`${item.product_id}-${item.colorId || index}`} className="order-product-item">
+              <div className="order-product-media">
+                {imageUrl ? (
+                  <img src={imageUrl} alt={item.product_name || `Product ${index + 1}`} loading="lazy" />
+                ) : (
+                  <div className="order-product-placeholder">
+                    <Icon icon="lucide:image-off"></Icon>
+                  </div>
+                )}
+                <span className="order-product-number">{String(index + 1).padStart(2, "0")}</span>
+              </div>
+
+              <div className="order-product-details">
+                <div className="order-product-name-row">
+                  <h3>{item.product_name || `Product #${item.product_id}`}</h3>
+                  <span className="order-product-qty">Qty {item.quantity}</span>
+                </div>
+
+                <div className="order-product-color">
+                  <span className="order-color-swatch" style={{ backgroundColor: colorHex }}></span>
+                  <span>{getItemColorLabel(item)}</span>
+                </div>
+
+                <div className="order-product-price-row">
+                  <span>{formatPrice(item.price)} each</span>
+                  <strong>{formatPrice(lineTotal)}</strong>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {!items.length && (
+          <div className="order-products-empty">
+            <Icon icon="lucide:package-open"></Icon>
+            <span>Product details are not available for this order.</span>
           </div>
-        ))}
-        {(order.OrderItems || []).length > 3 && (
-          <span className="more-items">+{order.OrderItems.length - 3} more</span>
         )}
       </div>
 
-      {/* ── Amount + Actions ── */}
       <div className="order-footer">
         <div className="order-total">
           <span className="total-label">Total Paid</span>
-          <span className="total-amount">₹{Number(order.total_amount).toLocaleString('en-IN')}</span>
+          <span className="total-amount">{formatPrice(order.total_amount)}</span>
           {Number(order.discount_amount) > 0 && (
             <span className="discount-saved">
               <Icon icon="lucide:tag"></Icon>
-              Saved ₹{Number(order.discount_amount).toLocaleString('en-IN')}
+              Saved {formatPrice(order.discount_amount)}
             </span>
           )}
         </div>
 
-        <button className={`track-btn ${expanded ? 'active' : ''}`} onClick={handleExpand}>
-          <Icon icon={expanded ? 'lucide:chevron-up' : 'lucide:map-pin'}></Icon>
-          {expanded ? 'Hide Tracking' : 'Track Order'}
+        <button className={`track-btn ${expanded ? "active" : ""}`} onClick={handleExpand} type="button">
+          <Icon icon={expanded ? "lucide:chevron-up" : "lucide:map-pin"}></Icon>
+          {expanded ? "Hide Tracking" : "Track Order"}
         </button>
       </div>
 
-      {/* ── Shipping Address ── */}
       <div className="order-address">
-        <Icon icon="lucide:map-pin" className="text-[#800020]"></Icon>
-        <span>{order.address}, {order.city} – {order.pincode}</span>
+        <Icon icon="lucide:map-pin"></Icon>
+        <span>{order.address}, {order.city} - {order.pincode}</span>
       </div>
 
-      {/* ── Tracking Panel ── */}
       {expanded && (
         <div className="tracking-panel">
           <div className="tracking-panel-header">
@@ -176,16 +214,13 @@ const OrderCard = ({ order }) => {
             </div>
           )}
 
-          {!trackLoading && !trackError && (
-            <TrackingTimeline activities={activities} />
-          )}
+          {!trackLoading && !trackError && <TrackingTimeline activities={activities} />}
         </div>
       )}
-    </div>
+    </article>
   );
 };
 
-/* ─── Main Page ──────────────────────────────────────────── */
 export default function MyOrders() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -194,42 +229,57 @@ export default function MyOrders() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user?.email) { navigate("/login?refresh=my-orders"); return; }
+    if (!user?.email) {
+      navigate("/login?refresh=my-orders");
+      return;
+    }
+
+    let isMounted = true;
 
     (async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const res = await fetch(API_ENDPOINTS.myOrders(user.email));
-        if (!res.ok) throw new Error('Failed to fetch orders');
-        const data = await res.json();
-        setOrders(data);
-      } catch (e) {
-        setError(e.message);
+        const response = await fetch(API_ENDPOINTS.myOrders(user.email));
+        if (!response.ok) throw new Error("Failed to fetch orders");
+        const data = await response.json();
+        if (isMounted) setOrders(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (isMounted) setError(err.message);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     })();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user, navigate]);
 
   return (
     <div className="my-orders-page">
-      {/* Hero Banner */}
-      <div className="orders-hero">
+      <section className="orders-hero">
         <div className="orders-hero-content">
-          <Icon icon="lucide:package-search" className="hero-icon"></Icon>
+          <span className="orders-hero-icon">
+            <Icon icon="lucide:package-search"></Icon>
+          </span>
           <div>
+            <p className="orders-eyebrow">Banarasi Kala</p>
             <h1>My Orders</h1>
-            <p>Track your Banarasi sarees from our loom to your doorstep</p>
+            <span>Every saree you ordered, tracked with color, price and delivery updates.</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="orders-container">
+      <main className="orders-container">
         {loading && (
           <div className="orders-loading">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="order-skeleton">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="order-skeleton">
                 <div className="skel skel-header"></div>
-                <div className="skel skel-body"></div>
+                <div className="skel skel-product"></div>
+                <div className="skel skel-product short"></div>
                 <div className="skel skel-footer"></div>
               </div>
             ))}
@@ -238,10 +288,10 @@ export default function MyOrders() {
 
         {error && (
           <div className="orders-error">
-            <Icon icon="lucide:wifi-off" className="text-4xl text-red-400"></Icon>
+            <Icon icon="lucide:wifi-off"></Icon>
             <h3>Could not load orders</h3>
             <p>{error}</p>
-            <button onClick={() => window.location.reload()}>Try Again</button>
+            <button onClick={() => window.location.reload()} type="button">Try Again</button>
           </div>
         )}
 
@@ -261,15 +311,14 @@ export default function MyOrders() {
           <div className="orders-list">
             <div className="orders-count">
               <Icon icon="lucide:layers"></Icon>
-              {orders.length} {orders.length === 1 ? 'Order' : 'Orders'}
+              {orders.length} {orders.length === 1 ? "Order" : "Orders"}
             </div>
-            {orders.map(order => (
+            {orders.map((order) => (
               <OrderCard key={order.id} order={order} />
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
-

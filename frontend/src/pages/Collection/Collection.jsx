@@ -1,19 +1,27 @@
 import { Icon } from "@iconify/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { useNotification } from "../../context/NotificationContext";
 import { API_ENDPOINTS } from "../../config/api";
+import { getProductCoverImage, getProductImages } from "../../utils/productMedia";
 import "./Collection.css";
 
-const PAGE_SIZE = 40;
+const PAGE_SIZE = 20;
 
 const getIdListParam = (params, key) =>
   (params.get(key) || "")
     .split(",")
     .map((value) => Number(value))
-    .filter(Number.isFinite);
+    .filter((value) => Number.isFinite(value) && value > 0);
+
+const getSortParam = (params) => {
+  const sort = params.get("sort");
+  if (sort === "special" || sort === "price_asc" || sort === "price_desc") return sort;
+  if (sort === "popular") return "special";
+  return "newest";
+};
 
 const Collection = () => {
   const [searchParams] = useSearchParams();
@@ -28,8 +36,14 @@ const Collection = () => {
   const [colors, setColors] = useState([]);
   const [varieties, setVarieties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtersLoading, setFiltersLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedFilters, setExpandedFilters] = useState({});
+  const [loadedImages, setLoadedImages] = useState({});
+  const [hoveredProductId, setHoveredProductId] = useState(null);
+  const [activeSlides, setActiveSlides] = useState({});
+  const productsRequestId = useRef(0);
 
 
 
@@ -38,7 +52,6 @@ const Collection = () => {
     occasion: [],
     material: [],
     color: [],
-    specialCollection: false,
     minPrice: 0,
     maxPrice: 200000,
     sortBy: "newest",
@@ -52,6 +65,7 @@ const Collection = () => {
       ...prev,
       search: urlSearch,
       variety: urlVarieties,
+      sortBy: getSortParam(searchParams),
     }));
     setCurrentPage(1);
   }, [searchParams]);
@@ -59,15 +73,17 @@ const Collection = () => {
   const totalPaginationPages = Math.ceil(totalItems / PAGE_SIZE);
 
 
-  // Fetch Metadata (Categories, Materials, Colors, Varieties)
+  // Fetch lean metadata for filters.
   useEffect(() => {
     const fetchMetadata = async () => {
+      setFiltersLoading(true);
       try {
+        const leanFields = "fields=id,name,slug";
         const [occRes, matRes, colRes, varRes] = await Promise.all([
-          fetch(API_ENDPOINTS.occasions),
-          fetch(API_ENDPOINTS.materials),
+          fetch(`${API_ENDPOINTS.occasions}?${leanFields}`),
+          fetch(`${API_ENDPOINTS.materials}?${leanFields}`),
           fetch(API_ENDPOINTS.colors),
-          fetch(API_ENDPOINTS.varieties),
+          fetch(`${API_ENDPOINTS.varieties}?${leanFields}`),
         ]);
         const [occData, matData, colData, varData] = await Promise.all([
           occRes.json(),
@@ -81,6 +97,8 @@ const Collection = () => {
         setVarieties(varData);
       } catch (error) {
         console.error("Error fetching metadata:", error);
+      } finally {
+        setFiltersLoading(false);
       }
     };
     fetchMetadata();
@@ -88,18 +106,21 @@ const Collection = () => {
 
   // Fetch Products
   const fetchProducts = async (page) => {
+    const requestId = productsRequestId.current + 1;
+    productsRequestId.current = requestId;
     setLoading(true);
     try {
       const params = new URLSearchParams();
       params.append("paginated", "true");
       params.append("page", page);
       params.append("pageSize", PAGE_SIZE);
+      params.append("status", "active");
+      params.append("view", "collection");
       
       if (filters.variety.length) params.append("variety", filters.variety.join(","));
       if (filters.occasion.length) params.append("occasion", filters.occasion.join(","));
       if (filters.material.length) params.append("material", filters.material.join(","));
       if (filters.color.length) params.append("color", filters.color.join(","));
-      if (filters.specialCollection) params.append("specialCollection", "true");
       if (filters.minPrice > 0) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice < 200000) params.append("maxPrice", filters.maxPrice);
       if (filters.sortBy) params.append("sortBy", filters.sortBy);
@@ -108,12 +129,17 @@ const Collection = () => {
       const res = await fetch(`${API_ENDPOINTS.products}?${params.toString()}`);
       const data = await res.json();
 
+      if (requestId !== productsRequestId.current) return;
+
       setProducts(data.items || []);
+      setLoadedImages({});
+      setActiveSlides({});
+      setHoveredProductId(null);
       setTotalItems(data.meta?.totalItems ?? 0);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
-      setLoading(false);
+      if (requestId === productsRequestId.current) setLoading(false);
     }
   };
 
@@ -166,6 +192,40 @@ const Collection = () => {
   const handleSortChange = (e) =>
     setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
 
+  const toggleFilterExpand = (key) => {
+    setExpandedFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  useEffect(() => {
+    if (!hoveredProductId) return undefined;
+
+    const product = products.find((item) => item.id === hoveredProductId);
+    const imageCount = getProductImages(product || {}).length;
+    if (imageCount <= 1) return undefined;
+
+    const timer = window.setInterval(() => {
+      setActiveSlides((current) => ({
+        ...current,
+        [hoveredProductId]: ((current[hoveredProductId] || 0) + 1) % imageCount,
+      }));
+    }, 1450);
+
+    return () => window.clearInterval(timer);
+  }, [hoveredProductId, products]);
+
+  const handleCardEnter = (productId) => {
+    setHoveredProductId(productId);
+  };
+
+  const handleCardLeave = (productId) => {
+    setHoveredProductId((current) => (current === productId ? null : current));
+    setActiveSlides((current) => ({ ...current, [productId]: 0 }));
+  };
+
+  const markImageLoaded = (productId) => {
+    setLoadedImages((current) => ({ ...current, [productId]: true }));
+  };
+
   const calculateDiscount = (mrp, selling) => {
     const m = Number(mrp);
     const s = Number(selling);
@@ -179,20 +239,11 @@ const Collection = () => {
       occasion: [],
       material: [],
       color: [],
-      specialCollection: false,
       minPrice: 0,
       maxPrice: 200000,
       sortBy: "newest",
       search: "",
     });
-  };
-
-  const getCoverImage = (product) => {
-    const allImages = [...(product.images || []), ...(product.productImages || [])];
-    if (allImages.length === 0) return product.image_url || "https://via.placeholder.com/400x600?text=VNS+Saree";
-    const cover = allImages.find((img) => img && (img.is_cover || img.is_primary)) || allImages[0];
-    if (typeof cover === 'string') return cover;
-    return cover?.url || "https://via.placeholder.com/400x600?text=VNS+Saree";
   };
 
   const handleWishlist = async (e, product) => {
@@ -205,6 +256,62 @@ const Collection = () => {
     }
     await toggleWishlist(product);
   };
+
+  const renderFilterGroup = (key, title, items, filterKey, renderExtra = null) => {
+    const isExpanded = Boolean(expandedFilters[key]);
+    const visibleItems = isExpanded ? items : items.slice(0, 5);
+    const hiddenCount = Math.max(0, items.length - visibleItems.length);
+
+    return (
+      <div className="filter-section">
+        <h3 className="filter-title">{title}</h3>
+        <div className="filter-list">
+          {visibleItems.map((item) => (
+            <label key={item.id} className="filter-item">
+              <input
+                type="checkbox"
+                checked={filters[filterKey].includes(item.id)}
+                onChange={() => handleCheckboxChange(filterKey, item.id)}
+              />
+              {renderExtra?.(item)}
+              {item.name}
+            </label>
+          ))}
+        </div>
+        {hiddenCount > 0 && (
+          <button
+            type="button"
+            className="filter-more-btn"
+            onClick={() => toggleFilterExpand(key)}
+          >
+            +{hiddenCount} more
+          </button>
+        )}
+        {isExpanded && items.length > 5 && (
+          <button
+            type="button"
+            className="filter-more-btn filter-less-btn"
+            onClick={() => toggleFilterExpand(key)}
+          >
+            Show less
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const renderFilterSkeleton = () => (
+    <div className="filter-skeleton-wrap" aria-label="Loading filters">
+      {Array.from({ length: 4 }).map((_, sectionIndex) => (
+        <div className="filter-section" key={sectionIndex}>
+          <span className="filter-skeleton-title" />
+          {Array.from({ length: 5 }).map((__, itemIndex) => (
+            <span className="filter-skeleton-row" key={itemIndex} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="collection-container">
@@ -228,94 +335,27 @@ const Collection = () => {
             {(filters.variety.length > 0 ||
               filters.occasion.length > 0 ||
               filters.material.length > 0 ||
-              filters.color.length > 0 ||
-              filters.specialCollection) && (
+              filters.color.length > 0) && (
                 <button className="clear-btn" onClick={clearAllFilters}>
                   Clear All
                 </button>
               )}
           </div>
 
-          <div className="filter-section">
-            <h3 className="filter-title">Variety</h3>
-            <div className="filter-list">
-              {varieties.map((v) => (
-                <label key={v.id} className="filter-item">
-                  <input
-                    type="checkbox"
-                    checked={filters.variety.includes(v.id)}
-                    onChange={() => handleCheckboxChange("variety", v.id)}
-                  />
-                  {v.name}
-                </label>
+          {filtersLoading ? (
+            renderFilterSkeleton()
+          ) : (
+            <>
+              {renderFilterGroup("variety", "Variety", varieties, "variety")}
+              {renderFilterGroup("material", "Fabric", materials, "material")}
+              {renderFilterGroup("occasion", "Occasions", occasions, "occasion")}
+              {renderFilterGroup("color", "Color", colors, "color", (col) => (
+                <svg className="color-swatch" viewBox="0 0 16 16" aria-hidden="true">
+                  <circle cx="8" cy="8" r="7.5" fill={col.hex_code || "#cccccc"} />
+                </svg>
               ))}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h3 className="filter-title">Collections</h3>
-            <div className="filter-list">
-              <label className="filter-item">
-                <input
-                  type="checkbox"
-                  checked={filters.specialCollection}
-                  onChange={() => setFilters(prev => ({ ...prev, specialCollection: !prev.specialCollection }))}
-                />
-                Special Collection
-              </label>
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h3 className="filter-title">Occasions</h3>
-            <div className="filter-list">
-              {occasions.map((occ) => (
-                <label key={occ.id} className="filter-item">
-                  <input
-                    type="checkbox"
-                    checked={filters.occasion.includes(occ.id)}
-                    onChange={() => handleCheckboxChange("occasion", occ.id)}
-                  />
-                  {occ.name}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h3 className="filter-title">Fabric</h3>
-            <div className="filter-list">
-              {materials.map((mat) => (
-                <label key={mat.id} className="filter-item">
-                  <input
-                    type="checkbox"
-                    checked={filters.material.includes(mat.id)}
-                    onChange={() => handleCheckboxChange("material", mat.id)}
-                  />
-                  {mat.name}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h3 className="filter-title">Color</h3>
-            <div className="filter-list">
-              {colors.map((col) => (
-                <label key={col.id} className="filter-item">
-                  <input
-                    type="checkbox"
-                    checked={filters.color.includes(col.id)}
-                    onChange={() => handleCheckboxChange("color", col.id)}
-                  />
-                  <svg className="color-swatch" viewBox="0 0 16 16" aria-hidden="true">
-                    <circle cx="8" cy="8" r="7.5" fill={col.hex_code || "#cccccc"} />
-                  </svg>
-                  {col.name}
-                </label>
-              ))}
-            </div>
-          </div>
+            </>
+          )}
 
           <div className="filter-section">
             <h3 className="filter-title">Price</h3>
@@ -341,10 +381,10 @@ const Collection = () => {
           <div className="listing-controls">
             <div className="sort-container">
               <select value={filters.sortBy} onChange={handleSortChange}>
-                <option value="newest">Sort by: Newest</option>
+                <option value="newest">Sort by: New Arrivals</option>
                 <option value="price_asc">Price: Low to High</option>
                 <option value="price_desc">Price: High to Low</option>
-                <option value="popularity">Popularity</option>
+                <option value="special">Special Collections</option>
               </select>
             </div>
           </div>
@@ -366,42 +406,77 @@ const Collection = () => {
                 No products found matching your filters.
               </div>
             ) : (
-              products.map((product) => (
-                <div key={product.id} className="product-card reveal-card">
+              products.map((product) => {
+                const cover = getProductCoverImage(product, "https://via.placeholder.com/400x600?text=VNS+Saree");
+                const productImages = getProductImages(product);
+                const sliderImages = productImages.length > 0 ? productImages : [{ url: cover }];
+                const activeSlide = activeSlides[product.id] || 0;
+                const imageReady = Boolean(loadedImages[product.id]);
+                const hasStockQuantity =
+                  product.stock_quantity !== undefined &&
+                  product.stock_quantity !== null &&
+                  product.stock_quantity !== "";
+                const stockQuantity = hasStockQuantity ? Number(product.stock_quantity) : null;
+                const lowStockThreshold = Number(product.low_stock_threshold || 5);
+                const isOutOfStock = hasStockQuantity && stockQuantity <= 0;
+                const isLowStock = hasStockQuantity && stockQuantity > 0 && stockQuantity < lowStockThreshold;
+
+                return (
+                <div
+                  key={product.id}
+                  className={`product-card reveal-card ${isOutOfStock ? "out-of-stock" : ""}`}
+                  onMouseEnter={() => handleCardEnter(product.id)}
+                  onMouseLeave={() => handleCardLeave(product.id)}
+                >
+                  <button
+                    type="button"
+                    className={`collection-wishlist-pill ${isInWishlist(product.id) ? "active" : ""}`}
+                    onClick={(e) => handleWishlist(e, product)}
+                    aria-label={isInWishlist(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+                  >
+                    <Icon
+                      className="wishlist-icon"
+                      icon={isInWishlist(product.id) ? "mdi:heart" : "lucide:heart"}
+                    />
+                  </button>
 
                   <Link
                     to={`/product/${product.slug}`}
                     className="card-img-container"
                   >
-                    <img
-                      src={getCoverImage(product)}
-                      alt={product.name}
-                      className="card-img"
-                    />
-                    <div className="wishlist-overlay">
-                      <button
-                        className={`wishlist-btn ${isInWishlist(product.id) ? "active" : ""}`}
-                        onClick={(e) => handleWishlist(e, product)}
-                      >
-                        <Icon
-                          className="wishlist-icon"
-                          icon={
-                            isInWishlist(product.id)
-                              ? "mdi:heart"
-                              : "lucide:heart"
-                          }
-                        ></Icon>
-                        {isInWishlist(product.id) ? "WISHLISTED" : "WISHLIST"}
-                      </button>
+                    {!imageReady && <span className="card-image-shimmer" aria-hidden="true" />}
+                    {isOutOfStock && <span className="collection-stock-badge">Out of stock</span>}
+                    {isLowStock && <span className="collection-stock-badge low">Very few stocks available</span>}
+                    <div
+                      className={`card-img-track ${imageReady ? "is-loaded" : ""}`}
+                      style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+                    >
+                      {sliderImages.map((image, imageIndex) => (
+                        <img
+                          key={`${product.id}-${image.url}-${imageIndex}`}
+                          src={image.url}
+                          alt={imageIndex === 0 ? product.name : ""}
+                          className="card-img"
+                          loading="lazy"
+                          onLoad={() => {
+                            if (imageIndex === 0) markImageLoaded(product.id);
+                          }}
+                        />
+                      ))}
                     </div>
+                    {sliderImages.length > 1 && (
+                      <div className="collection-card-dots" aria-hidden="true">
+                        {sliderImages.map((image, imageIndex) => (
+                          <span
+                            key={`${image.url}-${imageIndex}`}
+                            className={imageIndex === activeSlide ? "active" : ""}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </Link>
 
                   <div className="card-details">
-                    {product.occasion?.name && (
-                      <span className="product-occasion-badge">
-                        {product.occasion.name}
-                      </span>
-                    )}
                     <p className="product-title" title={product.name || "Premium Saree"}>
                       {product.name || "Handcrafted Banarasi Saree"}
                     </p>
@@ -427,7 +502,8 @@ const Collection = () => {
                     </div>
                   </div>
                 </div>
-              ))
+              );
+              })
             )}
           </div>
 

@@ -5,7 +5,7 @@
   padding: 34px 18px;
   background:
     linear-gradient(rgba(255, 246, 232, 0.62), rgba(255, 246, 232, 0.62)),
-    var(--auth-bg),
+    var(--auth-bg, var(--bk-section-bg)),
     linear-gradient(90deg, #f7e7cc 0%, #fff5e5 50%, #f7e7cc 100%);
   background-size: 100% 100%, cover, 100% 100%;
   background-position: center;

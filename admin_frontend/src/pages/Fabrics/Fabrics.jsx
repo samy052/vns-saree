@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { API_ENDPOINTS } from "../../config/api";
 
-const INITIAL_FORM = { name: "", description: "" };
+const INITIAL_FORM = { name: "", description: "", image: "" };
 
 export default function Fabrics() {
   const [fabrics, setFabrics] = useState([]);
@@ -23,6 +23,8 @@ export default function Fabrics() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFabric, setEditingFabric] = useState(null);
   const [formData, setFormData] = useState(INITIAL_FORM);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   // Unified modal system
@@ -80,11 +82,14 @@ export default function Fabrics() {
   const openFormModal = (fabric = null) => {
     if (fabric) {
       setEditingFabric(fabric);
-      setFormData({ name: fabric.name, description: fabric.description || "" });
+      setFormData({ name: fabric.name, description: fabric.description || "", image: fabric.image || "" });
+      setImagePreview(fabric.image || "");
     } else {
       setEditingFabric(null);
       setFormData(INITIAL_FORM);
+      setImagePreview("");
     }
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -109,11 +114,12 @@ export default function Fabrics() {
         setSubmitting(true);
         closeModal();
 
-        const payload = {
-          name: formData.name,
-          description: formData.description,
-          slug: editingFabric ? editingFabric.slug : slug,
-        };
+        const payload = new FormData();
+        payload.append("name", formData.name);
+        payload.append("description", formData.description || "");
+        payload.append("slug", editingFabric ? editingFabric.slug : slug);
+        if (formData.image && !imageFile) payload.append("image", formData.image);
+        if (imageFile) payload.append("image", imageFile);
 
         try {
           const url = editingFabric
@@ -122,8 +128,7 @@ export default function Fabrics() {
           const method = editingFabric ? "PUT" : "POST";
           const res = await fetch(url, {
             method,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: payload,
           });
 
           if (res.ok) {
@@ -292,6 +297,9 @@ export default function Fabrics() {
                 Fabric Name
               </th>
               <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                Image
+              </th>
+              <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                 Slug
               </th>
               <th className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
@@ -305,7 +313,7 @@ export default function Fabrics() {
           <tbody className="divide-y divide-gray-100">
             {filteredFabrics.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-4 py-16 text-center">
+                <td colSpan="7" className="px-4 py-16 text-center">
                   <Layers className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500">No fabrics found. Add your first fabric!</p>
                 </td>
@@ -323,6 +331,13 @@ export default function Fabrics() {
                   </td>
                   <td className="px-4 py-4">
                     <span className="font-bold text-[#4A3F35]">{fabric.name}</span>
+                  </td>
+                  <td className="px-4 py-4">
+                    {fabric.image ? (
+                      <img src={fabric.image} alt={fabric.name} className="w-12 h-12 rounded-lg object-cover border border-[#D4AF37]/20" />
+                    ) : (
+                      <span className="text-xs text-gray-400">No image</span>
+                    )}
                   </td>
                   <td className="px-4 py-4">
                     <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
@@ -401,6 +416,24 @@ export default function Fabrics() {
                   className="w-full mt-1.5 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] outline-none transition-all resize-none"
                   placeholder="Describe this fabric material..."
                 />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Fabric Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] || null;
+                    setImageFile(file);
+                    setImagePreview(file ? URL.createObjectURL(file) : formData.image || "");
+                  }}
+                  className="w-full mt-1.5 px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#800020]/20 focus:border-[#800020] outline-none transition-all"
+                />
+                {imagePreview && (
+                  <img src={imagePreview} alt="Fabric preview" className="mt-3 w-20 h-20 object-cover rounded-lg border border-[#D4AF37]/20" />
+                )}
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t mt-6">
                 <button

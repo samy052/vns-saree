@@ -37,3 +37,22 @@
 .animate-tracking-breathe {
   animation: tracking-breathe 4s ease-in-out infinite;
 }
+
+.App {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(255, 246, 232, 0.76), rgba(255, 246, 232, 0.92)),
+    var(--bk-section-bg),
+    #fff6e8;
+  background-size: 100% 100%, cover, 100% 100%;
+  background-position: center top;
+}
+
+.bk-textured-page {
+  background:
+    linear-gradient(rgba(255, 246, 232, 0.76), rgba(255, 246, 232, 0.92)),
+    var(--bk-section-bg),
+    #fff6e8;
+  background-size: 100% 100%, cover, 100% 100%;
+  background-position: center top;
+}

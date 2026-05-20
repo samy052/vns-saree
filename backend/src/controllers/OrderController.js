@@ -1,8 +1,47 @@
 const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
+const Product = require('../models/Product');
+const Color = require('../models/Color');
 const { sequelize } = require('../config/db');
 const EmailService = require('../services/EmailService');
 const ShipRocketService = require('../services/ShipRocketService');
+
+const sortProductImages = (images = []) => [...images].sort((a, b) => {
+  const left = Number.isFinite(Number(a.display_order)) ? Number(a.display_order) : 999;
+  const right = Number.isFinite(Number(b.display_order)) ? Number(b.display_order) : 999;
+  return left - right;
+});
+
+const pickOrderItemImage = (product, colorId) => {
+  const images = Array.isArray(product?.images) ? sortProductImages(product.images) : [];
+  if (!images.length) return "";
+
+  const numericColorId = Number(colorId);
+  const colorImages = Number.isFinite(numericColorId)
+    ? images.filter((image) => Number(image.color_id) === numericColorId)
+    : [];
+  const coverImages = images.filter((image) => image.is_cover);
+  const selected = colorImages[0] || coverImages[0] || images[0];
+
+  return selected?.url || selected?.image_url || "";
+};
+
+const serializeOrder = (order) => {
+  const json = order.toJSON();
+  json.OrderItems = (json.OrderItems || []).map((item) => ({
+    id: item.id,
+    product_id: item.product_id,
+    product_name: item.product_name || item.Product?.name || `Product #${item.product_id}`,
+    quantity: item.quantity,
+    price: item.price,
+    colorId: item.colorId || item.color_id || null,
+    color_name: item.Color?.name || null,
+    color_hex: item.Color?.hex_code || null,
+    image_url: pickOrderItemImage(item.Product, item.colorId || item.color_id),
+    product_slug: item.Product?.slug || null,
+  }));
+  return json;
+};
 
 class OrderController {
   async createOrder(req, res) {
@@ -52,6 +91,7 @@ class OrderController {
       const orderItems = items.map(item => ({
         order_id: order.id,
         product_id: item.id,
+        colorId: item.colorId || item.color_id || null,
         quantity: item.quantity,
         price: item.price,
         product_name: item.name || item.product_name
@@ -95,8 +135,17 @@ class OrderController {
 
   async getMyOrders(req, res) {
     try {
-      const orders = await Order.findAll({ include: [OrderItem] });
-      res.status(200).json(orders);
+      const orders = await Order.findAll({
+        include: [{
+          model: OrderItem,
+          include: [
+            { model: Product, attributes: ['id', 'name', 'slug', 'images'] },
+            { model: Color, attributes: ['id', 'name', 'hex_code'] },
+          ],
+        }],
+        order: [['createdAt', 'DESC']],
+      });
+      res.status(200).json(orders.map(serializeOrder));
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -108,10 +157,16 @@ class OrderController {
       const { email } = req.params;
       const orders = await Order.findAll({
         where: { customer_email: email },
-        include: [OrderItem],
+        include: [{
+          model: OrderItem,
+          include: [
+            { model: Product, attributes: ['id', 'name', 'slug', 'images'] },
+            { model: Color, attributes: ['id', 'name', 'hex_code'] },
+          ],
+        }],
         order: [['createdAt', 'DESC']],
       });
-      res.status(200).json(orders);
+      res.status(200).json(orders.map(serializeOrder));
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

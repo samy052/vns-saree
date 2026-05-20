@@ -1,6 +1,5 @@
 const Coupon = require('../models/Coupon');
 const { Op } = require('sequelize');
-const Category = require('../models/Category');
 const Product = require('../models/Product');
 const Variety = require('../models/Variety');
 const Color = require('../models/Color');

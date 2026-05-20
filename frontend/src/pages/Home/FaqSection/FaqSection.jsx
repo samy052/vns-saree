@@ -1,41 +1,28 @@
 import { useState } from "react";
 import "./FaqSection.css";
 
-const storySectionImages = import.meta.glob(
-  "../../../assets/story/*.{png,jpg,jpeg,webp}",
-  { eager: true, import: "default" },
-);
-
-const getSectionImage = (name) => {
-  const entry = Object.entries(storySectionImages).find(([path]) =>
-    path.toLowerCase().includes(name),
-  );
-  return entry?.[1] || "";
-};
-
 const FAQ_ITEMS = [
-  ["How long does delivery take?", "Orders usually arrive within 5-7 business days."],
-  ["What is your return policy?", "Returns are accepted as per our return and exchange policy."],
-  ["Do you offer Cash on Delivery?", "Cash on Delivery availability depends on your delivery location."],
-  ["How can I track my order?", "You can track your order from the My Orders page after login."],
-  ["Are the sarees 100% authentic?", "Yes, every saree is quality checked before dispatch."],
-  ["Do you ship internationally?", "International shipping is available for selected locations."],
+  ["How can I track my order?", "Once your order is shipped, you will receive a tracking link via SMS/email powered by Shiprocket."],
+  ["How many days does delivery take?", "Orders are usually delivered within 4-7 business days depending on your location."],
+  ["Do you offer Cash on Delivery (COD)?", "Yes, Cash on Delivery is available on selected pin codes."],
+  ["Do sarees include blouse pieces?", "Yes, most sarees come with an unstitched blouse piece unless otherwise mentioned."],
+  ["Will the product color exactly match the images?", "Slight color variations may occur due to photography lighting and screen settings."],
+  ["How can I contact customer support?", "You can contact us via WhatsApp, email, or phone during business hours."],
+  ["My payment failed but money was deducted. What should I do?", "If your payment was deducted but the order was not confirmed, the amount is usually refunded automatically within 5-7 business days."],
+  ["Can I return or exchange my saree?", "Yes, eligible products can be returned or exchanged as per our Return & Exchange Policy."],
+  ["Do you accept bulk or wholesale orders?", "Yes, we accept bulk and wedding collection orders. Please contact us for special pricing."],
+  ["Are online payments secure?", "Yes, all transactions are encrypted and securely processed through Razorpay."],
 ];
 
 const FaqSection = () => {
   const [openIndex, setOpenIndex] = useState(null);
-  const background = getSectionImage("banaras-ghat");
 
   const toggleItem = (index) => {
     setOpenIndex((current) => (current === index ? null : index));
   };
 
   return (
-    <section
-      className="bk-faq-section"
-      style={{ "--bk-faq-bg": `url(${background})` }}
-      aria-labelledby="faq-title"
-    >
+    <section className="bk-faq-section" aria-labelledby="faq-title">
       <div className="bk-faq-shell">
         <h2 id="faq-title">Frequently Asked Questions</h2>
         <div className="bk-faq-grid">

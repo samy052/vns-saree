@@ -8,7 +8,6 @@ import Layout from "./layout/Layout";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Users from "./pages/Users/Users";
 import Products from "./pages/Products/Products";
-import Categories from "./pages/Categories/Categories";
 import Varieties from "./pages/Varieties/Varieties";
 import Sizes from "./pages/Sizes/Sizes";
 import Colors from "./pages/Colors/Colors";
@@ -34,7 +33,6 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/categories" element={<Categories />} />
           <Route path="/varieties" element={<Varieties />} />
           <Route path="/sizes" element={<Sizes />} />
           <Route path="/colors" element={<Colors />} />

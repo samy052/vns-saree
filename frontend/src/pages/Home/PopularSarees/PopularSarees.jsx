@@ -1,11 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import { API_ENDPOINTS } from "../../../config/api";
+import { getProductCoverImage, getProductImages } from "../../../utils/productMedia";
 import "./PopularSarees.css";
 
 const calcDiscount = (mrp, sell) => {
@@ -13,25 +9,30 @@ const calcDiscount = (mrp, sell) => {
   return Math.round(((Number(mrp) - Number(sell)) / Number(mrp)) * 100);
 };
 
-const getCoverImage = (product) => {
-  const imgs = [...(product.images || []), ...(product.productImages || [])];
-  if (!imgs.length) return product.image_url || product.image || "";
-  return (imgs.find((img) => img.is_cover || img.is_primary) || imgs[0]).url;
-};
-
 const PopularSarees = () => {
+  const sectionRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState({});
+  const [hoveredProductId, setHoveredProductId] = useState(null);
+  const [activeSlides, setActiveSlides] = useState({});
 
   useEffect(() => {
     const controller = new AbortController();
 
-    fetch(`${API_ENDPOINTS.products}?specialCollection=true&limit=20`, {
+    const params = new URLSearchParams({
+      status: "active",
+      stockStatus: "in_stock",
+      storeFrontVisibility: "true",
+      limit: "10",
+      view: "home",
+    });
+
+    fetch(`${API_ENDPOINTS.products}?${params.toString()}`, {
       signal: controller.signal,
     })
       .then((response) => response.json())
-      .then((data) => setProducts((data.items || data).slice(0, 8)))
+      .then((data) => setProducts((data.items || data).slice(0, 10)))
       .catch((error) => {
         if (error.name !== "AbortError") setProducts([]);
       })
@@ -40,14 +41,59 @@ const PopularSarees = () => {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    if (loading || products.length === 0 || !sectionRef.current) return undefined;
+
+    const cards = sectionRef.current.querySelectorAll(".bk-popular-card");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.22, rootMargin: "0px 0px -8% 0px" }
+    );
+
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [loading, products]);
+
   const toggleWishlist = (id) => {
     setWishlist((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  if (!loading && products.length === 0) return null;
+  useEffect(() => {
+    if (!hoveredProductId) return undefined;
+
+    const product = products.find((item) => item.id === hoveredProductId);
+    const imageCount = getProductImages(product || {}).length;
+    if (imageCount <= 1) return undefined;
+
+    const timer = window.setInterval(() => {
+      setActiveSlides((current) => ({
+        ...current,
+        [hoveredProductId]: ((current[hoveredProductId] || 0) + 1) % imageCount,
+      }));
+    }, 1450);
+
+    return () => window.clearInterval(timer);
+  }, [hoveredProductId, products]);
+
+  const handleCardEnter = (productId) => {
+    setHoveredProductId(productId);
+  };
+
+  const handleCardLeave = (productId) => {
+    setHoveredProductId((current) => (current === productId ? null : current));
+    setActiveSlides((current) => ({ ...current, [productId]: 0 }));
+  };
 
   return (
-    <section className="bk-popular-section">
+    <section className="bk-popular-section" ref={sectionRef}>
       <div className="bk-popular-shell">
         <div className="bk-popular-header">
           <div className="bk-popular-title-wrap">
@@ -68,10 +114,15 @@ const PopularSarees = () => {
           </Link>
         </div>
 
-      {loading ? (
-        <div className="bk-popular-grid bk-popular-skeleton-grid">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bk-popular-card bk-popular-skeleton">
+        {loading ? (
+          <div className="bk-popular-showcase bk-popular-skeleton-grid">
+            {[...Array(7)].map((_, i) => (
+            <div
+              key={i}
+              className={`bk-popular-card bk-popular-skeleton ${
+                i === 0 ? "bk-popular-feature-card" : ""
+              }`}
+            >
               <div className="bk-popular-skeleton-image" />
               <div className="bk-popular-card-body">
                 <div className="bk-popular-skeleton-line wide" />
@@ -81,67 +132,84 @@ const PopularSarees = () => {
             </div>
           ))}
         </div>
+      ) : products.length === 0 ? (
+        <div className="bk-popular-empty" role="status">
+          <div className="bk-popular-empty-icon" aria-hidden="true" />
+          <h3>Curating Popular Sarees</h3>
+          <p>Featured pieces will appear here as soon as the collection is ready.</p>
+          <Link to="/collection" className="bk-popular-empty-link">
+            Explore Collection
+          </Link>
+        </div>
       ) : (
-        <Swiper
-          modules={[Autoplay, Pagination, Navigation]}
-          slidesPerView={1.12}
-          centeredSlides={true}
-          spaceBetween={18}
-          slidesPerGroup={1}
-          loop={true}
-          speed={760}
-          autoplay={{
-            delay: 2600,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
-          pagination={{ clickable: true }}
-          navigation={true}
-          breakpoints={{
-            480: {
-              slidesPerView: 1.4,
-              centeredSlides: true,
-              spaceBetween: 18,
-            },
-            768: {
-              slidesPerView: 2.2,
-              slidesPerGroup: 1,
-              spaceBetween: 18,
-              centeredSlides: false,
-            },
-            1024: {
-              slidesPerView: 4,
-              slidesPerGroup: 1,
-              centeredSlides: false,
-            },
-            1200: {
-              slidesPerView: 6,
-              slidesPerGroup: 1,
-              centeredSlides: false,
-            },
-          }}
-          className="bk-popular-grid bk-popular-carousel"
-        >
-          {products.slice(0, 12).map((product) => {
+        <div className="bk-popular-showcase">
+          {products.slice(0, 10).map((product, index) => {
             const sell = Number(product.selling_price || product.price);
             const mrp = Number(product.mrp_price || product.mrp || 0);
             const disc = calcDiscount(mrp, sell);
-            const img = getCoverImage(product) || product.image || "";
+            const img = getProductCoverImage(product);
+            const cardImages = getProductImages(product);
+            const sliderImages = cardImages.length > 0 ? cardImages : [{ url: img }];
             const liked = wishlist[product.id];
+            const activeIndex = activeSlides[product.id] || 0;
+            const motionClass =
+              index % 3 === 0
+                ? "from-left"
+                : index % 3 === 1
+                  ? "from-bottom"
+                  : "from-right";
 
             return (
-              <SwiperSlide key={product.id}>
-                <article className="bk-popular-card">
+                <article
+                  key={product.id}
+                  className={`bk-popular-card ${motionClass}`}
+                  onMouseEnter={() => handleCardEnter(product.id)}
+                  onMouseLeave={() => handleCardLeave(product.id)}
+                  onFocus={() => handleCardEnter(product.id)}
+                  onBlur={() => handleCardLeave(product.id)}
+                  style={{ transitionDelay: `${Math.min(index * 80, 420)}ms` }}
+                >
                   <Link
                     to={`/product/${product.slug}`}
                     className="bk-popular-card-link"
                   >
                     <div className="bk-popular-image-wrap">
-                      <img
-                        src={img}
-                        alt={product.name}
-                        className="bk-popular-image"
-                      />
+                      <div
+                        className="bk-popular-image-track"
+                        style={{
+                          "--slide-count": sliderImages.length,
+                          transform: `translateX(-${activeIndex * (100 / sliderImages.length)}%)`,
+                        }}
+                      >
+                        {sliderImages.map((image, imageIndex) => (
+                          <span
+                            key={`${image.url}-${imageIndex}`}
+                            className="bk-popular-slide"
+                          >
+                            <img
+                              src={image.url}
+                              alt=""
+                              className="bk-popular-image-bg"
+                              aria-hidden="true"
+                            />
+                            <img
+                              src={image.url}
+                              alt={product.name}
+                              className="bk-popular-image"
+                            />
+                          </span>
+                        ))}
+                      </div>
+                      {sliderImages.length > 1 && (
+                        <div className="bk-popular-dots" aria-hidden="true">
+                          {sliderImages.map((image, dotIndex) => (
+                            <span
+                              key={`${image.url}-dot-${dotIndex}`}
+                              className={dotIndex === activeIndex ? "is-active" : ""}
+                            />
+                          ))}
+                        </div>
+                      )}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -195,10 +263,9 @@ const PopularSarees = () => {
                     </div>
                   </Link>
                 </article>
-              </SwiperSlide>
             );
           })}
-        </Swiper>
+        </div>
       )}
       </div>
     </section>

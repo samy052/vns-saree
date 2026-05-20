@@ -7,9 +7,9 @@ import khaddiImg from "../../../assets/fabric/khaddi.png";
 import organzaImg from "../../../assets/fabric/organza.png";
 import satinSilkImg from "../../../assets/fabric/satan_silk.png";
 import tissueImg from "../../../assets/fabric/tissue.png";
-import "./CategoryStrip.css";
+import "./FabricStrip.css";
 
-const FABRIC_CATEGORIES = [
+const FABRICS = [
   { name: "Katan Silk", image: katanSilkImg },
   { name: "Organza", image: organzaImg },
   { name: "Tissue", image: tissueImg },
@@ -20,42 +20,42 @@ const FABRIC_CATEGORIES = [
   { name: "Satin Silk", image: satinSilkImg },
 ];
 
-const CategoryStrip = () => {
+const FabricStrip = () => {
   const navigate = useNavigate();
-  const marqueeCategories = [...FABRIC_CATEGORIES, ...FABRIC_CATEGORIES];
+  const marqueeFabrics = [...FABRICS, ...FABRICS];
   const selectFabric = (name) => {
     navigate(`/collection?fabric=${encodeURIComponent(name)}`);
   };
 
   return (
-  <div className="bk-category-strip">
-    <div className="bk-category-grid bk-category-grid-desktop">
-      {FABRIC_CATEGORIES.map((cat) => (
+  <div className="bk-fabric-strip">
+    <div className="bk-fabric-grid bk-fabric-grid-desktop">
+      {FABRICS.map((fabric) => (
         <button
           type="button"
-          key={cat.name}
-          className="bk-category-item"
-          onClick={() => selectFabric(cat.name)}
+          key={fabric.name}
+          className="bk-fabric-item"
+          onClick={() => selectFabric(fabric.name)}
         >
-          <span className="bk-category-swatch">
-            <img src={cat.image} alt={cat.name} />
+          <span className="bk-fabric-swatch">
+            <img src={fabric.image} alt={fabric.name} />
           </span>
-          <span className="bk-category-label">{cat.name}</span>
+          <span className="bk-fabric-label">{fabric.name}</span>
         </button>
       ))}
     </div>
-    <div className="bk-category-grid bk-category-grid-mobile">
-      {marqueeCategories.map((cat, index) => (
+    <div className="bk-fabric-grid bk-fabric-grid-mobile">
+      {marqueeFabrics.map((fabric, index) => (
         <button
           type="button"
-          key={`${cat.name}-${index}`}
-          className="bk-category-item"
-          onClick={() => selectFabric(cat.name)}
+          key={`${fabric.name}-${index}`}
+          className="bk-fabric-item"
+          onClick={() => selectFabric(fabric.name)}
         >
-          <span className="bk-category-swatch">
-            <img src={cat.image} alt={cat.name} />
+          <span className="bk-fabric-swatch">
+            <img src={fabric.image} alt={fabric.name} />
           </span>
-          <span className="bk-category-label">{cat.name}</span>
+          <span className="bk-fabric-label">{fabric.name}</span>
         </button>
       ))}
     </div>
@@ -63,4 +63,4 @@ const CategoryStrip = () => {
   );
 };
 
-export default CategoryStrip;
+export default FabricStrip;

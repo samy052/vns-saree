@@ -11,6 +11,7 @@ const userFacingMessage = (error, fallback) => {
 
   if (raw.includes("must have at least 1 image")) return raw;
   if (raw.includes("maximum 6 images")) return raw;
+  if (raw.includes("At least one product color is required")) return raw;
   if (raw.includes("At least one product image is required")) return raw;
   if (raw.includes("Product not found")) return "Product not found.";
 
@@ -25,7 +26,6 @@ const buildProductPayloadWithImages = async (req) => {
 
   const productData = typeof rawProductData === "string" ? JSON.parse(rawProductData) : rawProductData;
   
-  // Existing images from the client (already in the DB or already uploaded)
   const existingImages = Array.isArray(productData.images) ? productData.images : [];
   
   const newImages = [];
@@ -40,75 +40,40 @@ const buildProductPayloadWithImages = async (req) => {
     newImages.push({
       color_id: colorId,
       url: uploadResult.secure_url,
-      is_cover: false // Default to false, will be set later
     });
   }
 
-  // Combined existing and new images
-  let finalImages = [...existingImages, ...newImages];
-
+  const finalImages = [...existingImages, ...newImages];
   const selectedColorIds = Object.entries(productData.color_stocks || {})
     .filter(([, qty]) => parseInt(qty, 10) > 0)
     .map(([colorId]) => parseInt(colorId, 10));
 
-  // Validation: Check if each selected color has at least one image
-  for (const colorId of selectedColorIds) {
-    const hasImage = finalImages.some(img => img.color_id === colorId);
-    if (!hasImage) {
-      throw new Error(`Color ${colorId} must have at least 1 image`);
+  selectedColorIds.forEach((colorId) => {
+    const colorImages = finalImages.filter((image) => parseInt(image.color_id, 10) === colorId);
+    if (colorImages.length > 6) {
+      throw new Error("Each color can have maximum 6 images");
     }
+    if (colorImages.length < 1) throw new Error(`Color ${colorId} must have at least 1 image`);
+  });
+
+  if (selectedColorIds.length < 1) {
+    throw new Error("At least one product color is required");
   }
 
-  if (finalImages.length < 1) {
-    throw new Error("At least one product image is required");
-  }
+  const coverColorId = parseInt(productData.cover_color_id, 10);
+  const effectiveCoverColorId = selectedColorIds.includes(coverColorId) ? coverColorId : selectedColorIds[0];
 
-  // Handle cover image selection
-  const coverSelection = productData.cover_image_selection; // e.g., "existing:1:0" or "new:1:0"
-  let coverSet = false;
-
-  if (typeof coverSelection === "string" && coverSelection.includes(":")) {
-    const [source, colorIdStr, indexRaw] = coverSelection.split(":");
-    const colorId = parseInt(colorIdStr, 10);
-    const index = parseInt(indexRaw, 10);
-
-    if (source === "existing") {
-      // Find the image in existingImages by color and index
-      const colorImages = existingImages.filter(img => img.color_id === colorId);
-      const targetImage = colorImages[index];
-      if (targetImage) {
-        // Reset all covers
-        finalImages.forEach(img => img.is_cover = false);
-        // Find this specific image in finalImages and set as cover
-        const imgInFinal = finalImages.find(img => img.url === targetImage.url);
-        if (imgInFinal) {
-          imgInFinal.is_cover = true;
-          coverSet = true;
-        }
-      }
-    } else if (source === "new") {
-      const colorNewImages = newImages.filter(img => img.color_id === colorId);
-      const targetImage = colorNewImages[index];
-      if (targetImage) {
-        finalImages.forEach(img => img.is_cover = false);
-        targetImage.is_cover = true;
-        coverSet = true;
-      }
-    }
-  }
-
-  // If cover was not set explicitly, or selection was invalid, pick the first one
-  if (!coverSet) {
-    // If there was an existing cover, try to keep it
-    const existingCover = finalImages.find(img => img.is_cover);
-    if (!existingCover) {
-      finalImages[0].is_cover = true;
-    }
-  }
+  const images = finalImages.map((image, index) => ({
+    color_id: parseInt(image.color_id, 10),
+    url: image.url || image.image_url,
+    display_order: parseInt(image.display_order, 10) || index,
+    is_cover: parseInt(image.color_id, 10) === effectiveCoverColorId,
+  }));
 
   return {
     ...productData,
-    images: finalImages,
+    images,
+    cover_color_id: effectiveCoverColorId,
   };
 };
 

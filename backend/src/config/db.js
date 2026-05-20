@@ -1,29 +1,34 @@
 const { Sequelize } = require("sequelize");
-require("dotenv").config(); // Load from CWD by default
+const { config } = require("./env");
 
-if (!process.env.DATABASE_URL) {
+if (!config.databaseUrl) {
   console.error("CRITICAL ERROR: DATABASE_URL is not defined in environment variables.");
 }
 
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
+const sequelize = new Sequelize(config.databaseUrl, {
   dialect: "postgres",
-  logging: false,
+  logging: config.dbLogging ? console.log : false,
   dialectOptions: {
-    ssl: process.env.DATABASE_URL.includes("supabase.co") || 
-         process.env.DATABASE_URL.includes("render.com") || 
-         process.env.DB_SSL === 'true' ? {
+    ssl: config.dbSsl === "true" ||
+         (config.dbSsl === "auto" &&
+           (config.databaseUrl.includes("supabase.co") ||
+            config.databaseUrl.includes("render.com"))) ? {
       require: true,
       rejectUnauthorized: false,
     } : false,
   },
   define: {
-    schema: "vns_saree",
+    schema: config.dbSchema,
     timestamps: false,
   },
 });
 
 const runSchemaSync = async () => {
-  const syncMode = (process.env.DB_SYNC || "none").trim().toLowerCase();
+  const syncMode = config.dbSyncMode;
+  if (config.isProduction && syncMode !== "none" && !config.allowProductionDbSync) {
+    throw new Error("Refusing production DB sync. Set ALLOW_PRODUCTION_DB_SYNC=true only when intentional.");
+  }
+
   if (syncMode === "alter") {
     console.log("Database schema sync started in alter mode.");
     await sequelize.sync({ alter: true });
@@ -45,6 +50,7 @@ const connectDB = async () => {
   try {
     await sequelize.authenticate();
     console.log("PostgreSQL connected successfully.");
+    console.log(`Database schema: ${config.dbSchema}`);
 
     await runSchemaSync();
   

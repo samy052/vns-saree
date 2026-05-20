@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const Order = require('./Order');
 const Product = require('./Product');
+const Color = require('./Color');
 
 const OrderItem = sequelize.define('OrderItem', {
   id: {
@@ -16,6 +17,12 @@ const OrderItem = sequelize.define('OrderItem', {
   product_id: {
     type: DataTypes.INTEGER,
     references: { model: Product, key: 'id' }
+  },
+  colorId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'color_id',
+    references: { model: Color, key: 'id' }
   },
   quantity: {
     type: DataTypes.INTEGER,
@@ -40,5 +47,6 @@ const OrderItem = sequelize.define('OrderItem', {
 Order.hasMany(OrderItem, { foreignKey: 'order_id' });
 OrderItem.belongsTo(Order, { foreignKey: 'order_id' });
 OrderItem.belongsTo(Product, { foreignKey: 'product_id' });
+OrderItem.belongsTo(Color, { foreignKey: 'colorId' });
 
 module.exports = OrderItem;

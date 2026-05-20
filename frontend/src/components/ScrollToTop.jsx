@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, search, hash, key, state } = useLocation();
 
   useEffect(() => {
+    if (hash) return undefined;
+
     // Try immediate scroll
     window.scrollTo(0, 0);
     
@@ -18,7 +20,7 @@ const ScrollToTop = () => {
     }, 0);
 
     return () => clearTimeout(timeoutId);
-  }, [pathname]);
+  }, [pathname, search, hash, key, state?.refreshKey]);
 
   return null;
 };

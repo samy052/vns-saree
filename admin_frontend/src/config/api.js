@@ -4,7 +4,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5003";
 export const API_ENDPOINTS = {
   base: API_BASE_URL,
   products: `${API_BASE_URL}/api/products`,
-  categories: `${API_BASE_URL}/api/categories`,
   colors: `${API_BASE_URL}/api/colors`,
   materials: `${API_BASE_URL}/api/materials`,
   varieties: `${API_BASE_URL}/api/varieties`,

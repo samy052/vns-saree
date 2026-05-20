@@ -22,6 +22,7 @@ const STORY_IMAGES = {
 
 const ReviewsStory = () => {
   const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -33,7 +34,8 @@ const ReviewsStory = () => {
       })
       .catch((error) => {
         if (error.name !== "AbortError") setReviews([]);
-      });
+      })
+      .finally(() => setLoadingReviews(false));
 
     return () => controller.abort();
   }, []);
@@ -69,7 +71,7 @@ const ReviewsStory = () => {
         </div>
       </div>
 
-      {hasReviews && (
+      {(loadingReviews || hasReviews) && (
         <div className="bk-review-shell">
           <div className="bk-review-heading">
             <h2>Customer Reviews</h2>
@@ -84,7 +86,16 @@ const ReviewsStory = () => {
             </button>
 
             <div className="bk-review-cards">
-              {reviews.slice(0, 4).map((item, i) => {
+              {loadingReviews ? (
+                [...Array(4)].map((_, index) => (
+                  <article className="bk-review-card bk-review-skeleton-card" key={index}>
+                    <div className="bk-review-skeleton-stars" />
+                    <div className="bk-review-skeleton-line wide" />
+                    <div className="bk-review-skeleton-line" />
+                    <div className="bk-review-skeleton-line short" />
+                  </article>
+                ))
+              ) : reviews.slice(0, 4).map((item, i) => {
                 const rating = Number(item.rating || 0);
                 const reviewerName = item.Customer?.name || item.name;
 

@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const { config } = require("./config/env");
 
-const CategoryRoutes = require("./routes/CategoryRoutes");
 const VarietyRoutes = require("./routes/VarietyRoutes");
 const ColorRoutes = require("./routes/ColorRoutes");
 const MaterialRoutes = require("./routes/MaterialRoutes");
@@ -48,7 +47,6 @@ app.use("/api/auth", AuthRoutes);
 // Public: read endpoints used by the customer storefront.
 // Admin: create/update/delete endpoints inside these routers require admin auth.
 app.use("/api/products", ProductRoutes);
-app.use("/api/categories", CategoryRoutes);
 app.use("/api/varieties", VarietyRoutes);
 app.use("/api/colors", ColorRoutes);
 app.use("/api/materials", MaterialRoutes);

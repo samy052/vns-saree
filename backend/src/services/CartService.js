@@ -1,6 +1,5 @@
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
-const ProductImage = require("../models/ProductImage");
 
 class CartService {
   async getCart(customerId) {
@@ -9,12 +8,6 @@ class CartService {
       include: [
         {
           model: Product,
-          include: [
-            {
-              model: ProductImage,
-              as: "productImages",
-            },
-          ],
         },
       ],
     });
@@ -24,7 +17,6 @@ class CartService {
     const product = await Product.findByPk(productId);
     if (!product) throw new Error("Product not found");
 
-    // Stock Validation
     const colorStock = product.color_stocks?.[colorId] ?? product.stock_quantity;
     
     let cartItem = await Cart.findOne({

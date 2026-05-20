@@ -1,5 +1,12 @@
 .feedback-page {
     font-family: 'Plus Jakarta Sans', sans-serif;
+    background:
+        linear-gradient(rgba(255, 246, 232, 0.82), rgba(255, 246, 232, 0.94)),
+        url("../../assets/header_backgroung.png"),
+        #fff6e8;
+    background-size: 100% 100%, cover, auto;
+    background-position: center top;
+    background-attachment: scroll;
 }
 
 .feedback-hero {

@@ -1,5 +1,6 @@
 .bk-reviews-story {
   width: 100%;
+  min-height: 520px;
   background:
     linear-gradient(rgba(255, 246, 232, 0.62), rgba(255, 246, 232, 0.62)),
     var(--bk-section-bg),
@@ -196,6 +197,58 @@
   color: #5b514b;
   font-size: 12px;
   font-weight: 700;
+}
+
+.bk-review-skeleton-card {
+  gap: 12px;
+  pointer-events: none;
+}
+
+.bk-review-skeleton-stars,
+.bk-review-skeleton-line {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eadcc6;
+}
+
+.bk-review-skeleton-stars {
+  width: 82px;
+  height: 13px;
+}
+
+.bk-review-skeleton-line {
+  width: 74%;
+  height: 9px;
+}
+
+.bk-review-skeleton-line.wide {
+  width: 88%;
+}
+
+.bk-review-skeleton-line.short {
+  width: 48%;
+}
+
+.bk-review-skeleton-stars::after,
+.bk-review-skeleton-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 248, 236, 0.82) 48%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: bk-review-shimmer 1.35s ease-in-out infinite;
+}
+
+@keyframes bk-review-shimmer {
+  to {
+    transform: translateX(100%);
+  }
 }
 
 @media (max-width: 768px) {

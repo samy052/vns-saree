@@ -1,183 +1,200 @@
-import { Icon } from "@iconify/react";
 import "./About.css";
+import heroImage from "../../assets/aboutus/hero-about.png";
+import introImage from "../../assets/aboutus/intro-saree.png";
+import loomImage from "../../assets/aboutus/loom-process.png";
+import whyImage from "../../assets/aboutus/why-choose.png";
+import qualityImage from "../../assets/aboutus/quality-sarees.png";
+import founderImage from "../../assets/aboutus/founder-message.png";
+import ghatImage from "../../assets/aboutus/ghat.png";
+import CraftSection from "../Home/CraftSection/CraftSection";
+
+const curationChecks = [
+  "Fabric softness and richness",
+  "Zari detailing and finishing",
+  "Elegance of the design",
+  "Weaving quality",
+  "Color combinations and overall look",
+  "Uniqueness and premium feel",
+];
+
+const promiseItems = [
+  "Authentic Banarasi Sarees",
+  "Premium Handpicked Collections",
+  "Rich Silk & Elegant Zari Work",
+  "Strict Quality Checks",
+  "Timeless & Graceful Designs",
+  "Honest Pricing for Genuine Craftsmanship",
+  "Transparency and Trust",
+];
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="bg-[#800020] text-white py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1
-            className="text-4xl md:text-5xl font-bold mb-6"
-            style={{ fontFamily: "Playfair Display, serif" }}
-          >
-            The Heart of Banarasi Kala
-          </h1>
-          <p className="text-lg text-[#D4AF37] italic">
-            Welcome to Banarasi Kala, your premium destination for the finest
-            Banarasi weaves.
+    <main className="about-page">
+      <section className="about-hero">
+        <img src={heroImage} alt="" className="about-hero-image" aria-hidden="true" />
+        <div className="about-hero-overlay" />
+        <div className="about-shell about-hero-content">
+          <h1>About Us</h1>
+          <p className="about-hero-subtitle">
+            The Essence of Banaras.
+            <span>The Promise of Quality.</span>
+          </p>
+          <span className="about-ornament" aria-hidden="true" />
+          <p className="about-hero-copy">
+            Welcome to Banarasi Kala, where luxury you can see meets quality you
+            can feel. We are based in Banaras and personally curate every saree
+            to ensure you receive nothing but fine Banarasi craftsmanship.
           </p>
         </div>
       </section>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-16">
-        {/* Introduction */}
-        <section className="mb-16">
-          <p
-            className="text-gray-700 text-lg leading-relaxed mb-8"
-            style={{ fontFamily: "Poppins, sans-serif" }}
-          >
-            A Banarasi sari is not just a piece of clothing; it is a piece of
-            art, a legacy passed down through generations, and a symbol of
-            Indian grace. Our brand was born out of a deep love for the timeless
-            craftsmanship of Banaras, with a mission to bring these royal drapes
-            directly to your wardrobe.
+      <section className="about-shell about-intro-card">
+        <div className="about-intro-image">
+          <img src={introImage} alt="Banarasi saree detail" />
+        </div>
+        <div className="about-intro-copy">
+          <h2>Banarasi Kala was started with a clear focus.</h2>
+          <p>
+            To provide genuinely good-quality Banarasi sarees without
+            compromising on fabric, weaving, or finishing.
           </p>
-        </section>
-
-        {/* Our Curation Process */}
-        <section className="mb-16">
-          <h2
-            className="text-3xl font-bold text-[#800020] mb-6"
-            style={{ fontFamily: "Playfair Display, serif" }}
-          >
-            Our Curation Process
-          </h2>
-          <p
-            className="text-gray-700 leading-relaxed mb-6"
-            style={{ fontFamily: "Poppins, sans-serif" }}
-          >
-            At Banarasi Kala, we believe in the beauty of perfection. Instead of
-            mass-producing, we focus on curation.
+          <p>
+            Since we are based in Banaras itself, our team personally checks
+            every saree, from the fabric and zari work to the weaving and
+            finishing, before making it part of our collection.
           </p>
-          <p
-            className="text-gray-700 leading-relaxed"
-            style={{ fontFamily: "Poppins, sans-serif" }}
-          >
-            Our team personally visits the heart of Banaras to handpick every
-            single sari in our collection. We spend hours looking for the most
-            intricate zari work, the softest silks, and the most unique designs.
-            We don't just sell saris; we select masterpieces that reflect
-            elegance and authenticity.
+          <p>
+            We openly claim quality because we put time and effort into
+            selecting better products. Genuine Banarasi craftsmanship, good
+            materials, and detailed work naturally carry value.
           </p>
-        </section>
-
-        {/* Why Choose Us */}
-        <section className="mb-16">
-          <h2
-            className="text-3xl font-bold text-[#800020] mb-8"
-            style={{ fontFamily: "Playfair Display, serif" }}
-          >
-            Why Choose Banarasi Kala?
-          </h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="p-6 bg-[#FFF8F0] rounded-lg border-l-4 border-[#D4AF37]">
-              <h3 className="font-bold text-[#800020] mb-2">
-                Handpicked Excellence
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Every sari undergoes a strict quality check. If it's not
-                perfect, it's not part of our collection.
-              </p>
-            </div>
-            <div className="p-6 bg-[#FFF8F0] rounded-lg border-l-4 border-[#D4AF37]">
-              <h3 className="font-bold text-[#800020] mb-2">
-                Timeless Designs
-              </h3>
-              <p className="text-gray-600 text-sm">
-                We bridge the gap between traditional heritage and modern style,
-                ensuring you look stunning at every occasion.
-              </p>
-            </div>
-            <div className="p-6 bg-[#FFF8F0] rounded-lg border-l-4 border-[#D4AF37]">
-              <h3 className="font-bold text-[#800020] mb-2">
-                Quality You Can Trust
-              </h3>
-              <p className="text-gray-600 text-sm">
-                We are committed to transparency. What you see on our website is
-                exactly what you receive at your doorstep.
-              </p>
-            </div>
-            <div className="p-6 bg-[#FFF8F0] rounded-lg border-l-4 border-[#D4AF37]">
-              <h3 className="font-bold text-[#800020] mb-2">Fair Value</h3>
-              <p className="text-gray-600 text-sm">
-                By sourcing smartly, we ensure that you get premium Banarasi
-                craftsmanship at the most honest prices.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Founder Message */}
-        <section className="mb-16 bg-[#800020] text-white p-8 md:p-12 rounded-2xl">
-          <h2
-            className="text-2xl font-bold text-[#D4AF37] mb-6"
-            style={{ fontFamily: "Playfair Display, serif" }}
-          >
-            A Message from the Founder
-          </h2>
-          <blockquote className="text-lg italic leading-relaxed border-l-4 border-[#D4AF37] pl-6">
-            "Banarasi Kala started with a simple dream: to make every woman feel
-            like royalty. I personally involve myself in selecting each design,
-            ensuring that every thread tells a story of beauty and tradition.
-            When you wear a sari from Banarasi Kala, you aren't just wearing a
-            garment—you are wearing the soul of Banaras."
-          </blockquote>
-        </section>
-
-        {/* Visual Section */}
-        <section className="mb-16">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <img
-                src="https://images.unsplash.com/photo-1590736704728-f4730bb3c3af?auto=format&fit=crop&q=80"
-                alt="Banarasi Saree Detail"
-                className="rounded-xl shadow-lg w-full h-80 object-cover"
-              />
-            </div>
-            <div>
-              <img
-                src="https://images.unsplash.com/photo-1610030469915-0248719b7a37?auto=format&fit=crop&q=80"
-                alt="Zari Work Detail"
-                className="rounded-xl shadow-lg w-full h-80 object-cover"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Contact Information */}
-        <section className="text-center bg-[#FFF8F0] p-8 rounded-xl">
-          <h2
-            className="text-2xl font-bold text-[#800020] mb-6"
-            style={{ fontFamily: "Playfair Display, serif" }}
-          >
-            Get in Touch
-          </h2>
-          <div className="flex flex-col md:flex-row justify-center items-center gap-8 text-gray-700">
-            <div className="flex items-center gap-3">
-              <Icon
-                icon="lucide:mail"
-                className="text-[#800020] text-xl"
-              ></Icon>
-              <span>support@banarasikala.com</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Icon
-                icon="lucide:phone"
-                className="text-[#800020] text-xl"
-              ></Icon>
-              <span>+91 98765 43210</span>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500 mt-4">
-            Customer Care: Monday - Saturday (10:00 AM - 7:00 PM)
+          <p>
+            At Banarasi Kala, our goal is simple: to offer authentic,
+            well-selected Banarasi sarees that look elegant, feel premium, and
+            match the quality we present online.
           </p>
-        </section>
-      </main>
-    </div>
+          <p>
+            What you see on our website is what we aim to deliver in reality,
+            with honesty, consistency, and attention to detail.
+          </p>
+        </div>
+      </section>
+
+      <section className="about-shell about-editorial-grid">
+        <article className="about-text-panel about-philosophy">
+          <span className="about-icon">BQ</span>
+          <h2>Our Philosophy</h2>
+          <h3>We Believe in Real Quality</h3>
+          <p>
+            At Banarasi Kala, we proudly stand behind the quality we offer. We
+            do not believe in ordinary collections or mass-produced fashion.
+          </p>
+          <p>
+            Every saree we select reflects richness, purity, craftsmanship, and
+            elegance. True Banarasi luxury is never average.
+          </p>
+          <p>Real quality deserves real value.</p>
+        </article>
+
+        <div className="about-photo-panel about-loom-photo">
+          <img src={loomImage} alt="Banarasi weaving process" />
+        </div>
+
+        <article className="about-text-panel about-curation">
+          <span className="about-icon">CP</span>
+          <h2>Our Curation Process</h2>
+          <p>
+            Our collection is not randomly sourced. Our team personally explores
+            the markets of Banaras to handpick every saree with complete
+            attention to quality, craftsmanship, and detail.
+          </p>
+          <p>Before a saree becomes part of Banarasi Kala, we carefully examine:</p>
+          <ul>
+            {curationChecks.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </article>
+
+        <div className="about-photo-panel about-why-photo">
+          <img src={whyImage} alt="Banarasi Kala saree" />
+        </div>
+
+        <article className="about-text-panel about-why">
+          <span className="about-icon">WQ</span>
+          <h2>Why Choose Banarasi Kala?</h2>
+          <h3>Crafted for Those Who Understand Real Quality</h3>
+          <p>
+            At Banarasi Kala, we do not chase quantity. We focus on selecting
+            masterpieces. Every saree is chosen to give you a royal and elegant
+            feel, premium craftsmanship, and timeless beauty.
+          </p>
+          <p>
+            Luxury is not about flashy words. It is about detail, authenticity,
+            and quality you can feel.
+          </p>
+        </article>
+
+        <article className="about-text-panel about-quality">
+          <span className="about-icon">QT</span>
+          <h2>Quality That Speaks for Itself</h2>
+          <p>
+            We believe customers should receive exactly what they are promised.
+            From the shine of the zari to the grace of the weave, every detail
+            is selected carefully.
+          </p>
+          <strong>No false presentation.</strong>
+          <strong>No compromise in quality.</strong>
+        </article>
+
+        <div className="about-photo-panel about-quality-photo">
+          <img src={qualityImage} alt="Premium Banarasi sarees" />
+        </div>
+      </section>
+
+      <CraftSection />
+
+      <section className="about-shell about-promise">
+        <h2>Our Promise</h2>
+        <p>At Banarasi Kala, we promise:</p>
+        <div className="about-promise-row">
+          {promiseItems.map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="about-shell about-founder">
+        <div className="about-founder-photo">
+          <img src={founderImage} alt="Banarasi Kala founder message" />
+        </div>
+        <blockquote>
+          <span className="about-founder-quote about-founder-quote-start">"</span>
+          <h2>A Message from the Founder</h2>
+          <p>
+            "Banarasi Kala began with a simple dream: to bring the richness of
+            Banaras to every wardrobe with honesty, elegance, and authenticity.
+          </p>
+          <p>
+            I personally believe that real luxury lies in quality, detail, and
+            craftsmanship. Every saree we select carries a story of tradition,
+            beauty, and artistry.
+          </p>
+          <p>
+            True luxury is never cheap. Real quality always carries value. If
+            someone promises premium quality at throwaway prices, the difference
+            eventually shows in the product.
+          </p>
+          <p>
+            When you wear Banarasi Kala, you are not just wearing a saree. You
+            are wearing the soul of Banaras."
+          </p>
+          <span className="about-founder-quote about-founder-quote-end">"</span>
+          <img src={ghatImage} alt="" className="about-founder-ghat" aria-hidden="true" />
+        </blockquote>
+      </section>
+    </main>
   );
 };
 
 export default About;
-

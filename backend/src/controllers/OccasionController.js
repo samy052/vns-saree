@@ -4,7 +4,7 @@ const { uploadBufferToCloudinary } = require("../config/cloudinary");
 class OccasionController {
   async getAll(req, res) {
     try {
-      const occasions = await OccasionService.getAllOccasions();
+      const occasions = await OccasionService.getAllOccasions(req.query);
       res.status(200).json(occasions);
     } catch (error) {
       res.status(500).json({ message: error.message });

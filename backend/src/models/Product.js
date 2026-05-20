@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/db");
-const Category = require("./Category");
 const Material = require("./Material");
 const Variety = require("./Variety");
 const Occasion = require("./Occasion");
@@ -40,7 +39,6 @@ const Product = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-
     // Pricing & Financials
     selling_price: {
       type: DataTypes.DECIMAL(10, 2),
@@ -58,15 +56,6 @@ const Product = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    profit_amount: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-    },
-    profit_percent: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-
     // Inventory
     stock_quantity: {
       type: DataTypes.INTEGER,
@@ -77,14 +66,10 @@ const Product = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: 5,
     },
-    track_inventory: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
     color_stocks: {
       type: DataTypes.JSONB,
       defaultValue: {},
-      comment: "Color-wise stock: { color_id: quantity }",
+      allowNull: false,
     },
 
     // Physical Attributes
@@ -101,18 +86,14 @@ const Product = sequelize.define(
       allowNull: true,
     },
 
-    // Media
+    // Media. Each entry: { color_id, url, is_cover, display_order }
     images: {
       type: DataTypes.JSONB,
       defaultValue: [],
+      allowNull: false,
     },
 
     // Foreign Keys
-    category_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: { model: Category, key: "id" },
-    },
     material_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -130,10 +111,6 @@ const Product = sequelize.define(
     },
 
     // Boolean Statuses
-    is_special_collection: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     special_collection: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
@@ -142,26 +119,17 @@ const Product = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    is_available: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
+    status: {
+      type: DataTypes.STRING(20),
+      defaultValue: "active",
+      allowNull: false,
+      validate: {
+        isIn: [["active", "inactive"]],
+      },
     },
     blouse_piece: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
-    },
-    product_images_by_color: {
-      type: DataTypes.JSONB,
-      defaultValue: {},
-    },
-    cover_image_url: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    badge: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      defaultValue: "New Arrival",
     },
   },
   {
@@ -171,7 +139,6 @@ const Product = sequelize.define(
 );
 
 // Associations
-Product.belongsTo(Category, { foreignKey: "category_id" });
 Product.belongsTo(Material, { foreignKey: "material_id" });
 Product.belongsTo(Variety, { foreignKey: "variety_id" });
 Product.belongsTo(Occasion, { foreignKey: "occasion_id" });

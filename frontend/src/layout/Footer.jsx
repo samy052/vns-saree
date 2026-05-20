@@ -1,5 +1,5 @@
 import { Icon } from "@iconify/react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronRight,
   Mail,
@@ -14,11 +14,11 @@ import "./Footer.css";
 const quickLinks = [
   ["Home", "/"],
   ["Sarees", "/collection"],
-  ["Collections", "/collection"],
-  ["New Arrivals", "/collection?sort=new"],
-  ["Best Sellers", "/collection?sort=popular"],
+  ["New Arrivals", "/#new-arrivals"],
+  ["Special Collections", "/collection?sort=special"],
   ["About Us", "/about"],
   ["Contact Us", "/contact"],
+  ["Feedback", "/feedback"],
 ];
 
 const supportLinks = [
@@ -53,6 +53,30 @@ const marketplaces = [
 ];
 
 const Footer = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const refreshFooterLink = (to) => (event) => {
+    const target = new URL(to, window.location.origin);
+    const currentPath = `${location.pathname}${location.search}${location.hash}`;
+    const targetPath = `${target.pathname}${target.search}${target.hash}`;
+
+    if (currentPath === targetPath) {
+      event.preventDefault();
+      navigate(to, {
+        replace: true,
+        state: { refreshKey: Date.now() },
+      });
+      window.setTimeout(() => {
+        if (target.hash) {
+          document.querySelector(target.hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+        }
+      }, 40);
+    }
+  };
+
   return (
     <footer
       className="bk-footer"
@@ -60,7 +84,7 @@ const Footer = () => {
     >
       <div className="bk-footer-main">
         <div className="bk-footer-brand">
-          <Link to="/" className="bk-footer-logo" aria-label="Banarasi Kala home">
+          <Link to="/" onClick={refreshFooterLink("/")} className="bk-footer-logo" aria-label="Banarasi Kala home">
             <img src={logo} alt="Banarasi Kala" />
           </Link>
           <p>
@@ -89,7 +113,7 @@ const Footer = () => {
           <ul>
             {quickLinks.map(([label, path]) => (
               <li key={label}>
-                <Link to={path}>
+                <Link to={path} onClick={refreshFooterLink(path)}>
                   {label}
                   {label === "Sarees" && <ChevronRight size={12} />}
                 </Link>
@@ -104,7 +128,7 @@ const Footer = () => {
           <ul>
             {supportLinks.map(([label, path]) => (
               <li key={label}>
-                <Link to={path}>{label}</Link>
+                <Link to={path} onClick={refreshFooterLink(path)}>{label}</Link>
               </li>
             ))}
           </ul>
@@ -116,7 +140,7 @@ const Footer = () => {
           <ul>
             {policyLinks.map(([label, path]) => (
               <li key={label}>
-                <Link to={path}>{label}</Link>
+                <Link to={path} onClick={refreshFooterLink(path)}>{label}</Link>
               </li>
             ))}
           </ul>

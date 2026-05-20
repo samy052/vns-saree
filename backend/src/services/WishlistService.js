@@ -1,6 +1,5 @@
 const Wishlist = require("../models/Wishlist");
 const Product = require("../models/Product");
-const ProductImage = require("../models/ProductImage");
 
 class WishlistService {
   async getWishlist(customerId) {
@@ -9,11 +8,19 @@ class WishlistService {
       include: [
         {
           model: Product,
-          include: [
-            {
-              model: ProductImage,
-              as: "productImages",
-            },
+          attributes: [
+            "id",
+            "name",
+            "slug",
+            "short_description",
+            "selling_price",
+            "mrp_price",
+            "discount_percent",
+            "images",
+            "color_stocks",
+            "stock_quantity",
+            "low_stock_threshold",
+            "status",
           ],
         },
       ],

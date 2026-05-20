@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import api from '../utils/api';
 import { API_ENDPOINTS } from '../config/api';
 import { useNotification } from './NotificationContext';
+import { getProductCoverImage, getProductImages } from '../utils/productMedia';
 
 const CartContext = createContext();
 
@@ -35,9 +36,9 @@ export const CartProvider = ({ children }) => {
             const product = item.Product;
             if (!product) return null;
             const price = product.selling_price || product.mrp_price || 0;
-            const allImages = [...(product.images || []), ...(product.productImages || [])];
+            const allImages = getProductImages(product);
             const colorImage = allImages.find(img => img.color_id === item.colorId);
-            const image_url = colorImage?.url || allImages.find(img => img.is_cover || img.is_primary)?.url || allImages[0]?.url || product.image_url;
+            const image_url = colorImage?.url || getProductCoverImage(product);
             return {
               ...product,
               cartItemId: item.id,
@@ -71,7 +72,7 @@ export const CartProvider = ({ children }) => {
       const formattedCart = res.data.map(item => {
         const p = item.Product;
         if (!p) return null;
-        const allImages = [...(p.images || []), ...(p.productImages || [])];
+        const allImages = getProductImages(p);
         const colorImage = allImages.find(img => img.color_id === item.colorId);
         return {
           ...p,
@@ -79,7 +80,7 @@ export const CartProvider = ({ children }) => {
           quantity: item.quantity,
           colorId: item.colorId,
           price: p.selling_price || p.mrp_price || 0,
-          image_url: colorImage?.url || allImages.find(img => img.is_cover || img.is_primary)?.url || allImages[0]?.url || p.image_url
+          image_url: colorImage?.url || getProductCoverImage(p)
         };
       }).filter(i => i);
       setCart(formattedCart);
@@ -108,7 +109,7 @@ export const CartProvider = ({ children }) => {
       const formattedCart = res.data.map(item => {
         const p = item.Product;
         if (!p) return null;
-        const allImages = [...(p.images || []), ...(p.productImages || [])];
+        const allImages = getProductImages(p);
         const colorImage = allImages.find(img => img.color_id === item.colorId);
         return {
           ...p,
@@ -116,7 +117,7 @@ export const CartProvider = ({ children }) => {
           quantity: item.quantity,
           colorId: item.colorId,
           price: p.selling_price || p.mrp_price || 0,
-          image_url: colorImage?.url || allImages.find(img => img.is_cover || img.is_primary)?.url || allImages[0]?.url || p.image_url
+          image_url: colorImage?.url || getProductCoverImage(p)
         };
       }).filter(i => i);
       setCart(formattedCart);
@@ -156,8 +157,7 @@ export const CartProvider = ({ children }) => {
     // 2. Applicability Check
     let applicableSubtotal = 0;
     const hasRestrictions = coupon.applicable_product_id?.length || 
-                           coupon.applicable_variety_id?.length || 
-                           coupon.applicable_category_id?.length;
+                           coupon.applicable_variety_id?.length;
 
     if (!hasRestrictions) {
       applicableSubtotal = currentSubtotal;
@@ -166,7 +166,6 @@ export const CartProvider = ({ children }) => {
         let isMatch = false;
         if (coupon.applicable_product_id?.includes(item.id)) isMatch = true;
         if (coupon.applicable_variety_id?.includes(item.variety_id)) isMatch = true;
-        if (coupon.applicable_category_id?.includes(item.category_id)) isMatch = true;
         
         if (isMatch) applicableSubtotal += (item.price * item.quantity);
       });

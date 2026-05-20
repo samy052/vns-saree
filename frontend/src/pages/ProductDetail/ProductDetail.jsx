@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { useNotification } from "../../context/NotificationContext";
 import { API_ENDPOINTS } from "../../config/api";
+import { getColorStock, getProductCoverImage, getProductImages } from "../../utils/productMedia";
 import "./ProductDetail.css";
 
 const ProductDetail = () => {
@@ -29,8 +30,8 @@ const ProductDetail = () => {
   const perspectiveRef = useRef(null);
   const rootRef = useRef(null);
 
-  const getUniqueImages = (imgs1 = [], imgs2 = []) => {
-    const combined = [...imgs1, ...imgs2];
+  const getUniqueImages = (targetProduct = product) => {
+    const combined = getProductImages(targetProduct || {});
     const unique = Array.from(new Map(combined.map(img => [img.url, img])).values());
     return unique;
   };
@@ -55,8 +56,8 @@ const ProductDetail = () => {
         setProduct(prodData);
         setAllColors(colorsData);
         
-        const allImages = getUniqueImages(prodData.images, prodData.productImages);
-        const coverImg = allImages.find(img => img.is_cover || img.is_primary) || allImages[0];
+        const allImages = getUniqueImages(prodData);
+        const coverImg = allImages.find(img => img.is_cover) || allImages[0];
         const initialColorId = coverImg ? coverImg.color_id : null;
         
         setSelectedColorId(initialColorId);
@@ -74,7 +75,7 @@ const ProductDetail = () => {
 
   const handleColorChange = (colorId) => {
     setSelectedColorId(colorId);
-    const allImages = getUniqueImages(product.images, product.productImages);
+    const allImages = getUniqueImages(product);
     const colorImages = allImages.filter(img => img.color_id === colorId);
     if (colorImages.length > 0) {
       setMainImage(colorImages[0].url);
@@ -82,14 +83,14 @@ const ProductDetail = () => {
   };
 
   const getDistinctProductColors = () => {
-    const allImages = getUniqueImages(product.images, product.productImages);
+    const allImages = getUniqueImages(product);
     if (allImages.length === 0) return [];
     const colorIds = [...new Set(allImages.map(img => img.color_id))].filter(id => id);
     return allColors.filter(c => colorIds.includes(c.id));
   };
 
   const getVisibleImages = () => {
-    const allImages = getUniqueImages(product.images, product.productImages);
+    const allImages = getUniqueImages(product);
     if (allImages.length === 0) return [];
     if (!selectedColorId) return allImages;
     return allImages.filter(img => img.color_id === selectedColorId);
@@ -163,7 +164,7 @@ const ProductDetail = () => {
     }
 
     // Stock Validation
-    const colorStock = product.color_stocks?.[selectedColorId] ?? product.stock_quantity;
+    const colorStock = getColorStock(product, selectedColorId);
     if (quantity > colorStock) {
       showNotification(`Only ${colorStock} items available in this color!`, "warning");
       return;
@@ -387,7 +388,7 @@ const ProductDetail = () => {
               <div key={p.id} className="group cursor-pointer bg-white p-3 rounded-xl shadow-sm border border-[#D4AF37]/10 hover:shadow-xl transition-all">
                 <Link to={`/product/${p.slug}`}>
                   <div className="relative overflow-hidden aspect-[3/4] mb-4 rounded-lg">
-                    <img src={p.images?.[0]?.url || p.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.name} />
+                    <img src={getProductCoverImage(p)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.name} />
                   </div>
                   <h3 className="brand-font text-lg text-[#800020] mb-1 truncate">{p.name}</h3>
                   <p className="text-sm text-[#3D2817] font-black">₹{Number(p.selling_price).toLocaleString("en-IN")}</p>

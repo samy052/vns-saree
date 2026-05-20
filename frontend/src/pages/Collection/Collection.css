@@ -10,7 +10,12 @@
 }
 
 .collection-container {
-    background-color: #ffffff;
+    background:
+        linear-gradient(rgba(255, 246, 232, 0.76), rgba(255, 246, 232, 0.94)),
+        var(--bk-section-bg),
+        #fff6e8;
+    background-size: 100% 100%, cover, 100% 100%;
+    background-position: center top;
     min-height: 100vh;
     padding: 20px 4% 40px;
     color: var(--text-main);
@@ -110,8 +115,42 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: 250px;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
+}
+
+.filter-skeleton-wrap {
+    display: block;
+}
+
+.filter-skeleton-title,
+.filter-skeleton-row {
+    display: block;
+    border-radius: 999px;
+    background:
+        linear-gradient(90deg, rgba(239, 218, 190, 0.55) 0%, rgba(255, 250, 242, 0.96) 45%, rgba(231, 204, 166, 0.6) 100%);
+    background-size: 220% 100%;
+    animation: shimmer 1.3s ease-in-out infinite;
+}
+
+.filter-skeleton-title {
+    width: 52%;
+    height: 14px;
+    margin-bottom: 18px;
+}
+
+.filter-skeleton-row {
+    width: 88%;
+    height: 17px;
+    margin-bottom: 12px;
+}
+
+.filter-skeleton-row:nth-child(3) {
+    width: 72%;
+}
+
+.filter-skeleton-row:nth-child(5) {
+    width: 80%;
 }
 
 .filter-item {
@@ -218,65 +257,145 @@
     padding-top: 133.33%;
     /* 3:4 Aspect Ratio */
     overflow: hidden;
-    background-color: #f8f8f8;
+    background-color: #f8efe2;
     display: block;
     /* Ensure block display for padding trick */
 }
 
-.card-img {
+.collection-stock-badge {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 4;
+    max-width: calc(100% - 20px);
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(255, 248, 239, 0.94);
+    color: #8b001f;
+    border: 1px solid rgba(128, 0, 32, 0.2);
+    box-shadow: 0 8px 20px rgba(55, 15, 10, 0.16);
+    font-family: "Inter", "Poppins", Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1.1;
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.collection-stock-badge.low {
+    background: rgba(142, 0, 35, 0.94);
+    color: #fff8ec;
+    border-color: rgba(255, 236, 196, 0.45);
+}
+
+.product-card.out-of-stock .card-img {
+    filter: grayscale(0.42);
+    opacity: 0.8;
+}
+
+.card-image-shimmer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        linear-gradient(90deg, rgba(255, 246, 232, 0.42) 0%, rgba(255, 255, 255, 0.92) 42%, rgba(255, 246, 232, 0.42) 78%),
+        linear-gradient(135deg, #f3dec2 0%, #fff7eb 48%, #ebcfab 100%);
+    background-size: 220% 100%, 100% 100%;
+    animation: collection-image-shimmer 1.35s ease-in-out infinite;
+}
+
+.card-img-track {
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 2;
     width: 100%;
     height: 100%;
+    display: flex;
+    opacity: 1;
+    transition:
+        transform 0.85s cubic-bezier(0.55, 0, 0.15, 1),
+        opacity 0.25s ease;
+}
+
+.card-img-track.is-loaded {
+    opacity: 1;
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    flex: 0 0 100%;
     object-fit: cover;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.product-card:hover .card-img {
-    transform: scale(1.05);
-}
-
-/* Wishlist Button Overlay */
-.wishlist-overlay {
+.collection-card-dots {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #fff;
-    height: 40px;
+    left: 50%;
+    bottom: 50px;
+    z-index: 3;
+    display: inline-flex;
+    gap: 5px;
+    padding: 5px 7px;
+    background: rgba(255, 250, 241, 0.72);
+    border-radius: 999px;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.product-card:hover .collection-card-dots {
+    opacity: 1;
+}
+
+.collection-card-dots span {
+    width: 5px;
+    height: 5px;
+    background: rgba(91, 7, 16, 0.34);
+    border-radius: 50%;
+}
+
+.collection-card-dots span.active {
+    width: 13px;
+    background: #800020;
+    border-radius: 999px;
+}
+
+.collection-wishlist-pill {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transform: translateY(100%);
-    transition: all 0.2s;
-    border: 1px solid var(--border-color);
-}
-
-.product-card:hover .wishlist-overlay {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.wishlist-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-main);
-    background: none;
-    border: none;
+    color: #fff;
+    background: rgba(45, 24, 18, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 50%;
     cursor: pointer;
+    box-shadow: 0 8px 18px rgba(61, 20, 11, 0.18);
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.collection-wishlist-pill:hover {
+    background: rgba(128, 0, 32, 0.88);
+    transform: translateY(-1px);
+}
+
+.collection-wishlist-pill.active {
+    color: #fff;
+    background: #800020;
+    border-color: rgba(255, 235, 203, 0.88);
 }
 
 .wishlist-icon {
-    font-size: 16px;
-}
-
-.wishlist-btn.active {
-    color: var(--primary);
+    font-size: 20px;
 }
 
 /* Card Details */
@@ -456,4 +575,38 @@
     100% {
         background-position: 200% 0;
     }
+}
+
+@keyframes collection-image-shimmer {
+    0% {
+        background-position: 220% 0, center;
+    }
+
+    100% {
+        background-position: -120% 0, center;
+    }
+}
+
+.filter-more-btn {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 2px;
+    padding: 0;
+    color: var(--primary);
+    background: transparent;
+    border: 0;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.filter-more-btn:hover {
+    color: #b07824;
+}
+
+.filter-less-btn {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-muted);
 }

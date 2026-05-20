@@ -34,7 +34,7 @@ export default function Dashboard() {
     }]
   };
 
-  const categoryData = {
+  const collectionData = {
     labels: ['Bridal', 'Festival', 'Casual', 'Fusion'],
     datasets: [{
       data: [45, 30, 15, 10],
@@ -114,11 +114,11 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-8">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-[#4A3F35] flex items-center gap-2">
                       <span className="w-1.5 h-6 bg-[#800020] rounded-full"></span>
-                      Category Distribution
+                      Collection Mix
                   </h3>
               </div>
               <div className="flex items-center justify-center min-h-[200px]">
-                  <Doughnut data={categoryData} options={donutOptions} />
+                  <Doughnut data={collectionData} options={donutOptions} />
               </div>
           </div>
       </div>

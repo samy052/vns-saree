@@ -1,9 +1,24 @@
 const Occasion = require('../models/Occasion');
 
+const pickAttributes = (fields, allowed) => {
+  if (!fields) return undefined;
+  const selected = String(fields)
+    .split(",")
+    .map((field) => field.trim())
+    .filter((field) => allowed.includes(field));
+  return selected.length ? selected : undefined;
+};
+
 class OccasionService {
-  async getAllOccasions() {
+  async getAllOccasions(filters = {}) {
+    const parsedLimit = parseInt(filters.limit, 10);
+    const limit = Number.isFinite(parsedLimit)
+      ? Math.min(50, Math.max(1, parsedLimit))
+      : 0;
     return await Occasion.findAll({
-      order: [['name', 'ASC']]
+      attributes: pickAttributes(filters.fields, ["id", "name", "slug", "image", "createdAt", "updatedAt"]),
+      order: [['name', 'ASC']],
+      ...(limit ? { limit } : {}),
     });
   }
 

@@ -1,13 +1,8 @@
 .bk-faq-section {
   width: 100%;
-  color: #4b1a16;
-  background:
-    linear-gradient(rgba(255, 246, 232, 0.48), rgba(255, 246, 232, 0.48)),
-    var(--bk-faq-bg),
-    linear-gradient(90deg, #f7e7cc 0%, #fff5e5 50%, #f7e7cc 100%);
-  background-size: 100% 100%, cover, 100% 100%;
-  background-position: center, center 58%, center;
-  border-top: 1px solid rgba(112, 63, 24, 0.08);
+  color: #fff3d2;
+  background: #5b0710;
+  border-top: 1px solid rgba(212, 175, 55, 0.22);
 }
 
 .bk-faq-shell {
@@ -18,7 +13,7 @@
 
 .bk-faq-shell h2 {
   margin: 0 0 18px;
-  color: #5b2116;
+  color: #d4af37;
   font-family: "Cinzel", Georgia, "Times New Roman", serif;
   font-size: 19px;
   font-weight: 800;
@@ -39,8 +34,8 @@
 .bk-faq-item {
   min-width: 0;
   align-self: start;
-  background: rgba(255, 250, 243, 0.68);
-  border: 1px solid rgba(144, 96, 45, 0.2);
+  background: rgba(255, 246, 232, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 3px;
   box-shadow: 0 3px 10px rgba(71, 43, 17, 0.035);
 }
@@ -53,7 +48,7 @@
   align-items: center;
   gap: 12px;
   padding: 0 14px 0 18px;
-  color: #5f5148;
+  color: #fff3d2;
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -65,7 +60,7 @@
 
 .bk-faq-question svg {
   justify-self: end;
-  color: #8a6a55;
+  color: #d4af37;
   transition: transform 0.2s ease;
 }
 
@@ -76,7 +71,7 @@
 .bk-faq-item p {
   margin: 0;
   padding: 0 18px 16px;
-  color: #5f5148;
+  color: rgba(255, 243, 210, 0.86);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.55;

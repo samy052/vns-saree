@@ -95,6 +95,7 @@ const Checkout = () => {
               discount_amount: discountAmount,
               items: cart.map((item) => ({
                 id: item.id,
+                name: item.name,
                 quantity: item.quantity,
                 price: item.price,
                 colorId: item.colorId

@@ -1,17 +1,20 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import headerBackground from "../../assets/header_backgroung.png";
-import CategoryStrip from "./CategoryStrip/CategoryStrip";
+import FabricStrip from "./FabricStrip/FabricStrip";
 import HeroSlider from "./HeroSlider/HeroSlider";
 import OfferBand from "./OfferBand/OfferBand";
 import "./Home.css";
 
 const WhyChooseUs = lazy(() => import("./WhyChooseUs/WhyChooseUs"));
 const PopularSarees = lazy(() => import("./PopularSarees/PopularSarees"));
-const CraftSection = lazy(() => import("./CraftSection/CraftSection"));
+const BrowseCircles = lazy(() => import("./BrowseCircles/BrowseCircles"));
+const NewArrivals = lazy(() => import("./NewArrivals/NewArrivals"));
+const OccasionCollections = lazy(() => import("./OccasionCollections/OccasionCollections"));
 const ReviewsStory = lazy(() => import("./ReviewsStory/ReviewsStory"));
 const FaqSection = lazy(() => import("./FaqSection/FaqSection"));
 
-const DeferredSection = ({ children, minHeight = 240, canObserve = false }) => {
+const DeferredSection = ({ children, id, minHeight = 240, canObserve = false }) => {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -35,6 +38,7 @@ const DeferredSection = ({ children, minHeight = 240, canObserve = false }) => {
 
   return (
     <div
+      id={id}
       ref={sectionRef}
       className="home-deferred-section"
       style={{ minHeight: isVisible ? undefined : minHeight }}
@@ -49,6 +53,7 @@ const DeferredSection = ({ children, minHeight = 240, canObserve = false }) => {
 };
 
 const Home = () => {
+  const location = useLocation();
   const [hasScrolled, setHasScrolled] = useState(false);
 
   useEffect(() => {
@@ -74,6 +79,28 @@ const Home = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (location.hash !== "#new-arrivals") return undefined;
+
+    setHasScrolled(true);
+
+    let attempts = 0;
+    const scrollToNewArrivals = () => {
+      const target = document.getElementById("new-arrivals");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      attempts += 1;
+      if (attempts < 6) {
+        window.setTimeout(scrollToNewArrivals, 160);
+      }
+    };
+
+    const timer = window.setTimeout(scrollToNewArrivals, 80);
+    return () => window.clearTimeout(timer);
+  }, [location.hash]);
+
   return (
     <div
       className="home-page"
@@ -83,7 +110,7 @@ const Home = () => {
       }}
     >
       <main className="bk-home-main">
-        <CategoryStrip />
+        <FabricStrip />
         <OfferBand />
         <HeroSlider />
 
@@ -93,8 +120,14 @@ const Home = () => {
         <DeferredSection minHeight={360} canObserve={hasScrolled}>
           <PopularSarees />
         </DeferredSection>
-        <DeferredSection minHeight={420} canObserve={hasScrolled}>
-          <CraftSection />
+        <DeferredSection minHeight={280} canObserve={hasScrolled}>
+          <BrowseCircles />
+        </DeferredSection>
+        <DeferredSection id="new-arrivals" minHeight={380} canObserve={hasScrolled}>
+          <NewArrivals />
+        </DeferredSection>
+        <DeferredSection minHeight={480} canObserve={hasScrolled}>
+          <OccasionCollections />
         </DeferredSection>
         <DeferredSection minHeight={520} canObserve={hasScrolled}>
           <ReviewsStory />
@@ -103,6 +136,7 @@ const Home = () => {
           <FaqSection />
         </DeferredSection>
       </main>
+
     </div>
   );
 };

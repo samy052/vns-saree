@@ -6,19 +6,18 @@ import "./Products.css";
 
 const INITIAL_FORM_STATE = {
   name: "", sku: "", description: "", short_description: "",
-  selling_price: "", mrp_price: "", cost_price: "", discount_percent: "", profit_amount: "", profit_percent: "",
-  images: [], cover_image_selection: "", stock_quantity: 0, low_stock_threshold: 5, track_inventory: true,
+  selling_price: "", mrp_price: "", cost_price: "", discount_percent: "",
+  images: [], cover_color_id: "", stock_quantity: 0, low_stock_threshold: 5,
   color_stocks: {},
   weight: "", length: "6.5", width: "1.1",
-  category_id: "", material_id: "", variety_id: "", occasion_id: "",
-  is_special_collection: false, special_collection: false, is_new_arrival: false, is_available: true,
+  material_id: "", variety_id: "", occasion_id: "",
+  special_collection: false, is_new_arrival: false, status: "active",
   blouse_piece: true,
 };
 
 export default function Products() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [colors, setColors] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [varieties, setVarieties] = useState([]);
@@ -30,12 +29,11 @@ export default function Products() {
   const [newColorImageFiles, setNewColorImageFiles] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    category: "",
     material: "",
     variety: "",
     color: "",
     stockStatus: "",
-    isAvailable: "",
+    status: "",
   });
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,15 +86,13 @@ export default function Products() {
   const fetchLookupData = async () => {
     try {
       setLoading(true);
-      const [catRes, colRes, matRes, varRes, occRes] = await Promise.all([
-        fetch(API_ENDPOINTS.categories),
+      const [colRes, matRes, varRes, occRes] = await Promise.all([
         fetch(API_ENDPOINTS.colors), fetch(API_ENDPOINTS.materials),
         fetch(API_ENDPOINTS.varieties), fetch(API_ENDPOINTS.occasions),
       ]);
-      const [cats, cols, mats, vars, occs] = await Promise.all([
-        catRes.json(), colRes.json(), matRes.json(), varRes.json(), occRes.json(),
+      const [cols, mats, vars, occs] = await Promise.all([
+        colRes.json(), matRes.json(), varRes.json(), occRes.json(),
       ]);
-      setCategories(Array.isArray(cats) ? cats : []);
       setColors(Array.isArray(cols) ? cols : []);
       setMaterials(Array.isArray(mats) ? mats : []);
       setVarieties(Array.isArray(vars) ? vars : []);
@@ -113,12 +109,11 @@ export default function Products() {
         page: String(page),
         pageSize: String(size),
         search: searchTerm.trim(),
-        category: filters.category || "",
         material: filters.material || "",
         variety: filters.variety || "",
         color: filters.color || "",
         stockStatus: filters.stockStatus || "",
-        isAvailable: filters.isAvailable || "",
+        status: filters.status || "",
       });
       const res = await fetch(`${API_ENDPOINTS.products}?${params.toString()}`);
       const data = await res.json();
@@ -171,7 +166,7 @@ export default function Products() {
         mrp_price: product.mrp_price?.toString() || product.old_price?.toString() || "",
         color_stocks: product.color_stocks && typeof product.color_stocks === "object" ? product.color_stocks : {},
         images: Array.isArray(product.images) ? product.images : [],
-        cover_image_selection: "",
+        cover_color_id: product.images?.find((img) => img.is_cover)?.color_id || "",
       });
     } else { setEditingProduct(null); setFormData(INITIAL_FORM_STATE); }
     setNewColorImageFiles({});
@@ -251,16 +246,12 @@ export default function Products() {
     setFormData((prev) => {
       const updatedImages = (prev.images || []).filter((img) => img.url !== imageUrl);
       
-      // If the removed image was the cover, pick a new one
       const wasCover = (prev.images || []).find(img => img.url === imageUrl)?.is_cover;
-      if (wasCover && updatedImages.length > 0) {
-        updatedImages[0].is_cover = true;
-      }
 
       return {
         ...prev,
         images: updatedImages,
-        cover_image_selection: wasCover && updatedImages.length > 0 ? "existing:" + updatedImages[0].color_id + ":0" : prev.cover_image_selection,
+        cover_color_id: wasCover ? updatedImages[0]?.color_id || "" : prev.cover_color_id,
       };
     });
   };
@@ -276,11 +267,10 @@ export default function Products() {
     });
   };
 
-  const handleCoverImageSelect = ({ type, colorId, index }) => {
-    const selection = `${type}:${colorId}:${index}`;
+  const handleCoverImageSelect = ({ colorId }) => {
     setFormData((prev) => ({
       ...prev,
-      cover_image_selection: selection,
+      cover_color_id: parseInt(colorId, 10) || "",
     }));
   };
 
@@ -289,19 +279,12 @@ export default function Products() {
   const calculateDiscount = () => {
     const price = parseFloat(formData.selling_price);
     const old = parseFloat(formData.mrp_price);
-    const cost = parseFloat(formData.cost_price);
     
-    let updates = {};
     if (old > price) {
-      updates.discount_percent = Math.round(((old - price) / old) * 100);
-    }
-    if (price && cost) {
-      updates.profit_amount = price - cost;
-      updates.profit_percent = Math.round(((price - cost) / cost) * 100);
-    }
-    
-    if (Object.keys(updates).length > 0) {
-      setFormData(prev => ({ ...prev, ...updates }));
+      setFormData(prev => ({
+        ...prev,
+        discount_percent: Math.round(((old - price) / old) * 100),
+      }));
     }
   };
 
@@ -324,6 +307,14 @@ export default function Products() {
       return;
     }
 
+    const coverColorId = formData.cover_color_id || selectedColorIds[0];
+    const images = (formData.images || []).map((img, index) => ({
+      color_id: parseInt(img.color_id, 10),
+      url: img.url || img.image_url,
+      display_order: index,
+      is_cover: String(img.color_id) === String(coverColorId),
+    }));
+
     const payloadData = {
       ...formData,
       slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
@@ -333,13 +324,12 @@ export default function Products() {
       stock_quantity: parseInt(formData.stock_quantity) || 0,
       low_stock_threshold: parseInt(formData.low_stock_threshold) || 0,
       color_stocks: formData.color_stocks || {},
-      images: formData.images || [],
-      cover_image_selection: formData.cover_image_selection || "",
-      category_id: formData.category_id || null, 
+      images,
+      cover_color_id: coverColorId,
       material_id: formData.material_id || null,
       variety_id: formData.variety_id || null, 
       occasion_id: formData.occasion_id || null,
-      special_collection: formData.special_collection || formData.is_special_collection || false,
+      special_collection: Boolean(formData.special_collection),
     };
 
     const formPayload = new FormData();
@@ -446,13 +436,12 @@ export default function Products() {
     await fetchProducts(1, parsed);
   };
 
-  const updateAvailability = async (product, nextAvailable) => {
+  const updateAvailability = async (product, nextStatus) => {
     try {
       const payload = {
         ...product,
-        is_available: nextAvailable,
-        // Avoid sending nested include objects (Category/Color/Occasion etc.) to backend.
-        Category: undefined,
+        status: nextStatus,
+        // Avoid sending nested include objects (Color/Occasion etc.) to backend.
         Color: undefined,
         Material: undefined,
         Variety: undefined,
@@ -480,15 +469,15 @@ export default function Products() {
   };
 
   const requestAvailabilityChange = (product) => {
-    const nextAvailable = !product.is_available;
+    const nextStatus = product.status === "active" ? "inactive" : "active";
     const title = "Confirm";
-    const message = nextAvailable
+    const message = nextStatus === "active"
       ? "Are you sure you want to set this product as Active?"
       : "Are you sure you want to set this product as Inactive?";
 
     showModal("warning", title, message, async () => {
       closeModal();
-      await updateAvailability(product, nextAvailable);
+      await updateAvailability(product, nextStatus);
     }, closeModal);
   };
 
@@ -516,12 +505,11 @@ export default function Products() {
         </div>
         {showFilters && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-4 border-t border-gray-100">
-            <select value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Categories</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
             <select value={filters.material} onChange={(e) => setFilters({ ...filters, material: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Materials</option>{materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</select>
             <select value={filters.variety} onChange={(e) => setFilters({ ...filters, variety: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Varieties</option>{varieties.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}</select>
             <select value={filters.color} onChange={(e) => setFilters({ ...filters, color: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">All Colors</option>{colors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
             <select value={filters.stockStatus} onChange={(e) => setFilters({ ...filters, stockStatus: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">Stock Status</option><option value="in_stock">In Stock</option><option value="low_stock">Low Stock</option><option value="out_of_stock">Out</option></select>
-            <select value={filters.isAvailable} onChange={(e) => setFilters({ ...filters, isAvailable: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">Active / Inactive</option><option value="true">Active</option><option value="false">Inactive</option></select>
+            <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm"><option value="">Active / Inactive</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
           </div>
         )}
       </div>
@@ -560,7 +548,7 @@ export default function Products() {
                             <p className="text-[10px] text-gray-400 font-mono">{p.sku}</p>
                             <div className="flex gap-1 mt-1">
                               {p.is_new_arrival && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[9px] font-bold rounded">NEW</span>}
-                              {p.is_special_collection && <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">SPECIAL COLLECTION</span>}
+                              {p.special_collection && <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">SPECIAL COLLECTION</span>}
                             </div>
                           </div>
                         </div>
@@ -572,13 +560,13 @@ export default function Products() {
                           type="button"
                           onClick={() => requestAvailabilityChange(p)}
                           className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors ${
-                            p.is_available ? "bg-green-100" : "bg-gray-100"
+                            p.status === "active" ? "bg-green-100" : "bg-gray-100"
                           }`}
-                          title={p.is_available ? "Active (click to deactivate)" : "Inactive (click to activate)"}
+                          title={p.status === "active" ? "Active (click to deactivate)" : "Inactive (click to activate)"}
                         >
                           <span
                             className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
-                              p.is_available ? "translate-x-6" : "translate-x-1"
+                              p.status === "active" ? "translate-x-6" : "translate-x-1"
                             }`}
                           />
                         </button>
@@ -621,7 +609,6 @@ export default function Products() {
         onCalculateDiscount={calculateDiscount}
         submitting={submitting}
         editingProduct={editingProduct}
-        categories={categories}
         materials={materials}
         varieties={varieties}
         colors={colors}

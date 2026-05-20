@@ -4,9 +4,7 @@ const { uploadBufferToCloudinary } = require("../config/cloudinary");
 class VarietyController {
   async getAll(req, res) {
     try {
-      const varieties = await VarietyService.getAllVarieties({
-        category: req.query.category,
-      });
+      const varieties = await VarietyService.getAllVarieties(req.query);
       res.status(200).json(varieties);
     } catch (error) {
       res.status(500).json({ message: error.message });

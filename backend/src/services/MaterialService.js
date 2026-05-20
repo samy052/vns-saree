@@ -1,8 +1,20 @@
 const Material = require('../models/Material');
 
+const pickAttributes = (fields, allowed) => {
+  if (!fields) return undefined;
+  const selected = String(fields)
+    .split(",")
+    .map((field) => field.trim())
+    .filter((field) => allowed.includes(field));
+  return selected.length ? selected : undefined;
+};
+
 class MaterialService {
-  async getAllMaterials() {
-    return await Material.findAll();
+  async getAllMaterials(filters = {}) {
+    return await Material.findAll({
+      attributes: pickAttributes(filters.fields, ["id", "name", "slug", "image", "createdAt", "updatedAt"]),
+      order: [["name", "ASC"]],
+    });
   }
 
   async getMaterialById(id) {

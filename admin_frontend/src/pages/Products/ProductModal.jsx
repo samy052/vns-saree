@@ -16,7 +16,6 @@ const ProductModal = ({
   onSave,
   submitting,
   editingProduct,
-  categories,
   materials,
   varieties,
   colors,
@@ -28,8 +27,7 @@ const ProductModal = ({
 
   if (!isOpen) return null;
 
-  const filteredVarieties = varieties.filter(v => v.category_id === parseInt(formData.category_id));
-  const isSelectionComplete = formData.category_id && formData.variety_id;
+  const isSelectionComplete = Boolean(formData.variety_id);
 
   const inputClasses = (isDisabled) =>
     `w-full rounded-lg px-3 py-2.5 text-sm transition-all focus:outline-none focus:ring-1 ${
@@ -47,7 +45,6 @@ const ProductModal = ({
     formData.name && 
     formData.selling_price && 
     formData.stock_quantity !== "" && 
-    formData.category_id && 
     formData.variety_id && 
     formData.material_id;
 
@@ -100,44 +97,33 @@ const ProductModal = ({
         {/* Form */}
         <form onSubmit={onSave} className="flex-1 overflow-y-auto p-6 bg-gray-50/30 space-y-8">
           
-          {/* SECTION 1: HIERARCHY (Category Selection) */}
+          {/* SECTION 1: PRODUCT TYPE */}
           <div className="bg-white p-6 rounded-2xl border border-[#D4AF37]/30 shadow-sm relative overflow-hidden">
              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#800020]"></div>
              <div className="flex items-center gap-3 mb-6">
                 <div className="p-1.5 bg-[#800020]/5 rounded text-[#800020]">
                   <Sparkles className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 1: Product Hierarchy</h3>
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 1: Product Type</h3>
              </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className={labelClasses(false)}>Main Category *</label>
-                  <select name="category_id" value={formData.category_id} onChange={onInputChange} required className={inputClasses(false)}>
-                    <option value="">Select Category</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
-
+             <div className="grid grid-cols-1 gap-6">
                 <div className="relative">
-                  <label className={labelClasses(!formData.category_id)}>Variety / Weave Type *</label>
+                  <label className={labelClasses(false)}>Variety / Weave Type *</label>
                   <select
                     name="variety_id"
                     value={formData.variety_id}
                     onChange={onInputChange}
                     required
-                    disabled={!formData.category_id}
-                    className={inputClasses(!formData.category_id)}
+                    className={inputClasses(false)}
                   >
                     <option value="">Select Variety</option>
-                    {filteredVarieties.map((v) => (
+                    {varieties.map((v) => (
                       <option key={v.id} value={v.id}>{v.name}</option>
                     ))}
                   </select>
                   
-                  {formData.category_id && filteredVarieties.length === 0 && (
+                  {varieties.length === 0 && (
                     <div className="absolute -bottom-10 left-0 right-0 p-2 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2 animate-in slide-in-from-top-1">
                       <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
                       <p className="text-[10px] text-red-700 font-medium">
@@ -263,13 +249,13 @@ const ProductModal = ({
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative">
               <div className="flex items-center gap-3 mb-6 text-orange-600">
                 <Package className="w-4 h-4" />
-                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 4: Image Management by Color</h3>
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 4: Color Variants & Images</h3>
               </div>
 
               <div className="space-y-6">
                 <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-inner">
                   <div className="flex justify-between items-center mb-4">
-                    <label className="text-[10px] font-black text-gray-400 uppercase">Upload Images for Available Colors</label>
+                    <label className="text-[10px] font-black text-gray-400 uppercase">Available colors, stock and up to 6 images</label>
                     <div className="relative w-48">
                       <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
                       <input 
@@ -335,9 +321,9 @@ const ProductModal = ({
                                       <button
                                         type="button"
                                         onClick={() => onCoverImageSelect({ type: "existing", colorId: colorIdNum, index: idx, url: img.url })}
-                                        className={`text-[7px] px-1 rounded ${img.is_cover || formData.cover_image_selection === `existing:${colorIdNum}:${idx}` ? "bg-green-500 text-white" : "bg-white/90 text-black"}`}
+                                        className={`text-[7px] px-1 rounded ${String(formData.cover_color_id) === String(colorIdNum) ? "bg-green-500 text-white" : "bg-white/90 text-black"}`}
                                       >
-                                        Cov
+                                        Cover
                                       </button>
                                       <button
                                         type="button"
@@ -351,7 +337,7 @@ const ProductModal = ({
                                 ))}
                                 {localFiles.map((file, idx) => {
                                   const previewUrl = URL.createObjectURL(file);
-                                  const isSelectedCover = formData.cover_image_selection === `new:${colorIdStr}:${idx}`;
+                                  const isSelectedCover = String(formData.cover_color_id) === String(colorIdStr);
                                   return (
                                     <div key={`${file.name}-${idx}`} className="relative border rounded overflow-hidden">
                                       <button
@@ -365,10 +351,10 @@ const ProductModal = ({
                                       <div className="absolute top-0 right-0 p-0.5 bg-black/45 flex gap-0.5">
                                         <button
                                           type="button"
-                                          onClick={() => onCoverImageSelect({ type: "new", colorId: colorIdStr, index: idx })}
+                                          onClick={() => onCoverImageSelect({ colorId: colorIdStr })}
                                           className={`text-[7px] px-1 rounded ${isSelectedCover ? "bg-emerald-300 text-black" : "bg-green-50 text-black"}`}
                                         >
-                                          C
+                                          Cover
                                         </button>
                                         <button
                                           type="button"
@@ -396,7 +382,7 @@ const ProductModal = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-gray-100">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
                    <div className="p-4 bg-gradient-to-br from-[#800020] to-[#a0152d] rounded-2xl text-white flex flex-col items-center justify-center shadow-lg">
                       <p className="text-[10px] uppercase font-bold opacity-80 mb-1">Total Available Stock</p>
                       <input 
@@ -420,16 +406,6 @@ const ProductModal = ({
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
-                    <div>
-                      <p className="text-xs font-black text-gray-700 uppercase tracking-tighter">Inventory Tracking</p>
-                      <p className="text-[9px] text-gray-400 font-bold uppercase mt-0.5">Auto-update on sales</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" name="track_inventory" checked={formData.track_inventory} onChange={onInputChange} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#800020]"></div>
-                    </label>
-                  </div>
                 </div>
               </div>
             </div>
@@ -498,7 +474,15 @@ const ProductModal = ({
                       <p className="text-xs font-black text-gray-700 uppercase tracking-tighter">Product Status</p>
                       <p className="text-[9px] text-gray-400 font-bold uppercase">Active / Inactive</p>
                     </div>
-                    <input type="checkbox" name="is_available" checked={formData.is_available} onChange={onInputChange} className="w-6 h-6 text-[#800020] rounded-lg cursor-pointer transition-transform group-hover:scale-110" />
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={onInputChange}
+                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold uppercase text-gray-700 focus:border-[#800020] focus:outline-none"
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
                  </div>
               </div>
             </div>

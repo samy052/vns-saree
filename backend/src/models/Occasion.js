@@ -20,14 +20,9 @@ const Occasion = sequelize.define('Occasion', {
     type: DataTypes.TEXT,
     allowNull: true
   },
-  icon: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
   image: {
     type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: "",
+    allowNull: true,
   }
 }, {
   tableName: 'occasions'

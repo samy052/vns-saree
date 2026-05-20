@@ -9,6 +9,7 @@ import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import PreLoader from "./components/PreLoader/PreLoader";
+import headerBackground from "./assets/header_backgroung.png";
 import "./App.css";
 
 const Home = lazy(() => import("./pages/Home/Home"));
@@ -53,7 +54,13 @@ function App() {
           <CartProvider>
             <Router>
               <ScrollToTop />
-              <div className="App">
+              <div
+                className="App"
+                style={{
+                  "--bk-section-bg": `url(${headerBackground})`,
+                  "--bk-header-bg": `url(${headerBackground})`,
+                }}
+              >
                 <Suspense fallback={<PreLoader />}>
                   <Routes>
                     <Route element={<Layout />}>
