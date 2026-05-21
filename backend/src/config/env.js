@@ -30,6 +30,9 @@ const config = {
   dbSsl: normalize(process.env.DB_SSL, "auto").toLowerCase(),
   allowProductionDbSync: parseBoolean(process.env.ALLOW_PRODUCTION_DB_SYNC, false),
   corsOrigins: normalize(process.env.CORS_ORIGINS || process.env.CLIENT_URL || "*"),
+  referralSignupBonus: Number(process.env.REFERRAL_SIGNUP_BONUS || 100),
+  referralOrderBonus: Number(process.env.REFERRAL_ORDER_BONUS || 50),
+  referralOrderDelayDays: Number(process.env.REFERRAL_ORDER_DELAY_DAYS || 7),
 };
 
 module.exports = { config, parseBoolean };

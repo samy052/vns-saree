@@ -25,6 +25,7 @@ const Wishlist = lazy(() => import("./pages/Wishlist/Wishlist"));
 const MyOrders = lazy(() => import("./pages/MyOrders/MyOrders"));
 const Contact = lazy(() => import("./pages/Contact/Contact"));
 const Feedback = lazy(() => import("./pages/Feedback/Feedback"));
+const Profile = lazy(() => import("./pages/Profile/Profile"));
 
 
 
@@ -93,6 +94,14 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <MyOrders />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/profile"
+                        element={
+                          <ProtectedRoute>
+                            <Profile />
                           </ProtectedRoute>
                         }
                       />

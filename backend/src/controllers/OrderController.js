@@ -2,9 +2,12 @@ const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
 const Product = require('../models/Product');
 const Color = require('../models/Color');
+const Customer = require('../models/Customer');
 const { sequelize } = require('../config/db');
 const EmailService = require('../services/EmailService');
 const ShipRocketService = require('../services/ShipRocketService');
+const WalletService = require('../services/WalletService');
+const { config } = require('../config/env');
 
 const sortProductImages = (images = []) => [...images].sort((a, b) => {
   const left = Number.isFinite(Number(a.display_order)) ? Number(a.display_order) : 999;
@@ -52,6 +55,10 @@ class OrderController {
         total_amount, items, coupon_code 
       } = req.body;
 
+      const customer = customer_email
+        ? await Customer.findOne({ where: { email: customer_email }, transaction: t })
+        : null;
+
       let discount_amount = 0;
       let final_total = total_amount;
 
@@ -76,6 +83,7 @@ class OrderController {
       }
 
       const order = await Order.create({
+        customer_id: customer?.id || null,
         customer_name,
         customer_email,
         address,
@@ -194,6 +202,55 @@ class OrderController {
     } catch (error) {
       console.error('[Track] Error:', error?.response?.data || error.message);
       res.status(500).json({ message: 'Tracking unavailable', detail: error.message });
+    }
+  }
+
+  // ── Admin: Update order status. If delivered, schedule referral reward ──────
+  async updateOrderStatus(req, res) {
+    const t = await sequelize.transaction();
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!status) return res.status(400).json({ message: 'status is required' });
+
+      const order = await Order.findByPk(id, { transaction: t });
+      if (!order) return res.status(404).json({ message: 'Order not found' });
+
+      const normalized = String(status).trim();
+      const isDelivered = normalized.toLowerCase() === 'delivered';
+
+      const updatePayload = { status: normalized };
+      if (isDelivered && !order.delivered_at) {
+        updatePayload.delivered_at = new Date();
+      }
+
+      await order.update(updatePayload, { transaction: t });
+
+      // Referral reward: if this order belongs to a referred user, reward referrer
+      // after 7 days from delivery.
+      if (isDelivered && updatePayload.delivered_at && order.customer_id) {
+        const buyer = await Customer.findByPk(order.customer_id, { transaction: t });
+        if (buyer?.referred_by_id) {
+          const availableAt = new Date(
+            updatePayload.delivered_at.getTime() + config.referralOrderDelayDays * 24 * 60 * 60 * 1000,
+          );
+          await WalletService.createPendingCredit({
+            customerId: buyer.referred_by_id,
+            amount: config.referralOrderBonus,
+            type: 'REFERRAL_ORDER_BONUS',
+            dedupeKey: `ref_order:${order.id}`,
+            availableAt,
+            meta: { order_id: order.id, referred_customer_id: buyer.id },
+          });
+        }
+      }
+
+      await t.commit();
+      return res.status(200).json({ message: 'Order updated', order });
+    } catch (error) {
+      await t.rollback();
+      return res.status(500).json({ message: error.message });
     }
   }
 }

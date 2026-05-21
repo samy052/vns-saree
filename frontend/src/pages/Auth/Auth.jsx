@@ -65,6 +65,7 @@ const Auth = () => {
     phone: "",
     email: "",
     password: "",
+    referral_code: "",
   });
   const [forgotPasswordData, setForgotPasswordData] = useState({
     email: "",
@@ -90,11 +91,29 @@ const Auth = () => {
       return;
     }
 
+    if (params.get("mode") === "forgot") {
+      setActiveTab("forgotPassword");
+      const email = params.get("email") || "";
+      setForgotPasswordData((prev) => ({ ...prev, email }));
+      setError("");
+      setSuccess("");
+      setAnimationKey((key) => key + 1);
+      return;
+    }
+
     if (params.has("refresh")) {
       setActiveTab("login");
       setError("");
       setSuccess("");
       setAnimationKey((key) => key + 1);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const ref = params.get("ref");
+    if (ref) {
+      setSignupData((prev) => ({ ...prev, referral_code: ref }));
     }
   }, [location.search]);
 
@@ -426,6 +445,16 @@ const Auth = () => {
             />
 
             <AuthField
+              icon="lucide:gift"
+              label="Referral Code (optional)"
+              name="referral_code"
+              value={signupData.referral_code}
+              placeholder="Enter referral code"
+              onChange={handleSignupChange}
+              required={false}
+            />
+
+            <AuthField
               icon="lucide:lock"
               label="Password"
               name="password"
@@ -582,4 +611,3 @@ const Auth = () => {
 };
 
 export default Auth;
-

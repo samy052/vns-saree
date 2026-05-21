@@ -7,6 +7,10 @@ const Order = sequelize.define('Order', {
     primaryKey: true,
     autoIncrement: true
   },
+  customer_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   customer_name: {
     type: DataTypes.STRING,
     allowNull: false
@@ -47,6 +51,10 @@ const Order = sequelize.define('Order', {
   status: {
     type: DataTypes.STRING,
     defaultValue: 'Pending'
+  },
+  delivered_at: {
+    type: DataTypes.DATE,
+    allowNull: true
   },
   state: {
     type: DataTypes.STRING,

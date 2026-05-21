@@ -15,6 +15,9 @@ const CartRoutes = require("./routes/CartRoutes");
 const WishlistRoutes = require("./routes/WishlistRoutes");
 const FeedbackRoutes = require("./routes/FeedbackRoutes");
 const ShipRocketRoutes = require("./routes/ShipRocketRoutes");
+const WalletRoutes = require("./routes/WalletRoutes");
+const ReferralRoutes = require("./routes/ReferralRoutes");
+const CustomerRoutes = require("./routes/CustomerRoutes");
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -22,6 +25,7 @@ const allowedOrigins = [
   "https://vns-saree-new.vercel.app",
   "https://vns-saree-bgbv.vercel.app",
 ];
+
 
 const app = express();
 
@@ -82,6 +86,9 @@ app.use("/api/shiprocket", ShipRocketRoutes);
 // Customer account APIs. Route files enforce customer authentication.
 app.use("/api/cart", CartRoutes);
 app.use("/api/wishlist", WishlistRoutes);
+app.use("/api/wallet", WalletRoutes);
+app.use("/api/referral", ReferralRoutes);
+app.use("/api/customers", CustomerRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "API route not found" });

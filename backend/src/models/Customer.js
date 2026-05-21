@@ -46,6 +46,25 @@ const Customer = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    referral_code: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+    },
+    referred_by_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: "referred_by",
+    },
+    wallet_balance: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    avatar_url: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     tableName: "customers",

@@ -406,6 +406,9 @@ const Header = () => {
                   <button type="button" onClick={() => goProtected("/my-orders")}>
                     My Orders
                   </button>
+                  <button type="button" onClick={() => goProtected("/profile")}>
+                    My Profile
+                  </button>
                   <button type="button" onClick={() => goProtected("/wishlist")}>
                     Wishlist
                   </button>

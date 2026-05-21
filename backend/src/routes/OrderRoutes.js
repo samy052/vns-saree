@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const OrderController = require('../controllers/OrderController');
+const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 
 // Public checkout route.
 router.post('/', OrderController.createOrder);
@@ -13,5 +14,8 @@ router.get('/track/:orderId', OrderController.trackOrder);
 
 // Admin/order lookup route.
 router.get('/', OrderController.getMyOrders);
+
+// Admin: Update status (e.g., Delivered). Triggers referral reward scheduling.
+router.patch('/:id/status', authMiddleware, adminMiddleware, OrderController.updateOrderStatus);
 
 module.exports = router;

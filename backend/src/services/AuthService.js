@@ -4,10 +4,15 @@ const Customer = require("../models/Customer");
 const Admin = require("../models/Admin");
 const EmailService = require("./EmailService");
 const { Op } = require("sequelize");
+const WalletService = require("./WalletService");
+const { config } = require("../config/env");
+
+const generateReferralCode = () =>
+  `VNS${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
 
 class AuthService {
   async register(userData) {
-    const { name, phone, email, password } = userData;
+    const { name, phone, email, password, referral_code } = userData;
 
     const existingPhone = await Customer.findOne({ where: { phone } });
     if (existingPhone) {
@@ -27,12 +32,43 @@ class AuthService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const customer = await Customer.create({
-      name,
-      phone,
-      email,
-      password: hashedPassword,
-    });
+    let customer = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        customer = await Customer.create({
+          name,
+          phone,
+          email,
+          password: hashedPassword,
+          referral_code: generateReferralCode(),
+        });
+        break;
+      } catch (err) {
+        // Retry only on referral_code collisions (rare).
+        if (err?.name === "SequelizeUniqueConstraintError") continue;
+        throw err;
+      }
+    }
+    if (!customer) {
+      throw new Error("Failed to generate referral code. Please try again.");
+    }
+
+    // Optional referral flow:
+    // - If referral_code is valid, credit ₹100 to the new user's wallet immediately.
+    // - Referrer earns ₹50 only after referred user's delivered order + 7 days (handled elsewhere).
+    if (referral_code) {
+      const referrer = await Customer.findOne({ where: { referral_code } });
+      if (referrer && referrer.id !== customer.id) {
+        await customer.update({ referred_by_id: referrer.id });
+        await WalletService.creditNow({
+          customerId: customer.id,
+          amount: config.referralSignupBonus,
+          type: "REFERRAL_SIGNUP_BONUS",
+          dedupeKey: `ref_signup:${customer.id}`,
+          meta: { referrer_id: referrer.id },
+        });
+      }
+    }
 
     return this.generateTokens(customer);
   }
@@ -111,6 +147,9 @@ class AuthService {
       phone: user.phone,
       email: user.email,
       role: role,
+      avatar_url: user.avatar_url || null,
+      wallet_balance: user.wallet_balance ?? null,
+      referral_code: user.referral_code || null,
     };
 
     return {

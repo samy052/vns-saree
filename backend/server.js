@@ -4,6 +4,7 @@ const cron = require("node-cron");
 const app = require("./src");
 const { connectDB } = require("./src/config/db");
 const { config } = require("./src/config/env");
+const WalletService = require("./src/services/WalletService");
 
 const PORT = config.port;
 
@@ -36,11 +37,26 @@ const startHeartbeat = () => {
   });
 };
 
+const startReferralPayoutJob = () => {
+  // Every hour: process pending wallet credits that became available (e.g., referral payouts).
+  cron.schedule("15 * * * *", async () => {
+    try {
+      const result = await WalletService.processDuePendingCredits({ limit: 500 });
+      if (result.processed) {
+        console.log(`[Wallet] Processed ${result.processed} pending credits`);
+      }
+    } catch (error) {
+      console.error("[Wallet] Pending credit processing failed:", error.message);
+    }
+  });
+};
+
 const startServer = async () => {
   try {
     await connectDB();
 
     startHeartbeat();
+    startReferralPayoutJob();
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
