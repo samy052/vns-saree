@@ -14,7 +14,12 @@ const OccasionCollections = lazy(() => import("./OccasionCollections/OccasionCol
 const ReviewsStory = lazy(() => import("./ReviewsStory/ReviewsStory"));
 const FaqSection = lazy(() => import("./FaqSection/FaqSection"));
 
-const DeferredSection = ({ children, id, minHeight = 240, canObserve = false }) => {
+const DeferredSection = ({
+  children,
+  id,
+  variant = "default",
+  canObserve = false,
+}) => {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -40,12 +45,13 @@ const DeferredSection = ({ children, id, minHeight = 240, canObserve = false }) 
     <div
       id={id}
       ref={sectionRef}
-      className="home-deferred-section"
-      style={{ minHeight: isVisible ? undefined : minHeight }}
+      className={`home-deferred-section home-deferred-section--${variant} ${
+        isVisible ? "is-visible" : "is-loading"
+      }`}
     >
       {!isVisible && <div className="home-section-loader" aria-hidden="true" />}
       {isVisible && (
-        <Suspense fallback={<div className="home-section-loader" />}>
+        <Suspense fallback={<div className="home-section-loader" aria-hidden="true" />}>
           {children}
         </Suspense>
       )}
@@ -115,25 +121,25 @@ const Home = () => {
         <OfferBand />
         <HeroSlider />
 
-        <DeferredSection minHeight={150} canObserve>
+        <DeferredSection variant="why" canObserve>
           <WhyChooseUs />
         </DeferredSection>
-        <DeferredSection minHeight={360} canObserve={hasScrolled}>
+        <DeferredSection variant="popular" canObserve={hasScrolled}>
           <PopularSarees />
         </DeferredSection>
-        <DeferredSection minHeight={280} canObserve={hasScrolled}>
+        <DeferredSection variant="browse" canObserve={hasScrolled}>
           <BrowseCircles />
         </DeferredSection>
-        <DeferredSection id="new-arrivals" minHeight={380} canObserve={hasScrolled}>
+        <DeferredSection id="new-arrivals" variant="arrivals" canObserve={hasScrolled}>
           <NewArrivals />
         </DeferredSection>
-        <DeferredSection minHeight={480} canObserve={hasScrolled}>
+        <DeferredSection variant="occasion" canObserve={hasScrolled}>
           <OccasionCollections />
         </DeferredSection>
-        <DeferredSection minHeight={520} canObserve={hasScrolled}>
+        <DeferredSection variant="reviews" canObserve={hasScrolled}>
           <ReviewsStory />
         </DeferredSection>
-        <DeferredSection minHeight={220} canObserve={hasScrolled}>
+        <DeferredSection variant="faq" canObserve={hasScrolled}>
           <FaqSection />
         </DeferredSection>
       </main>

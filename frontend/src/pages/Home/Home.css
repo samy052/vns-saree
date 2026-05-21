@@ -19,12 +19,13 @@
 
 .home-deferred-section {
   width: 100%;
+  min-height: var(--home-deferred-min-height, 360px);
   content-visibility: auto;
-  contain-intrinsic-size: 1px 420px;
+  contain-intrinsic-size: var(--home-deferred-min-height, 420px);
 }
 
 .home-section-loader {
-  min-height: inherit;
+  min-height: var(--home-deferred-min-height, 360px);
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -62,6 +63,34 @@
   min-height: 92px;
 }
 
+.home-deferred-section--why {
+  --home-deferred-min-height: 150px;
+}
+
+.home-deferred-section--popular {
+  --home-deferred-min-height: 760px;
+}
+
+.home-deferred-section--browse {
+  --home-deferred-min-height: 300px;
+}
+
+.home-deferred-section--arrivals {
+  --home-deferred-min-height: 430px;
+}
+
+.home-deferred-section--occasion {
+  --home-deferred-min-height: 450px;
+}
+
+.home-deferred-section--reviews {
+  --home-deferred-min-height: 560px;
+}
+
+.home-deferred-section--faq {
+  --home-deferred-min-height: 260px;
+}
+
 @keyframes bkHomeDeferredShimmer {
   from {
     background-position: 120% 0;
@@ -86,6 +115,27 @@
 @media (max-width: 640px) {
   .bk-home-main {
     padding-top: 136px;
+  }
+
+  .home-deferred-section--popular,
+  .home-deferred-section--arrivals {
+    --home-deferred-min-height: 1210px;
+  }
+
+  .home-deferred-section--browse {
+    --home-deferred-min-height: 320px;
+  }
+
+  .home-deferred-section--occasion {
+    --home-deferred-min-height: 585px;
+  }
+
+  .home-deferred-section--reviews {
+    --home-deferred-min-height: 610px;
+  }
+
+  .home-deferred-section--faq {
+    --home-deferred-min-height: 300px;
   }
 
   .home-section-loader::before {
