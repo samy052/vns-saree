@@ -156,25 +156,25 @@
   .bk-fabric-strip {
     margin-bottom: 0;
     overflow: hidden;
-    padding: 8px 0 6px;
+    padding: 12px 0 7px;
   }
 
   .bk-fabric-grid-mobile {
     width: max-content;
     min-width: max-content;
-    gap: 9px;
-    padding: 0 14px;
+    gap: 13px;
+    padding: 0 16px;
     overflow: visible;
     scroll-padding-inline: 0;
     scroll-snap-type: none;
-    --bk-fabric-half-gap: 5px;
+    --bk-fabric-half-gap: 6.5px;
     animation: bk-fabric-marquee 30s linear infinite;
     will-change: transform;
   }
 
   .bk-fabric-item {
-    flex: 0 0 78px;
-    width: 78px;
+    flex: 0 0 84px;
+    width: 84px;
     scroll-snap-align: none;
   }
 
@@ -187,7 +187,7 @@
 
   .bk-fabric-label {
     width: 100%;
-    font-size: clamp(8px, 2.1vw, 10px);
+    font-size: clamp(8px, 2.2vw, 10px);
     line-height: 1;
     white-space: normal;
   }

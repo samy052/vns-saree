@@ -115,7 +115,7 @@ const Home = () => {
         <OfferBand />
         <HeroSlider />
 
-        <DeferredSection minHeight={150} canObserve={hasScrolled}>
+        <DeferredSection minHeight={150} canObserve>
           <WhyChooseUs />
         </DeferredSection>
         <DeferredSection minHeight={360} canObserve={hasScrolled}>

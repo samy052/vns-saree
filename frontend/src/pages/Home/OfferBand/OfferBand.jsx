@@ -43,11 +43,11 @@ const OfferBand = () => {
         aria-label="Loading offer"
       >
         <div className="bk-offer-main bk-offer-skeleton">
-          <span className="bk-offer-skeleton-title" />
+          <span className="bk-offer-title bk-offer-skeleton-title" />
           <span className="bk-offer-divider" aria-hidden="true" />
-          <span className="bk-offer-skeleton-code-wrap">
-            <span className="bk-offer-skeleton-label" />
-            <span className="bk-offer-skeleton-code" />
+          <span className="bk-offer-code-wrap bk-offer-skeleton-code-wrap">
+            <span className="bk-offer-code-label bk-offer-skeleton-label" />
+            <span className="bk-offer-code bk-offer-skeleton-code" />
           </span>
         </div>
       </div>
