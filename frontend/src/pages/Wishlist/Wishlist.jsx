@@ -7,6 +7,7 @@ import { useWishlist } from "../../context/WishlistContext";
 import { API_ENDPOINTS } from "../../config/api";
 import api from "../../utils/api";
 import { getColorStock, getProductImages } from "../../utils/productMedia";
+import EmptyStateIcon from "../../components/EmptyStateIcon";
 import "./Wishlist.css";
 
 const Wishlist = () => {
@@ -126,9 +127,7 @@ const Wishlist = () => {
         </section>
       ) : !hasItems ? (
         <section className="wishlist-empty">
-          <span className="wishlist-empty-icon">
-            <Icon icon="lucide:heart" />
-          </span>
+          <EmptyStateIcon variant="wishlist" />
           <h2>Your wishlist is waiting</h2>
           <p>Save sarees you love and return here whenever you are ready.</p>
           <Link to="/collection" className="wishlist-primary-link">

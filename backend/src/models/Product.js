@@ -131,6 +131,20 @@ const Product = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    payment_options: {
+      type: DataTypes.JSONB,
+      defaultValue: ["prepaid"],
+      allowNull: false,
+    },
+    service_options: {
+      type: DataTypes.JSONB,
+      defaultValue: [],
+      allowNull: false,
+    },
+    care_instructions: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     tableName: "products",

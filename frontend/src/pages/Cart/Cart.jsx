@@ -5,6 +5,7 @@ import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 import api from "../../utils/api";
 import { API_ENDPOINTS } from "../../config/api";
+import EmptyStateIcon from "../../components/EmptyStateIcon";
 import "./Cart.css";
 
 const Cart = () => {
@@ -59,7 +60,7 @@ const Cart = () => {
 
           {cart.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-lg shadow-sm border border-[#D4AF37]/10">
-              <Icon icon="lucide:shopping-bag" className="text-6xl text-[#D4AF37]/30 mb-6" />
+              <EmptyStateIcon variant="cart" className="mx-auto mb-2" />
               <h3 className="brand-font text-2xl text-[#800020] mb-4">Your bag is currently empty</h3>
               <p className="text-gray-500 mb-8">Explore our heritage collection to add items.</p>
               <Link to="/collection" className="inline-block px-10 py-4 bg-[#800020] text-[#D4AF37] font-bold uppercase tracking-widest hover:bg-[#3D2817] transition-all">

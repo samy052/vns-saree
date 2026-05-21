@@ -1,121 +1,133 @@
 import { Icon } from "@iconify/react";
-import { useState, useEffect, useRef } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useWishlist } from "../../context/WishlistContext";
+import { useCart } from "../../context/CartContext";
 import { useNotification } from "../../context/NotificationContext";
+import { useWishlist } from "../../context/WishlistContext";
 import { API_ENDPOINTS } from "../../config/api";
-import { getColorStock, getProductCoverImage, getProductImages } from "../../utils/productMedia";
+import { getProductCoverImage, getProductImages } from "../../utils/productMedia";
 import "./ProductDetail.css";
+
+const PRODUCT_RATING = "4.8";
+const PRODUCT_REVIEW_COUNT = "124";
 
 const ProductDetail = () => {
   const { slug } = useParams();
-  const { addToCart } = useCart();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showNotification } = useNotification();
-  const navigate = useNavigate();
-  
+
   const [product, setProduct] = useState(null);
   const [allColors, setAllColors] = useState([]);
-  const [products, setProducts] = useState([]); // For related products
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mainImage, setMainImage] = useState("");
   const [selectedColorId, setSelectedColorId] = useState(null);
+  const [colorImagesById, setColorImagesById] = useState({});
+  const [loadingColorId, setLoadingColorId] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [activeAccordion, setActiveAccordion] = useState("story");
+  const [activeAccordion, setActiveAccordion] = useState("description");
+  const [isGalleryHovering, setIsGalleryHovering] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [relatedHoverId, setRelatedHoverId] = useState(null);
+  const [relatedSlides, setRelatedSlides] = useState({});
 
   const frameRef = useRef(null);
   const perspectiveRef = useRef(null);
   const rootRef = useRef(null);
 
-  const getUniqueImages = (targetProduct = product) => {
-    const combined = getProductImages(targetProduct || {});
-    const unique = Array.from(new Map(combined.map(img => [img.url, img])).values());
-    return unique;
+  const getSortedImages = (targetProduct = product) => {
+    const unique = Array.from(
+      new Map(
+        getProductImages(targetProduct || {})
+          .map((image) => (typeof image === "string" ? { url: image } : image))
+          .filter((image) => image?.url)
+          .map((image) => [image.url, image]),
+      ).values(),
+    );
+
+    return unique.sort((a, b) => Number(a.display_order || 0) - Number(b.display_order || 0));
+  };
+
+  const getCoverColorId = (targetProduct = product) => {
+    const images = getSortedImages(targetProduct);
+    return images.find((image) => image.is_cover)?.color_id || images[0]?.color_id || null;
+  };
+
+  const getFirstImageForColor = (targetProduct, colorId) => {
+    const images = getSortedImages(targetProduct);
+    const colorImages = images.filter((image) => String(image.color_id) === String(colorId));
+    return colorImages[0] || images.find((image) => image.is_cover) || images[0] || null;
+  };
+
+  const updateColorInUrl = (colorId, replace = false) => {
+    const nextParams = new URLSearchParams(window.location.search);
+    if (colorId) nextParams.set("color", String(colorId));
+    else nextParams.delete("color");
+    const nextUrl = `${window.location.pathname}?${nextParams.toString()}`;
+    if (replace) window.history.replaceState(null, "", nextUrl);
+    else window.history.pushState(null, "", nextUrl);
   };
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const [prodRes, allRes, colorsRes] = await Promise.all([
-          fetch(`${API_ENDPOINTS.products}/${slug}`),
-          fetch(API_ENDPOINTS.products),
-          fetch(API_ENDPOINTS.colors),
+        const initialColor = searchParams.get("color");
+        const [prodRes, relatedRes] = await Promise.all([
+          fetch(`${API_ENDPOINTS.products}/${slug}/detail${initialColor ? `?color=${encodeURIComponent(initialColor)}` : ""}`),
+          fetch(`${API_ENDPOINTS.products}?view=collection&limit=5&status=active`),
         ]);
 
         if (!prodRes.ok) throw new Error("Product not found");
 
-        const [prodData, allData, colorsData] = await Promise.all([
+        const [prodData, relatedData] = await Promise.all([
           prodRes.json(),
-          allRes.json(),
-          colorsRes.json(),
+          relatedRes.json(),
         ]);
 
+        const sortedImages = getSortedImages(prodData);
+        const initialColorId = prodData.selected_color_id || getCoverColorId(prodData);
+        const initialImage = sortedImages[0] || getFirstImageForColor(prodData, initialColorId);
+
         setProduct(prodData);
-        setAllColors(colorsData);
-        
-        const allImages = getUniqueImages(prodData);
-        const coverImg = allImages.find(img => img.is_cover) || allImages[0];
-        const initialColorId = coverImg ? coverImg.color_id : null;
-        
+        setAllColors(Array.isArray(prodData.colors) ? prodData.colors : []);
         setSelectedColorId(initialColorId);
-        setMainImage(coverImg ? coverImg.url : prodData.image_url);
-        
-        setProducts((allData.rows || allData).filter((p) => p.slug !== slug));
-        setLoading(false);
+        setColorImagesById(initialColorId ? { [String(initialColorId)]: sortedImages } : {});
+        setMainImage(initialImage?.url || prodData.image_url || "");
+        setProducts((relatedData.items || relatedData.rows || relatedData || []).filter((item) => item.slug !== slug));
+        if (initialColorId && String(searchParams.get("color")) !== String(initialColorId)) updateColorInUrl(initialColorId, true);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching product:", error);
+        setProduct(null);
+      } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [slug]);
-
-  const handleColorChange = (colorId) => {
-    setSelectedColorId(colorId);
-    const allImages = getUniqueImages(product);
-    const colorImages = allImages.filter(img => img.color_id === colorId);
-    if (colorImages.length > 0) {
-      setMainImage(colorImages[0].url);
-    }
-  };
-
-  const getDistinctProductColors = () => {
-    const allImages = getUniqueImages(product);
-    if (allImages.length === 0) return [];
-    const colorIds = [...new Set(allImages.map(img => img.color_id))].filter(id => id);
-    return allColors.filter(c => colorIds.includes(c.id));
-  };
-
-  const getVisibleImages = () => {
-    const allImages = getUniqueImages(product);
-    if (allImages.length === 0) return [];
-    if (!selectedColorId) return allImages;
-    return allImages.filter(img => img.color_id === selectedColorId);
-  };
-
 
   useEffect(() => {
     const frame = frameRef.current;
     const perspective = perspectiveRef.current;
 
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (event) => {
       if (!perspective || !frame) return;
       const rect = perspective.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -10;
-      const rotateY = ((x - centerX) / centerX) * 10;
-
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -6;
+      const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 6;
       frame.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     };
 
     const handleMouseLeave = () => {
-      if (frame) frame.style.transform = `rotateX(0deg) rotateY(0deg)`;
+      if (frame) frame.style.transform = "rotateX(0deg) rotateY(0deg)";
     };
 
     if (perspective) {
@@ -123,35 +135,112 @@ const ProductDetail = () => {
       perspective.addEventListener("mouseleave", handleMouseLeave);
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("active");
-          }
-        });
-      },
-      { threshold: 0.1 },
-    );
-
-    if (rootRef.current) {
-      rootRef.current
-        .querySelectorAll(".reveal-up")
-        .forEach((el) => observer.observe(el));
-    }
-
     return () => {
       if (perspective) {
         perspective.removeEventListener("mousemove", handleMouseMove);
         perspective.removeEventListener("mouseleave", handleMouseLeave);
       }
-      observer.disconnect();
     };
   }, [loading]);
 
-  const changeImage = (src) => {
-    setMainImage(src);
+  const visibleImages = useMemo(() => {
+    if (!selectedColorId) return getSortedImages(product);
+    return colorImagesById[String(selectedColorId)] || [];
+  }, [product, selectedColorId, colorImagesById]);
+
+  const distinctColors = useMemo(() => {
+    return allColors;
+  }, [allColors]);
+
+  const selectedColor = distinctColors.find((color) => String(color.id) === String(selectedColorId));
+  const selectedStockStatus = selectedColor?.stock_status || "in_stock";
+  const isSelectedOutOfStock = selectedStockStatus === "out_of_stock";
+  const isSelectedLowStock = selectedStockStatus === "low_stock";
+  const isChangingColor = Boolean(loadingColorId);
+  const canAddToBag = !isSelectedOutOfStock && !isChangingColor;
+  const formatMoney = (value) => `Rs. ${Number(value || 0).toLocaleString("en-IN")}`;
+  const formatNumber = (value) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "";
   };
+
+  const handleColorChange = async (colorId) => {
+    const cachedImages = colorImagesById[String(colorId)];
+      setSelectedColorId(colorId);
+      updateColorInUrl(colorId);
+      setActiveImageIndex(0);
+    if (cachedImages?.length) {
+      setMainImage(cachedImages[0].url);
+      return;
+    }
+
+    setLoadingColorId(colorId);
+    try {
+      const response = await fetch(`${API_ENDPOINTS.products}/${slug}/colors/${colorId}/images`);
+      const data = await response.json();
+      const images = getSortedImages({ images: data.images || [] });
+      setColorImagesById((current) => ({ ...current, [String(colorId)]: images }));
+      setAllColors((current) =>
+        current.map((color) =>
+          String(color.id) === String(colorId) ? { ...color, stock_status: data.stock_status } : color,
+        ),
+      );
+      setMainImage(images[0]?.url || "");
+    } catch (error) {
+      console.error("Error loading color images:", error);
+      showNotification("Could not load this color. Please try again.", "warning");
+    } finally {
+      setLoadingColorId(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!isGalleryHovering || visibleImages.length <= 1) return undefined;
+
+    const timer = window.setInterval(() => {
+      setActiveImageIndex((current) => {
+        const next = (current + 1) % visibleImages.length;
+        setMainImage(visibleImages[next]?.url || "");
+        return next;
+      });
+    }, 1450);
+
+    return () => window.clearInterval(timer);
+  }, [isGalleryHovering, visibleImages]);
+
+  useEffect(() => {
+    if (!relatedHoverId) return undefined;
+    const target = products.find((item) => item.id === relatedHoverId);
+    const imageCount = getSortedImages(target).length;
+    if (imageCount <= 1) return undefined;
+
+    const timer = window.setInterval(() => {
+      setRelatedSlides((current) => ({
+        ...current,
+        [relatedHoverId]: ((current[relatedHoverId] || 0) + 1) % imageCount,
+      }));
+    }, 1450);
+
+    return () => window.clearInterval(timer);
+  }, [relatedHoverId, products]);
+
+  useEffect(() => {
+    if (!products.length) return undefined;
+
+    const timer = window.setInterval(() => {
+      setRelatedSlides((current) => {
+        const next = { ...current };
+        products.slice(0, 4).forEach((item) => {
+          if (item.id === relatedHoverId) return;
+          const count = getSortedImages(item).length;
+          if (count > 1) next[item.id] = ((next[item.id] || 0) + 1) % count;
+        });
+        return next;
+      });
+    }, 1850);
+
+    return () => window.clearInterval(timer);
+  }, [products, relatedHoverId]);
 
   const incrementQty = () => setQuantity((prev) => prev + 1);
   const decrementQty = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
@@ -163,19 +252,13 @@ const ProductDetail = () => {
       return;
     }
 
-    // Stock Validation
-    const colorStock = getColorStock(product, selectedColorId);
-    if (quantity > colorStock) {
-      showNotification(`Only ${colorStock} items available in this color!`, "warning");
+    if (isSelectedOutOfStock) {
+      showNotification("This color is out of stock.", "warning");
       return;
     }
 
     const result = await addToCart(product, quantity, selectedColorId);
-    if (result.success) {
-      showNotification("Added to Bag!");
-    } else {
-      showNotification(result.message, "warning");
-    }
+    showNotification(result.success ? "Added to Bag!" : result.message, result.success ? "success" : "warning");
   };
 
   const handleWishlist = async () => {
@@ -187,31 +270,84 @@ const ProductDetail = () => {
     await toggleWishlist(product);
   };
 
-  const toggleAccordion = (id) => {
-    setActiveAccordion((prev) => (prev === id ? null : id));
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: product.name, text: product.name, url: window.location.href });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        showNotification("Product link copied with selected color!");
+      }
+    } catch {
+      showNotification("Share cancelled", "info");
+    }
   };
+
+  const specificationRows = product
+    ? [
+        ["SKU", product.sku],
+        ["Variety", product.Variety?.name],
+        ["Material", product.Material?.name],
+        ["Fabric", product.Material?.name],
+        ["Occasion", product.Occasion?.name],
+        ["Length", product.length ? `${formatNumber(product.length)} m` : ""],
+        ["Width", product.width ? `${formatNumber(product.width)} m` : ""],
+        ["Weight", product.weight ? `${formatNumber(product.weight)} kg` : ""],
+        ["Blouse Piece", product.blouse_piece ? "Included" : ""],
+        ["Care", product.care_instructions],
+      ].filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
+    : [];
+
+  const shippingRows = product
+    ? [
+        Array.isArray(product.payment_options) && product.payment_options.includes("prepaid")
+          ? ["Prepaid", "Online payment available"]
+          : null,
+        Array.isArray(product.payment_options) && product.payment_options.includes("cod")
+          ? ["COD", "Cash on Delivery available on selected pin codes"]
+          : null,
+        Array.isArray(product.service_options) && product.service_options.includes("return")
+          ? ["Return", "Return available as per policy"]
+          : null,
+        Array.isArray(product.service_options) && product.service_options.includes("exchange")
+          ? ["Exchange", "Exchange available as per policy"]
+          : null,
+        ["Taxes & Shipping", "Incl. of all taxes & free shipping across Pan India"],
+      ].filter(Boolean)
+    : [];
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F5F1E8]">
-        <p className="serif-text italic text-2xl text-[#800020] animate-pulse">
-          Unveiling elegance...
-        </p>
+      <div className="product-detail-page">
+        <main className="product-detail-shell">
+          <div className="product-detail-skeleton" aria-label="Loading product">
+            <div className="product-skeleton-gallery">
+              <span className="product-skeleton-thumb" />
+              <span className="product-skeleton-thumb" />
+              <span className="product-skeleton-thumb" />
+              <span className="product-skeleton-image" />
+            </div>
+            <div className="product-skeleton-info">
+              <span className="product-skeleton-line short" />
+              <span className="product-skeleton-line title" />
+              <span className="product-skeleton-line medium" />
+              <span className="product-skeleton-box" />
+              <span className="product-skeleton-line medium" />
+              <span className="product-skeleton-actions" />
+              <span className="product-skeleton-box tall" />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F5F1E8]">
+      <div className="product-detail-page product-detail-loading">
         <div className="text-center">
-          <p className="serif-text italic text-2xl text-[#800020] mb-4">
-            This product is no longer available.
-          </p>
-          <Link
-            to="/collection"
-            className="text-[#D4AF37] font-bold uppercase tracking-widest border-b border-[#D4AF37]"
-          >
+          <p className="serif-text italic text-2xl text-[#800020] mb-4">This product is no longer available.</p>
+          <Link to="/collection" className="text-[#800020] font-bold uppercase tracking-widest border-b border-[#800020]">
             Return to Collection
           </Link>
         </div>
@@ -219,188 +355,285 @@ const ProductDetail = () => {
     );
   }
 
-  const distinctColors = getDistinctProductColors();
-  const visibleImages = getVisibleImages();
-
   return (
-    <div className="relative min-h-screen bg-[#F5F1E8]" ref={rootRef}>
-      <main className="max-w-6xl mx-auto px-4 lg:px-12 py-6">
-        <nav className="flex text-[10px] uppercase tracking-widest text-[#3D2817]/60 mb-6" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2">
-            <li><Link to="/" className="hover:text-[#800020]">Home</Link></li>
-            <Icon icon="lucide:chevron-right"></Icon>
-            <li><Link to="/collection" className="hover:text-[#800020]">Collections</Link></li>
-            <Icon icon="lucide:chevron-right"></Icon>
-            <li className="text-[#800020] font-bold">{product.name}</li>
-          </ol>
+    <div className="product-detail-page" ref={rootRef}>
+      <main className="product-detail-shell">
+        <nav className="product-breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">Home</Link>
+          <Icon icon="lucide:chevron-right" />
+          <Link to="/collection">Collections</Link>
+          <Icon icon="lucide:chevron-right" />
+          <span>{product.name}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-7 flex flex-col md:flex-row-reverse gap-4">
-            <div className="flex-1 product-3d-perspective" ref={perspectiveRef}>
-              <div className="product-3d-frame relative bg-white rounded-xl shadow-2xl overflow-hidden border border-[#D4AF37]/20 group zoom-container" ref={frameRef}>
-                <img src={mainImage} alt={product.name} className="w-full h-full object-contain zoom-image" />
-                <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-md p-2 rounded-full text-white pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Icon icon="lucide:rotate-3d" className="text-xl"></Icon>
-                </div>
-                {product.discount_percent > 0 && (
-                  <div className="absolute top-6 left-6 bg-[#800020] text-[#D4AF37] px-4 py-1 font-bold text-sm tracking-widest shadow-lg">
-                    {product.discount_percent}% OFF
+        <div className="product-detail-grid">
+          <section className="product-gallery">
+            <div
+              className="product-main-media product-3d-perspective"
+              ref={perspectiveRef}
+              onMouseEnter={() => setIsGalleryHovering(true)}
+              onMouseLeave={() => setIsGalleryHovering(false)}
+            >
+              <div className="product-3d-frame product-image-frame" ref={frameRef}>
+                {loadingColorId ? <span className="product-image-loader" aria-hidden="true" /> : null}
+                {visibleImages.length > 0 ? (
+                  <div
+                    className="product-main-image-track"
+                    style={{ transform: `translateX(-${activeImageIndex * 100}%)` }}
+                  >
+                    {visibleImages.map((image, index) => (
+                      <img
+                        key={`${image.url}-${index}`}
+                        src={image.url}
+                        alt={index === activeImageIndex ? product.name : ""}
+                        className="product-main-image"
+                      />
+                    ))}
                   </div>
+                ) : mainImage ? (
+                  <img src={mainImage} alt={product.name} className="product-main-image" />
+                ) : null}
+                {Number(product.discount_percent || 0) > 0 && (
+                  <span className="product-discount-badge">{product.discount_percent}% OFF</span>
+                )}
+                <div className="product-image-actions">
+                  <button type="button" onClick={handleWishlist} className={isInWishlist(product.id) ? "active" : ""} aria-label="Wishlist">
+                    <Icon icon={isInWishlist(product.id) ? "mdi:heart" : "lucide:heart"} />
+                  </button>
+                  <button type="button" onClick={handleShare} aria-label="Share">
+                    <Icon icon="lucide:share-2" />
+                  </button>
+                </div>
+                {visibleImages.length > 1 && (
+                  <div className="product-image-dots" aria-hidden="true">
+                    {visibleImages.map((image, index) => (
+                      <span key={`${image.url}-dot`} className={index === activeImageIndex ? "active" : ""} />
+                    ))}
+                  </div>
+                )}
+                {isSelectedOutOfStock && (
+                  <span className="product-image-stock-badge out">Out of stock</span>
                 )}
               </div>
             </div>
 
-            <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-x-visible pb-4 md:pb-0 scroll-smooth custom-scrollbar">
-              {visibleImages.map((img, idx) => (
+            <div className="product-thumbs">
+              {visibleImages.map((image, index) => (
                 <button
-                  key={idx}
-                  onClick={() => changeImage(img.url)}
-                  className={`w-20 h-24 md:w-24 md:h-32 flex-shrink-0 border-2 rounded-lg overflow-hidden transition-all ${mainImage === img.url ? "border-[#800020] shadow-md scale-105" : "border-transparent opacity-60 hover:opacity-100 hover:border-[#D4AF37]"}`}
+                  key={`${image.url}-${index}`}
+                  type="button"
+                  onClick={() => {
+                    setActiveImageIndex(index);
+                    setMainImage(image.url);
+                  }}
+                  onFocus={() => setActiveImageIndex(index)}
+                  onMouseEnter={() => setActiveImageIndex(index)}
+                  className={`product-thumb ${mainImage === image.url ? "active" : ""}`}
+                  aria-label={`View image ${index + 1}`}
                 >
-                  <img src={img.url} className="w-full h-full object-cover" alt={`Thumb ${idx + 1}`} />
+                  <img src={image.url} alt="" />
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="lg:col-span-5 flex flex-col">
-            <div className="mb-6">
-              <span className="text-[#D4AF37] font-bold text-xs uppercase tracking-[0.3em] mb-2 block">
-                {product.Variety?.name || "Handwoven Edit"}
+          <section className="product-info-panel">
+            <span className="product-kicker">
+              {[product.Variety?.name, product.Occasion?.name].filter(Boolean).join(" / ") || "Banarasi Kala"}
+            </span>
+            <h1 className="product-detail-title">{product.name}</h1>
+            <p className="product-detail-subtitle">
+              {[product.Material?.name, selectedColor?.name].filter(Boolean).join(" / ")}
+            </p>
+
+            <div className="product-rating-row">
+              <span>
+                <Icon icon="mdi:star" />
+                <Icon icon="mdi:star" />
+                <Icon icon="mdi:star" />
+                <Icon icon="mdi:star" />
+                <Icon icon="mdi:star-half" />
               </span>
-              <h1 className="text-3xl md:text-4xl font-bold text-[#800020] mb-2 leading-tight uppercase brand-font tracking-tight">
-                {product.name}
-              </h1>
-              <p className="serif-text text-lg italic text-[#3D2817]/70 mb-3">
-                {product.Material?.name || "Pure Silk"}
-              </p>
-              <div className="flex items-center space-x-2">
-                <div className="flex text-[#D4AF37]">
-                  <Icon icon="mdi:star"></Icon>
-                  <Icon icon="mdi:star"></Icon>
-                  <Icon icon="mdi:star"></Icon>
-                  <Icon icon="mdi:star"></Icon>
-                  <Icon icon="mdi:star-half"></Icon>
-                </div>
-                <span className="text-xs font-semibold text-gray-500">4.8 (124 Reviews)</span>
-              </div>
+              <strong>{PRODUCT_RATING}</strong>
+              <small>({PRODUCT_REVIEW_COUNT} Reviews)</small>
             </div>
 
-            <div className="bg-white/60 p-5 border border-[#D4AF37]/20 rounded-xl mb-6 backdrop-blur-sm">
-              <div className="flex items-baseline space-x-4 mb-1">
-                <span className="text-3xl font-black text-[#3D2817]">₹{Number(product.selling_price).toLocaleString("en-IN")}</span>
-                {product.mrp_price > product.selling_price && (
+            <div className="product-price-card">
+              <div className="product-price-row">
+                <strong>{formatMoney(product.selling_price)}</strong>
+                {Number(product.mrp_price || 0) > Number(product.selling_price || 0) && (
                   <>
-                    <span className="text-xl text-gray-400 line-through opacity-60">₹{Number(product.mrp_price).toLocaleString("en-IN")}</span>
-                    <span className="text-emerald-600 font-bold text-sm tracking-wider uppercase">SAVE {product.discount_percent}%</span>
+                    <span>{formatMoney(product.mrp_price)}</span>
+                    <em>Save {product.discount_percent}%</em>
                   </>
                 )}
               </div>
-              <p className="text-[10px] text-gray-500 italic uppercase tracking-[0.2em] font-bold">Incl. of all taxes & free worldwide shipping</p>
+              <p>Incl. of all taxes & free shipping across Pan India</p>
             </div>
 
             {distinctColors.length > 0 && (
-              <div className="mb-8">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">
-                  Select Color: <span className="text-[#800020]">{allColors.find(c => c.id === selectedColorId)?.name}</span>
+              <div className="product-color-section">
+                <p>
+                  Select Color: <span>{selectedColor?.name || "Choose color"}</span>
                 </p>
-                <div className="flex flex-wrap gap-4">
-                  {distinctColors.map((color) => (
-                    <button
-                      key={color.id}
-                      onClick={() => handleColorChange(color.id)}
-                      className={`group relative w-8 h-8 rounded-full transition-all duration-300 ${selectedColorId === color.id ? 'ring-2 ring-[#800020] ring-offset-4 scale-110' : 'hover:scale-105'}`}
-                      title={color.name}
-                    >
-                      <svg className="product-color-swatch" viewBox="0 0 32 32" aria-hidden="true">
-                        <circle cx="16" cy="16" r="15" fill={color.hex_code || "#cccccc"} />
-                      </svg>
-                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[8px] font-black uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">{color.name}</span>
-                    </button>
-                  ))}
+                <div className="product-color-list">
+                  {distinctColors.map((color) => {
+                    const isOut = color.stock_status === "out_of_stock";
+                    const isLow = color.stock_status === "low_stock";
+                    return (
+                      <button
+                        key={color.id}
+                        type="button"
+                        onClick={() => handleColorChange(color.id)}
+                        className={`product-color-btn ${String(selectedColorId) === String(color.id) ? "active" : ""} ${isOut ? "out" : ""} ${isLow ? "low" : ""}`}
+                        aria-disabled={isOut}
+                        title={color.name}
+                      >
+                        <span style={{ backgroundColor: color.hex_code || "#ccc" }} />
+                        <strong>{color.name}</strong>
+                        {isLow && <small>Few stocks</small>}
+                        {isOut && <small>Out</small>}
+                      </button>
+                    );
+                  })}
                 </div>
+                {isSelectedLowStock && (
+                  <div className="product-stock-note low">Few stocks available for this color</div>
+                )}
+                {isSelectedOutOfStock && (
+                  <div className="product-stock-note out">This color is out of stock</div>
+                )}
               </div>
             )}
 
-            <div className="space-y-4 mb-8">
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-                <div className="flex items-center border border-[#800020]/20 rounded-sm bg-white overflow-hidden">
-                  <button onClick={decrementQty} className="w-10 h-12 flex items-center justify-center hover:bg-[#800020] hover:text-white transition-colors"><Icon icon="lucide:minus"></Icon></button>
-                  <input type="number" value={quantity} readOnly className="w-12 h-12 text-center bg-transparent font-bold focus:ring-0 border-none" />
-                  <button onClick={incrementQty} className="w-10 h-12 flex items-center justify-center hover:bg-[#800020] hover:text-white transition-colors"><Icon icon="lucide:plus"></Icon></button>
-                </div>
-                <button
-                  onClick={handleAddToCart}
-                  className="flex-1 h-12 bg-[#800020] text-[#D4AF37] flex items-center justify-center font-bold tracking-[0.2em] rounded-sm shadow-xl hover:bg-[#3D2817] transition-all transform hover:-translate-y-1 active:scale-95 group w-full md:w-auto"
-                >
-                  <Icon icon="lucide:shopping-bag" className="text-xl mr-3 group-hover:scale-110 transition-transform"></Icon>
-                  ADD TO BAG
+            <div className="product-action-panel">
+              <div className="product-qty">
+                <button type="button" onClick={decrementQty} disabled={isSelectedOutOfStock} aria-label="Decrease quantity">
+                  <Icon icon="lucide:minus" />
+                </button>
+                <input type="number" value={quantity} readOnly aria-label="Quantity" />
+                <button type="button" onClick={incrementQty} disabled={isSelectedOutOfStock} aria-label="Increase quantity">
+                  <Icon icon="lucide:plus" />
                 </button>
               </div>
-
-              <div className="flex items-center space-x-6">
-                <button 
-                  onClick={handleWishlist}
-                  className={`flex items-center text-sm font-semibold transition-colors ${isInWishlist(product?.id) ? 'text-red-600' : 'hover:text-[#800020]'}`}
-                >
-                  <Icon icon={isInWishlist(product?.id) ? "mdi:heart" : "lucide:heart"} className="text-lg mr-2"></Icon>
-                  {isInWishlist(product?.id) ? 'In Wishlist' : 'Save to Wishlist'}
-                </button>
-                <button className="flex items-center text-sm font-semibold hover:text-[#800020] transition-colors">
-                  <Icon icon="lucide:share-2" className="text-lg mr-2"></Icon>
-                  Share Piece
-                </button>
-              </div>
+              <button type="button" onClick={handleAddToCart} className="product-add-btn" disabled={!canAddToBag}>
+                <Icon icon="lucide:shopping-bag" />
+                {isSelectedOutOfStock ? "Out of Stock" : isChangingColor ? "Loading..." : "Add to Bag"}
+              </button>
             </div>
 
-            <div className="border-t border-[#D4AF37]/20">
+            <div className="product-accordion">
               {[
-                { id: "story", title: "Product Story", content: product.description || "This exquisite piece is a testament to the rich heritage of Banarasi weaving." },
-                { id: "material", title: "Material & Specifications", content: (
-                  <ul className="list-disc pl-4 space-y-1">
-                    <li>Material: {product.Material?.name || "Pure Silk"}</li>
-                    {product.weight && <li>Weight: {product.weight}g</li>}
-                    {product.length && <li>Length: {product.length} Metres</li>}
-                    <li>Care: Dry Clean Only</li>
-                  </ul>
-                )},
-                { id: "shipping", title: "Shipping & Returns", content: "Ships within 48 hours. Complimentary express delivery globally." },
+                {
+                  id: "description",
+                  title: "Description",
+                  content: <p>{product.description || product.short_description || "Product description will be updated soon."}</p>,
+                },
+                {
+                  id: "specifications",
+                  title: "Material & Specifications",
+                  content: (
+                    <div className="product-spec-grid">
+                      {specificationRows.map(([label, value]) => (
+                        <div className="product-spec-row" key={label}>
+                          <span>{label}</span>
+                          <strong>{value}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  ),
+                },
+                {
+                  id: "shipping",
+                  title: "Shipping & Returns",
+                  content: (
+                    <div className="product-spec-grid">
+                      {shippingRows.map(([label, value]) => (
+                        <div className="product-spec-row" key={label}>
+                          <span>{label}</span>
+                          <strong>{value}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  ),
+                },
               ].map((item) => (
-                <div key={item.id} className={`border-b border-[#D4AF37]/20 py-4 ${activeAccordion === item.id ? "active" : ""}`}>
-                  <button onClick={() => toggleAccordion(item.id)} className="w-full flex items-center justify-between text-left">
-                    <span className="brand-font font-bold text-lg tracking-wider uppercase">{item.title}</span>
-                    <Icon icon="lucide:chevron-down" className={`transition-transform duration-300 ${activeAccordion === item.id ? "rotate-180" : ""}`}></Icon>
+                <div key={item.id} className="product-accordion-item">
+                  <button type="button" onClick={() => setActiveAccordion((prev) => (prev === item.id ? null : item.id))}>
+                    <span>{item.title}</span>
+                    <Icon icon="lucide:chevron-down" className={activeAccordion === item.id ? "rotate" : ""} />
                   </button>
-                  <div className={`accordion-content overflow-hidden transition-all duration-400 ${activeAccordion === item.id ? "max-h-[500px] mt-4" : "max-h-0"}`}>
-                    <div className="text-sm text-gray-600 leading-relaxed">{item.content}</div>
+                  <div className={`product-accordion-content ${activeAccordion === item.id ? "open" : ""}`}>
+                    {item.content}
                   </div>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         </div>
 
-        <section className="mt-24 reveal-up">
-          <h2 className="text-3xl font-bold text-[#800020] uppercase brand-font mb-10">More Products</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.slice(0, 4).map((p) => (
-              <div key={p.id} className="group cursor-pointer bg-white p-3 rounded-xl shadow-sm border border-[#D4AF37]/10 hover:shadow-xl transition-all">
-                <Link to={`/product/${p.slug}`}>
-                  <div className="relative overflow-hidden aspect-[3/4] mb-4 rounded-lg">
-                    <img src={getProductCoverImage(p)} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.name} />
-                  </div>
-                  <h3 className="brand-font text-lg text-[#800020] mb-1 truncate">{p.name}</h3>
-                  <p className="text-sm text-[#3D2817] font-black">₹{Number(p.selling_price).toLocaleString("en-IN")}</p>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </section>
+        {products.length > 0 && (
+          <section className="product-related">
+            <h2>More Products</h2>
+            <div className="product-related-grid">
+              {products.slice(0, 4).map((item) => {
+                const images = getSortedImages(item);
+                const fallbackImage = getProductCoverImage(item, "https://via.placeholder.com/500x650?text=Banarasi+Kala");
+                const slideImages = images.length ? images : [{ url: fallbackImage }];
+                const activeSlide = relatedSlides[item.id] || 0;
+                const hasDiscount = Number(item.mrp_price || 0) > Number(item.selling_price || 0);
+
+                return (
+                  <Link
+                    key={item.id}
+                    to={`/product/${item.slug}`}
+                    className="product-related-card"
+                    onMouseEnter={() => setRelatedHoverId(item.id)}
+                    onMouseLeave={() => {
+                      setRelatedHoverId((current) => (current === item.id ? null : current));
+                    }}
+                    onTouchStart={() => setRelatedHoverId(item.id)}
+                  >
+                    <div className="product-related-media">
+                      <div
+                        className="product-related-track"
+                        style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+                      >
+                        {slideImages.map((image, index) => (
+                          <img key={`${item.id}-${image.url}-${index}`} src={image.url} alt={index === 0 ? item.name : ""} />
+                        ))}
+                      </div>
+                      {hasDiscount && <span className="product-related-discount">{item.discount_percent}% off</span>}
+                      {slideImages.length > 1 && (
+                        <div className="product-related-dots" aria-hidden="true">
+                          {slideImages.map((image, index) => (
+                            <span key={`${image.url}-dot-${index}`} className={index === activeSlide ? "active" : ""} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="product-related-body">
+                      <h3>{item.name}</h3>
+                      {item.short_description && <p className="product-related-desc">{item.short_description}</p>}
+                      <div className="product-related-price">
+                        <strong>{formatMoney(item.selling_price)}</strong>
+                        {hasDiscount && (
+                          <>
+                            <span>{formatMoney(item.mrp_price)}</span>
+                            <em>{item.discount_percent}% OFF</em>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );
 };
 
 export default ProductDetail;
-

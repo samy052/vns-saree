@@ -32,6 +32,12 @@ const Header = () => {
   const userPhone = user?.phone || "Welcome to Banarasi Kala";
 
   useEffect(() => {
+    if (location.pathname !== "/collection") return;
+    const query = new URLSearchParams(location.search).get("search") || "";
+    setHeaderSearch(query);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     const controller = new AbortController();
 
     const fetchSareeVarieties = async () => {
@@ -157,7 +163,6 @@ const Header = () => {
       replace: currentPath === targetPath,
       state: currentPath === targetPath ? { refreshKey: Date.now() } : undefined,
     });
-    setHeaderSearch("");
     closeMenus();
   };
 
@@ -180,7 +185,12 @@ const Header = () => {
     event.preventDefault();
     closeMenus();
     window.dispatchEvent(new Event("auth:refresh"));
-    navigate("/login?refresh=login");
+    const targetPath = "/login?refresh=login";
+    const currentPath = `${location.pathname}${location.search}${location.hash}`;
+    navigate(targetPath, {
+      replace: currentPath === targetPath,
+      state: currentPath === targetPath ? { refreshKey: Date.now() } : undefined,
+    });
   };
 
   const scrollForTarget = (target) => {

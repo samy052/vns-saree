@@ -43,6 +43,7 @@ const Collection = () => {
   const [loadedImages, setLoadedImages] = useState({});
   const [hoveredProductId, setHoveredProductId] = useState(null);
   const [activeSlides, setActiveSlides] = useState({});
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const productsRequestId = useRef(0);
 
 
@@ -165,18 +166,25 @@ const Collection = () => {
 
 
   useEffect(() => {
-    setCurrentPage(1);
-    fetchProducts(1);
-  }, [filters]);
-
-  useEffect(() => {
     fetchProducts(currentPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [currentPage]);
+  }, [filters, currentPage]);
+
+  useEffect(() => {
+    if (!mobileFiltersOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileFiltersOpen]);
 
 
 
   const handleCheckboxChange = (type, id) => {
+    setCurrentPage(1);
     setFilters((prev) => {
       const current = prev[type];
       const updated = current.includes(id)
@@ -186,11 +194,15 @@ const Collection = () => {
     });
   };
 
-  const handlePriceChange = (e) =>
+  const handlePriceChange = (e) => {
+    setCurrentPage(1);
     setFilters((prev) => ({ ...prev, maxPrice: e.target.value }));
+  };
 
-  const handleSortChange = (e) =>
+  const handleSortChange = (e) => {
+    setCurrentPage(1);
     setFilters((prev) => ({ ...prev, sortBy: e.target.value }));
+  };
 
   const toggleFilterExpand = (key) => {
     setExpandedFilters((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -234,6 +246,7 @@ const Collection = () => {
   };
 
   const clearAllFilters = () => {
+    setCurrentPage(1);
     setFilters({
       variety: [],
       occasion: [],
@@ -313,6 +326,52 @@ const Collection = () => {
     </div>
   );
 
+  const hasActiveFilters =
+    filters.variety.length > 0 ||
+    filters.occasion.length > 0 ||
+    filters.material.length > 0 ||
+    filters.color.length > 0 ||
+    filters.search.trim().length > 0 ||
+    Number(filters.minPrice) > 0 ||
+    Number(filters.maxPrice) < 200000;
+
+  const renderFiltersBody = () => (
+    <>
+      {filtersLoading ? (
+        renderFilterSkeleton()
+      ) : (
+        <>
+          {renderFilterGroup("variety", "Variety", varieties, "variety")}
+          {renderFilterGroup("material", "Fabric", materials, "material")}
+          {renderFilterGroup("occasion", "Occasions", occasions, "occasion")}
+          {renderFilterGroup("color", "Color", colors, "color", (col) => (
+            <svg className="color-swatch" viewBox="0 0 16 16" aria-hidden="true">
+              <circle cx="8" cy="8" r="7.5" fill={col.hex_code || "#cccccc"} />
+            </svg>
+          ))}
+        </>
+      )}
+
+      <div className="filter-section">
+        <h3 className="filter-title">Price</h3>
+        <div className="collection-price-filter">
+          <input
+            type="range"
+            min="0"
+            max="200000"
+            step="1000"
+            value={filters.maxPrice}
+            onChange={handlePriceChange}
+          />
+          <div className="collection-price-range">
+            <span>₹0</span>
+            <span>₹{Number(filters.maxPrice).toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="collection-container">
       <nav className="breadcrumb">
@@ -332,53 +391,26 @@ const Collection = () => {
         <aside className="filters-sidebar">
           <div className="sidebar-header">
             <h2>FILTERS</h2>
-            {(filters.variety.length > 0 ||
-              filters.occasion.length > 0 ||
-              filters.material.length > 0 ||
-              filters.color.length > 0) && (
+            {hasActiveFilters && (
                 <button className="clear-btn" onClick={clearAllFilters}>
                   Clear All
                 </button>
               )}
           </div>
 
-          {filtersLoading ? (
-            renderFilterSkeleton()
-          ) : (
-            <>
-              {renderFilterGroup("variety", "Variety", varieties, "variety")}
-              {renderFilterGroup("material", "Fabric", materials, "material")}
-              {renderFilterGroup("occasion", "Occasions", occasions, "occasion")}
-              {renderFilterGroup("color", "Color", colors, "color", (col) => (
-                <svg className="color-swatch" viewBox="0 0 16 16" aria-hidden="true">
-                  <circle cx="8" cy="8" r="7.5" fill={col.hex_code || "#cccccc"} />
-                </svg>
-              ))}
-            </>
-          )}
-
-          <div className="filter-section">
-            <h3 className="filter-title">Price</h3>
-            <div className="px-2">
-              <input
-                type="range"
-                min="0"
-                max="200000"
-                step="1000"
-                value={filters.maxPrice}
-                onChange={handlePriceChange}
-                className="w-full accent-[#800020]"
-              />
-              <div className="flex justify-between mt-2 text-xs text-gray-500 font-bold">
-                <span>₹0</span>
-                <span>₹{Number(filters.maxPrice).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
+          {renderFiltersBody()}
         </aside>
 
         <section className="product-listing">
           <div className="listing-controls">
+            <button
+              type="button"
+              className="mobile-filter-trigger"
+              onClick={() => setMobileFiltersOpen(true)}
+            >
+              <Icon icon="lucide:sliders-horizontal" />
+              Filters
+            </button>
             <div className="sort-container">
               <select value={filters.sortBy} onChange={handleSortChange}>
                 <option value="newest">Sort by: New Arrivals</option>
@@ -541,6 +573,53 @@ const Collection = () => {
           {/* End of product listing */}
         </section>
       </div>
+
+      {mobileFiltersOpen && (
+        <div
+          className="mobile-filter-backdrop"
+          role="presentation"
+          onClick={() => setMobileFiltersOpen(false)}
+        >
+          <aside
+            className="mobile-filter-drawer"
+            aria-label="Collection filters"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mobile-filter-header">
+              <div>
+                <span>Refine Sarees</span>
+                <h2>Filters</h2>
+              </div>
+              <button
+                type="button"
+                className="mobile-filter-close"
+                onClick={() => setMobileFiltersOpen(false)}
+                aria-label="Close filters"
+              >
+                <Icon icon="lucide:x" />
+              </button>
+            </div>
+
+            <div className="mobile-filter-body">
+              <div className="sidebar-header mobile-filter-actions">
+                <h2>FILTERS</h2>
+                {hasActiveFilters && (
+                  <button className="clear-btn" onClick={clearAllFilters}>
+                    Clear All
+                  </button>
+                )}
+              </div>
+              {renderFiltersBody()}
+            </div>
+
+            <div className="mobile-filter-footer">
+              <button type="button" onClick={() => setMobileFiltersOpen(false)}>
+                View {totalItems || ""} Sarees
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
 
     </div>
   );

@@ -13,6 +13,9 @@ const INITIAL_FORM_STATE = {
   material_id: "", variety_id: "", occasion_id: "",
   special_collection: false, is_new_arrival: false, status: "active",
   blouse_piece: true,
+  payment_options: ["prepaid"],
+  service_options: [],
+  care_instructions: "",
 };
 
 export default function Products() {
@@ -256,6 +259,17 @@ export default function Products() {
     });
   };
 
+  const handleMultiSelectChange = (fieldName, optionValue) => {
+    setFormData((prev) => {
+      const current = Array.isArray(prev[fieldName]) ? prev[fieldName] : [];
+      const next = current.includes(optionValue)
+        ? current.filter((item) => item !== optionValue)
+        : [...current, optionValue];
+
+      return { ...prev, [fieldName]: next };
+    });
+  };
+
   const handleRemoveNewColorImage = (colorId, index) => {
     setNewColorImageFiles((prev) => {
       const next = { ...prev };
@@ -307,6 +321,18 @@ export default function Products() {
       return;
     }
 
+    if (!Array.isArray(formData.payment_options) || formData.payment_options.length === 0) {
+      showModal("warning", "Payment option required", "Choose at least one payment option: Prepaid or COD.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (!Array.isArray(formData.service_options) || formData.service_options.length === 0) {
+      showModal("warning", "Return / exchange option required", "Choose at least one product service option: Return or Exchange.");
+      setSubmitting(false);
+      return;
+    }
+
     const coverColorId = formData.cover_color_id || selectedColorIds[0];
     const images = (formData.images || []).map((img, index) => ({
       color_id: parseInt(img.color_id, 10),
@@ -330,6 +356,9 @@ export default function Products() {
       variety_id: formData.variety_id || null, 
       occasion_id: formData.occasion_id || null,
       special_collection: Boolean(formData.special_collection),
+      payment_options: formData.payment_options || [],
+      service_options: formData.service_options || [],
+      care_instructions: formData.care_instructions || "",
     };
 
     const formPayload = new FormData();
@@ -599,6 +628,7 @@ export default function Products() {
         onClose={() => setIsModalOpen(false)}
         formData={formData}
         onInputChange={handleInputChange}
+        onMultiSelectChange={handleMultiSelectChange}
         onColorStockChange={handleColorStockChange}
         onColorImageUpload={handleColorImageUpload}
         onRemoveSavedColorImage={handleRemoveSavedColorImage}

@@ -62,6 +62,7 @@ const WhatsappFloatingSupport = ({ hidden = false }) => {
 const Layout = () => {
   const location = useLocation();
   const { user } = useAuth();
+  const [isRouteRefreshing, setIsRouteRefreshing] = useState(false);
   const footerlessAuthPages = ["/cart", "/wishlist", "/contact", "/feedback"];
   const hideFooter =
     location.pathname === "/login" ||
@@ -72,8 +73,14 @@ const Layout = () => {
     location.pathname,
     location.search,
     location.hash,
-    location.state?.refreshKey || "",
   ].join("|");
+
+  useEffect(() => {
+    if (!location.state?.refreshKey) return undefined;
+    setIsRouteRefreshing(true);
+    const timer = window.setTimeout(() => setIsRouteRefreshing(false), 520);
+    return () => window.clearTimeout(timer);
+  }, [location.state?.refreshKey]);
 
   return (
     <>
@@ -81,8 +88,9 @@ const Layout = () => {
       <div
         className={`bk-layout-content ${
           isHomePage ? "bk-layout-content-home" : ""
-        }`}
+        } ${isRouteRefreshing ? "bk-layout-refreshing" : ""}`}
       >
+        {isRouteRefreshing && <div className="bk-route-refresh-veil" aria-hidden="true" />}
         <Outlet key={routeRefreshKey} />
       </div>
       <WhatsappFloatingSupport hidden={hideWhatsapp} />

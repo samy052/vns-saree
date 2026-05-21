@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import API_ENDPOINTS from "../../config/api";
+import EmptyStateIcon from "../../components/EmptyStateIcon";
 import "./MyOrders.css";
 
 const STATUS_CONFIG = {
@@ -297,7 +298,7 @@ export default function MyOrders() {
 
         {!loading && !error && orders.length === 0 && (
           <div className="orders-empty">
-            <Icon icon="lucide:shopping-bag" className="empty-icon"></Icon>
+            <EmptyStateIcon variant="orders" />
             <h3>No Orders Yet</h3>
             <p>Your orders will appear here once you place your first order.</p>
             <Link to="/collection" className="shop-now-btn">

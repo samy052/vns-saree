@@ -47,7 +47,7 @@ const payments = [
 ];
 
 const marketplaces = [
-  ["logos:amazon", "Amazon"],
+  ["simple-icons:amazon", "Amazon"],
   ["simple-icons:flipkart", "Flipkart"],
   ["simple-icons:myntra", "Myntra"],
 ];
@@ -92,16 +92,28 @@ const Footer = () => {
             <span>Pure Banarasi.</span>
           </p>
           <div className="bk-footer-socials" aria-label="Social links">
-            <a href="#" aria-label="Instagram">
+            <a
+              href="https://www.instagram.com/banarasikala_?igsh=Z3dmdGxncDliaDQy&utm_source=qr"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Instagram"
+            >
               <Icon icon="mdi:instagram"></Icon>
             </a>
-            <a href="#" aria-label="Facebook">
+            <a
+              href="https://www.facebook.com/share/1KX26mnhfz/?mibextid=wwXIfr"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Facebook"
+            >
               <Icon icon="mdi:facebook"></Icon>
             </a>
-            <a href="#" aria-label="Pinterest">
-              <Icon icon="mdi:pinterest"></Icon>
-            </a>
-            <a href="#" aria-label="YouTube">
+            <a
+              href="https://youtube.com/@banarasi_kala?si=avjJ1hM8SESwwAn7"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="YouTube"
+            >
               <Icon icon="mdi:youtube"></Icon>
             </a>
           </div>

@@ -12,6 +12,8 @@ const upload = multer({
 // Public routes
 router.get('/', ProductController.getAll);
 router.get('/summary', authMiddleware, adminMiddleware, ProductController.getSummary);
+router.get('/:slug/detail', ProductController.getDetailBySlug);
+router.get('/:slug/colors/:colorId/images', ProductController.getColorImages);
 router.get('/:id(\\d+)', ProductController.getById);
 router.get('/:slug', ProductController.getBySlug);
 

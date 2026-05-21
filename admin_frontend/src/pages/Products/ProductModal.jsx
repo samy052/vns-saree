@@ -7,6 +7,7 @@ const ProductModal = ({
   onClose,
   formData,
   onInputChange,
+  onMultiSelectChange,
   onColorStockChange,
   onColorImageUpload,
   onRemoveSavedColorImage,
@@ -46,7 +47,11 @@ const ProductModal = ({
     formData.selling_price && 
     formData.stock_quantity !== "" && 
     formData.variety_id && 
-    formData.material_id;
+    formData.material_id &&
+    Array.isArray(formData.payment_options) &&
+    formData.payment_options.length > 0 &&
+    Array.isArray(formData.service_options) &&
+    formData.service_options.length > 0;
 
   // Profit Calculation
   const sellingPrice = parseFloat(formData.selling_price) || 0;
@@ -489,9 +494,85 @@ const ProductModal = ({
 
             {/* SECTION 6: PHYSICAL MEASUREMENTS */}
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative">
+              <div className="flex items-center gap-3 mb-6 text-emerald-600">
+                <Package className="w-4 h-4" />
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 6: Selling Rules & Care</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                  <label className={labelClasses(!isSelectionComplete)}>Payment Options *</label>
+                  <p className="text-[10px] text-gray-400 font-bold mb-3">Choose what customer can use for this product.</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: "prepaid", label: "Prepaid", help: "Online payment" },
+                      { value: "cod", label: "COD", help: "Cash on delivery" },
+                    ].map((option) => (
+                      <label key={option.value} className={`p-3 rounded-xl border cursor-pointer transition-all ${formData.payment_options?.includes(option.value) ? "bg-[#800020]/5 border-[#800020]/40 ring-1 ring-[#800020]/10" : "bg-white border-gray-100"}`}>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.payment_options?.includes(option.value) || false}
+                            onChange={() => onMultiSelectChange("payment_options", option.value)}
+                            className="w-4 h-4 text-[#800020] rounded border-gray-300 focus:ring-[#800020]"
+                          />
+                          <span className="text-xs font-black uppercase text-gray-700">{option.label}</span>
+                        </div>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase mt-1 ml-6">{option.help}</p>
+                      </label>
+                    ))}
+                  </div>
+                  {(!formData.payment_options || formData.payment_options.length === 0) && (
+                    <p className="text-[10px] text-red-500 mt-2 font-bold">Select at least one payment option.</p>
+                  )}
+                </div>
+
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                  <label className={labelClasses(!isSelectionComplete)}>Return / Exchange Options *</label>
+                  <p className="text-[10px] text-gray-400 font-bold mb-3">Choose which service is allowed on this product.</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: "return", label: "Return", help: "Return allowed" },
+                      { value: "exchange", label: "Exchange", help: "Exchange allowed" },
+                    ].map((option) => (
+                      <label key={option.value} className={`p-3 rounded-xl border cursor-pointer transition-all ${formData.service_options?.includes(option.value) ? "bg-[#800020]/5 border-[#800020]/40 ring-1 ring-[#800020]/10" : "bg-white border-gray-100"}`}>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={formData.service_options?.includes(option.value) || false}
+                            onChange={() => onMultiSelectChange("service_options", option.value)}
+                            className="w-4 h-4 text-[#800020] rounded border-gray-300 focus:ring-[#800020]"
+                          />
+                          <span className="text-xs font-black uppercase text-gray-700">{option.label}</span>
+                        </div>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase mt-1 ml-6">{option.help}</p>
+                      </label>
+                    ))}
+                  </div>
+                  {(!formData.service_options || formData.service_options.length === 0) && (
+                    <p className="text-[10px] text-red-500 mt-2 font-bold">Select at least one return/exchange option.</p>
+                  )}
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className={labelClasses(!isSelectionComplete)}>Care Instructions</label>
+                  <textarea
+                    name="care_instructions"
+                    value={formData.care_instructions || ""}
+                    onChange={onInputChange}
+                    rows={3}
+                    placeholder="Example: Dry clean only. Store folded in muslin cloth. Keep away from direct sunlight."
+                    className={inputClasses(!isSelectionComplete)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 7: PHYSICAL MEASUREMENTS */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative">
               <div className="flex items-center gap-3 mb-6 text-yellow-600">
                 <Hash className="w-4 h-4" />
-                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 6: Physical Measurements</h3>
+                <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Step 7: Physical Measurements</h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -336,7 +336,7 @@
 .bk-popular-skeleton-line {
   position: relative;
   overflow: hidden;
-  background: rgba(226, 204, 170, 0.88);
+  background: var(--bk-loader-base);
 }
 
 .bk-popular-skeleton-image {
@@ -364,9 +364,9 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 0%, rgba(255, 248, 236, 0.84) 48%, transparent 100%);
+  background: var(--bk-loader-sheen);
   transform: translateX(-100%);
-  animation: bk-popular-shimmer 1.35s ease-in-out infinite;
+  animation: bk-popular-shimmer var(--bk-loader-duration) ease-in-out infinite;
 }
 
 .bk-popular-empty {
@@ -506,12 +506,12 @@
 
 @media (max-width: 520px) {
   .bk-popular-card-link {
-    min-height: 250px;
+    min-height: 224px;
   }
 
   .bk-popular-image-wrap,
   .bk-popular-skeleton-image {
-    min-height: 178px;
+    min-height: 152px;
   }
 
   .bk-popular-card {
@@ -519,8 +519,8 @@
   }
 
   .bk-popular-card-body {
-    min-height: 78px;
-    padding: 10px;
+    min-height: 70px;
+    padding: 9px;
   }
 
   .bk-popular-card-body h3 {

@@ -85,9 +85,9 @@
 
 .skel {
   border-radius: 12px;
-  background: linear-gradient(90deg, #f7ead5 25%, #fff8ee 48%, #f1dfc2 75%);
+  background: var(--bk-loader-gradient);
   background-size: 220% 100%;
-  animation: orders-shimmer 1.4s linear infinite;
+  animation: orders-shimmer var(--bk-loader-duration) ease-in-out infinite;
 }
 
 .skel-header {
@@ -111,8 +111,8 @@
 }
 
 @keyframes orders-shimmer {
-  0% { background-position: 220% 0; }
-  100% { background-position: -220% 0; }
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
 }
 
 .orders-count {
@@ -131,7 +131,8 @@
   overflow: hidden;
   border-radius: 20px;
   border: 1px solid rgba(128, 0, 32, 0.12);
-  background: rgba(255, 252, 246, 0.96);
+  background:
+    linear-gradient(180deg, rgba(255, 250, 241, 0.96) 0%, rgba(255, 242, 219, 0.98) 100%);
   box-shadow: 0 18px 52px rgba(77, 31, 12, 0.09);
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
@@ -654,8 +655,7 @@
   text-align: center;
 }
 
-.orders-error > svg,
-.empty-icon {
+.orders-error > svg {
   color: #d4af37;
   font-size: 54px;
 }

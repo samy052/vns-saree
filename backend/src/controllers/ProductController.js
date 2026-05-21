@@ -13,6 +13,8 @@ const userFacingMessage = (error, fallback) => {
   if (raw.includes("maximum 6 images")) return raw;
   if (raw.includes("At least one product color is required")) return raw;
   if (raw.includes("At least one product image is required")) return raw;
+  if (raw.includes("Choose at least one payment option")) return raw;
+  if (raw.includes("Choose at least one return/exchange option")) return raw;
   if (raw.includes("Product not found")) return "Product not found.";
 
   return fallback;
@@ -117,6 +119,28 @@ class ProductController {
     } catch (error) {
       logServerError("getBySlug", error);
       res.status(500).json({ message: "Failed to load product." });
+    }
+  }
+
+  async getDetailBySlug(req, res) {
+    try {
+      const product = await ProductService.getProductDetailBySlug(req.params.slug, req.query.color);
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      res.status(200).json(product);
+    } catch (error) {
+      logServerError("getDetailBySlug", error);
+      res.status(500).json({ message: "Failed to load product detail." });
+    }
+  }
+
+  async getColorImages(req, res) {
+    try {
+      const payload = await ProductService.getProductColorImages(req.params.slug, req.params.colorId);
+      if (!payload) return res.status(404).json({ message: 'Product not found' });
+      res.status(200).json(payload);
+    } catch (error) {
+      logServerError("getColorImages", error);
+      res.status(500).json({ message: "Failed to load product color images." });
     }
   }
 

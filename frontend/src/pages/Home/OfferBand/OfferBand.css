@@ -100,7 +100,7 @@
       rgba(199, 144, 55, 0.18) 100%
     );
   background-size: 220% 100%;
-  animation: bk-offer-skeleton-shimmer 1.45s ease-in-out infinite;
+  animation: bk-offer-skeleton-shimmer var(--bk-loader-duration) ease-in-out infinite;
 }
 
 .bk-offer-skeleton-title {

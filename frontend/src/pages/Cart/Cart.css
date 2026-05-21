@@ -39,7 +39,43 @@
 }
 
 .item-row:hover {
-    background-color: rgba(212, 175, 55, 0.03);
+    background-color: rgba(255, 246, 232, 0.98);
+}
+
+.item-row {
+    background:
+        linear-gradient(180deg, rgba(255, 250, 241, 0.96) 0%, rgba(255, 242, 219, 0.98) 100%) !important;
+    border-color: rgba(128, 0, 32, 0.12) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 18px 34px rgba(88, 39, 13, 0.12) !important;
+}
+
+.item-row > div:first-child {
+    background:
+        radial-gradient(circle at top, rgba(212, 175, 55, 0.14), transparent 58%),
+        linear-gradient(135deg, #f1d9b6 0%, #fff8ec 48%, #e5c394 100%);
+    border: 1px solid rgba(128, 0, 32, 0.12);
+    border-radius: 12px !important;
+}
+
+.cart-summary-delay > div,
+.fixed .relative.w-full.max-w-md {
+    background:
+        linear-gradient(180deg, rgba(255, 250, 241, 0.98) 0%, rgba(255, 244, 224, 0.98) 100%) !important;
+    border: 1px solid rgba(128, 0, 32, 0.12);
+    box-shadow: 0 24px 58px rgba(88, 39, 13, 0.14) !important;
+}
+
+.cart-shimmer,
+.cart-skeleton {
+    background: var(--bk-loader-gradient);
+    background-size: 220% 100%;
+    animation: cartShimmer var(--bk-loader-duration) ease-in-out infinite;
+}
+
+@keyframes cartShimmer {
+    0% { background-position: 120% 0; }
+    100% { background-position: -120% 0; }
 }
 
 input[type="number"]::-webkit-inner-spin-button,

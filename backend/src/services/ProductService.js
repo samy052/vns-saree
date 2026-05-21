@@ -2,6 +2,7 @@ const Product = require("../models/Product");
 const Material = require("../models/Material");
 const Variety = require("../models/Variety");
 const Occasion = require("../models/Occasion");
+const Color = require("../models/Color");
 const { Op } = require("sequelize");
 
 const productIncludes = [
@@ -52,6 +53,15 @@ const toFloatOrNull = (value) => {
   if (value === "" || value === null || value === undefined) return null;
   const num = parseFloat(value);
   return Number.isNaN(num) ? null : num;
+};
+
+const normalizeStringArray = (value = [], allowed = []) => {
+  const raw = Array.isArray(value) ? value : String(value || "").split(",");
+  return [...new Set(
+    raw
+      .map((item) => String(item || "").trim().toLowerCase())
+      .filter((item) => allowed.includes(item)),
+  )];
 };
 
 const normalizeImages = (images = [], coverColorId = null) => {
@@ -114,6 +124,14 @@ const normalizeProduct = (product) => {
   };
 };
 
+const getStockStatus = (quantity, threshold = 5) => {
+  const stock = toIntOrZero(quantity);
+  const low = toIntOrZero(threshold || 5);
+  if (stock <= 0) return "out_of_stock";
+  if (stock <= low) return "low_stock";
+  return "in_stock";
+};
+
 const keepOnlyCoverColorImages = (product) => {
   const coverColorId = product.images.find((image) => image.is_cover)?.color_id || product.images[0]?.color_id;
   if (!coverColorId) return product;
@@ -171,8 +189,12 @@ const sanitizeProductPayload = (data = {}) => {
   const color_stocks = data.color_stocks && typeof data.color_stocks === "object" ? data.color_stocks : {};
   const images = normalizeImages(data.images || [], data.cover_color_id);
   const totalStock = Object.values(color_stocks).reduce((sum, qty) => sum + toIntOrZero(qty), 0);
+  const payment_options = normalizeStringArray(data.payment_options, ["prepaid", "cod"]);
+  const service_options = normalizeStringArray(data.service_options, ["return", "exchange"]);
 
   validateColorMedia(color_stocks, images);
+  if (payment_options.length === 0) throw new Error("Choose at least one payment option");
+  if (service_options.length === 0) throw new Error("Choose at least one return/exchange option");
 
   const sanitized = {
     ...data,
@@ -191,6 +213,9 @@ const sanitizeProductPayload = (data = {}) => {
     color_stocks,
     images,
     status: ["active", "inactive"].includes(String(data.status)) ? String(data.status) : "active",
+    payment_options,
+    service_options,
+    care_instructions: String(data.care_instructions || "").trim() || null,
   };
 
   if (!sanitized.slug || String(sanitized.slug).trim() === "") {
@@ -419,6 +444,98 @@ class ProductService {
 
   async getProductBySlug(slug) {
     return normalizeProduct(await Product.findOne({ where: { slug }, include: productIncludes }));
+  }
+
+  async getProductDetailBySlug(slug, requestedColorId = null) {
+    const product = normalizeProduct(await Product.findOne({
+      where: { slug },
+      attributes: [
+        "id",
+        "name",
+        "slug",
+        "description",
+        "short_description",
+        "sku",
+        "selling_price",
+        "mrp_price",
+        "discount_percent",
+        "images",
+        "color_stocks",
+        "stock_quantity",
+        "low_stock_threshold",
+        "weight",
+        "length",
+        "width",
+        "blouse_piece",
+        "payment_options",
+        "service_options",
+        "care_instructions",
+        "material_id",
+        "variety_id",
+        "occasion_id",
+      ],
+      include: productIncludes,
+    }));
+
+    if (!product) return null;
+
+    const images = normalizeImages(product.images || []);
+    const coverColorId = images.find((image) => image.is_cover)?.color_id || images[0]?.color_id || null;
+    const colorIds = [...new Set(images.map((image) => image.color_id).filter(Boolean))];
+    const selectedColorId =
+      requestedColorId && colorIds.includes(toIntOrZero(requestedColorId))
+        ? toIntOrZero(requestedColorId)
+        : coverColorId;
+
+    const colors = await Color.findAll({
+      where: { id: { [Op.in]: colorIds.length ? colorIds : [0] } },
+      attributes: ["id", "name", "hex_code"],
+    });
+
+    const selectedImages = images
+      .filter((image) => image.color_id === selectedColorId)
+      .sort((a, b) => toIntOrZero(a.display_order) - toIntOrZero(b.display_order));
+
+    const colorMeta = colors.map((color) => {
+      const plain = typeof color.toJSON === "function" ? color.toJSON() : color;
+      const qty = product.color_stocks?.[String(plain.id)] ?? 0;
+      return {
+        ...plain,
+        stock_status: getStockStatus(qty, product.low_stock_threshold),
+      };
+    });
+
+    delete product.color_stocks;
+    delete product.stock_quantity;
+
+    return {
+      ...product,
+      images: selectedImages,
+      selected_color_id: selectedColorId,
+      colors: colorMeta,
+    };
+  }
+
+  async getProductColorImages(slug, colorId) {
+    const product = normalizeProduct(await Product.findOne({
+      where: { slug },
+      attributes: ["id", "slug", "images", "color_stocks", "low_stock_threshold"],
+    }));
+
+    if (!product) return null;
+
+    const targetColorId = toIntOrZero(colorId);
+    const images = normalizeImages(product.images || [])
+      .filter((image) => image.color_id === targetColorId)
+      .sort((a, b) => toIntOrZero(a.display_order) - toIntOrZero(b.display_order));
+    const stock = product.color_stocks?.[String(targetColorId)] ?? 0;
+
+    return {
+      product_id: product.id,
+      color_id: targetColorId,
+      stock_status: getStockStatus(stock, product.low_stock_threshold),
+      images,
+    };
   }
 
   async createProduct(data) {
