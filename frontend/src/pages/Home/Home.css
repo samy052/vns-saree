@@ -19,9 +19,12 @@
 
 .home-deferred-section {
   width: 100%;
-  min-height: var(--home-deferred-min-height, 360px);
   content-visibility: auto;
   contain-intrinsic-size: var(--home-deferred-min-height, 420px);
+}
+
+.home-deferred-section.is-loading {
+  min-height: var(--home-deferred-min-height, 360px);
 }
 
 .home-section-loader {

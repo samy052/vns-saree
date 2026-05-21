@@ -10,7 +10,7 @@ const WHATSAPP_NUMBER = "916307715455";
 const WHATSAPP_TEXT = encodeURIComponent("Hi Banarasi Kala, I need quick help.");
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_TEXT}`;
 const SIGNUP_POPUP_INITIAL_DELAY = 10000;
-const SIGNUP_POPUP_REPEAT_DELAY = 120000;
+const SIGNUP_POPUP_REPEAT_DELAY = 300000;
 
 const WhatsappFloatingSupport = ({ hidden = false }) => {
   const [isVisible, setIsVisible] = useState(true);
