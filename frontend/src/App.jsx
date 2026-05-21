@@ -25,11 +25,6 @@ const Wishlist = lazy(() => import("./pages/Wishlist/Wishlist"));
 const MyOrders = lazy(() => import("./pages/MyOrders/MyOrders"));
 const Contact = lazy(() => import("./pages/Contact/Contact"));
 const Feedback = lazy(() => import("./pages/Feedback/Feedback"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy/PrivacyPolicy"));
-const RefundPolicy = lazy(() => import("./pages/RefundPolicy/RefundPolicy"));
-const ReturnExchange = lazy(() => import("./pages/ReturnExchange/ReturnExchange"));
-const ShippingPolicy = lazy(() => import("./pages/ShippingPolicy/ShippingPolicy"));
-const TermsConditions = lazy(() => import("./pages/TermsConditions/TermsConditions"));
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -125,20 +120,6 @@ function App() {
                         }
                       />
                       <Route path="/testimonials" element={<Testimonials />} />
-                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                      <Route path="/refund-policy" element={<RefundPolicy />} />
-                      <Route
-                        path="/return-exchange"
-                        element={<ReturnExchange />}
-                      />
-                      <Route
-                        path="/shipping-policy"
-                        element={<ShippingPolicy />}
-                      />
-                      <Route
-                        path="/terms-conditions"
-                        element={<TermsConditions />}
-                      />
                       <Route path="/login" element={<Auth />} />
                     </Route>
                   </Routes>

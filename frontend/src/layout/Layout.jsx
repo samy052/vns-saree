@@ -1,7 +1,7 @@
 import { Icon } from "@iconify/react";
 import Header from "./Header";
 import Footer from "./Footer";
-import { Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import "./Layout.css";
@@ -9,6 +9,8 @@ import "./Layout.css";
 const WHATSAPP_NUMBER = "916307715455";
 const WHATSAPP_TEXT = encodeURIComponent("Hi Banarasi Kala, I need quick help.");
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_TEXT}`;
+const SIGNUP_POPUP_INITIAL_DELAY = 10000;
+const SIGNUP_POPUP_REPEAT_DELAY = 120000;
 
 const WhatsappFloatingSupport = ({ hidden = false }) => {
   const [isVisible, setIsVisible] = useState(true);
@@ -59,9 +61,62 @@ const WhatsappFloatingSupport = ({ hidden = false }) => {
   );
 };
 
+const SignupGiftPopup = ({ hidden = false }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (hidden) {
+      setIsVisible(false);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsVisible(true);
+    }, SIGNUP_POPUP_INITIAL_DELAY);
+
+    return () => window.clearTimeout(timer);
+  }, [hidden]);
+
+  useEffect(() => {
+    if (hidden || isVisible) return undefined;
+
+    const timer = window.setTimeout(() => {
+      setIsVisible(true);
+    }, SIGNUP_POPUP_REPEAT_DELAY);
+
+    return () => window.clearTimeout(timer);
+  }, [hidden, isVisible]);
+
+  if (hidden || !isVisible) return null;
+
+  return (
+    <aside className="bk-signup-gift" role="dialog" aria-modal="false" aria-labelledby="bk-signup-gift-title">
+      <button
+        type="button"
+        className="bk-signup-gift-close"
+        onClick={() => setIsVisible(false)}
+        aria-label="Close sign up offer"
+      >
+        <Icon icon="lucide:x" />
+      </button>
+
+      <span className="bk-signup-gift-kicker">Welcome Gift</span>
+      <h2 id="bk-signup-gift-title">Rs.100 in your wallet</h2>
+      <p>Sign up today and start your first Banarasi Kala order with a little extra joy.</p>
+
+      <Link className="bk-signup-gift-action" to="/login?mode=signup">
+        Claim now
+        <Icon icon="lucide:arrow-right" />
+      </Link>
+
+      <span className="bk-signup-gift-note">Plus complimentary shipping on your first order</span>
+    </aside>
+  );
+};
+
 const Layout = () => {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [isRouteRefreshing, setIsRouteRefreshing] = useState(false);
   const footerlessAuthPages = ["/cart", "/wishlist", "/contact", "/feedback"];
   const hideFooter =
@@ -69,6 +124,7 @@ const Layout = () => {
     (!user && footerlessAuthPages.includes(location.pathname));
   const isHomePage = location.pathname === "/";
   const hideWhatsapp = location.pathname === "/contact";
+  const hideSignupGift = loading || Boolean(user) || location.pathname === "/login";
   const routeRefreshKey = [
     location.pathname,
     location.search,
@@ -93,6 +149,7 @@ const Layout = () => {
         {isRouteRefreshing && <div className="bk-route-refresh-veil" aria-hidden="true" />}
         <Outlet key={routeRefreshKey} />
       </div>
+      <SignupGiftPopup hidden={hideSignupGift} />
       <WhatsappFloatingSupport hidden={hideWhatsapp} />
       {!hideFooter && <Footer />}
     </>

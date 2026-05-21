@@ -97,7 +97,7 @@ const PopularSarees = () => {
       <div className="bk-popular-shell">
         <div className="bk-popular-header">
           <div className="bk-popular-title-wrap">
-            <h2>Popular Sarees</h2>
+            <h2>Special Collection</h2>
           </div>
           <Link to="/collection" className="bk-popular-view-all">
             View All
@@ -116,7 +116,7 @@ const PopularSarees = () => {
 
         {loading ? (
           <div className="bk-popular-showcase bk-popular-skeleton-grid">
-            {[...Array(7)].map((_, i) => (
+            {[...Array(10)].map((_, i) => (
             <div
               key={i}
               className={`bk-popular-card bk-popular-skeleton ${
@@ -135,7 +135,7 @@ const PopularSarees = () => {
       ) : products.length === 0 ? (
         <div className="bk-popular-empty" role="status">
           <div className="bk-popular-empty-icon" aria-hidden="true" />
-          <h3>Curating Popular Sarees</h3>
+          <h3>Curating Special Collection</h3>
           <p>Featured pieces will appear here as soon as the collection is ready.</p>
           <Link to="/collection" className="bk-popular-empty-link">
             Explore Collection

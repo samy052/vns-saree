@@ -155,6 +155,10 @@
   border-radius: 999px;
 }
 
+.bk-browse-mobile .bk-browse-line {
+  height: 11px;
+}
+
 .bk-browse-skeleton .bk-browse-circle::after,
 .bk-browse-line::after {
   content: "";

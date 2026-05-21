@@ -24,13 +24,52 @@
 }
 
 .home-section-loader {
-  min-height: 180px;
+  min-height: inherit;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
   background:
     linear-gradient(rgba(255, 246, 232, 0.62), rgba(255, 246, 232, 0.62)),
     var(--bk-section-bg),
     linear-gradient(90deg, #f7e7cc 0%, #fff5e5 50%, #f7e7cc 100%);
   background-size: 100% 100%, cover, 100% 100%;
   background-position: center;
+}
+
+.home-section-loader::before,
+.home-section-loader::after {
+  content: "";
+  position: absolute;
+  left: max(18px, calc((100% - var(--bk-page-max)) / 2 + var(--bk-page-pad)));
+  right: max(18px, calc((100% - var(--bk-page-max)) / 2 + var(--bk-page-pad)));
+  border-radius: 10px;
+  background:
+    var(--bk-loader-sheen),
+    var(--bk-loader-base);
+  background-size: 220% 100%;
+  animation: bkHomeDeferredShimmer var(--bk-loader-duration) ease-in-out infinite;
+}
+
+.home-section-loader::before {
+  top: 28px;
+  width: min(360px, calc(100% - 36px));
+  height: 24px;
+}
+
+.home-section-loader::after {
+  top: 74px;
+  bottom: 30px;
+  min-height: 92px;
+}
+
+@keyframes bkHomeDeferredShimmer {
+  from {
+    background-position: 120% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
 }
 
 
@@ -46,7 +85,16 @@
 
 @media (max-width: 640px) {
   .bk-home-main {
-    padding-top: 146px;
+    padding-top: 136px;
   }
 
+  .home-section-loader::before {
+    top: 22px;
+    height: 20px;
+  }
+
+  .home-section-loader::after {
+    top: 58px;
+    bottom: 22px;
+  }
 }

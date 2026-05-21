@@ -43,6 +43,7 @@ const DeferredSection = ({ children, id, minHeight = 240, canObserve = false }) 
       className="home-deferred-section"
       style={{ minHeight: isVisible ? undefined : minHeight }}
     >
+      {!isVisible && <div className="home-section-loader" aria-hidden="true" />}
       {isVisible && (
         <Suspense fallback={<div className="home-section-loader" />}>
           {children}

@@ -82,6 +82,14 @@ const Auth = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+    if (params.get("mode") === "signup") {
+      setActiveTab("signup");
+      setError("");
+      setSuccess("");
+      setAnimationKey((key) => key + 1);
+      return;
+    }
+
     if (params.has("refresh")) {
       setActiveTab("login");
       setError("");

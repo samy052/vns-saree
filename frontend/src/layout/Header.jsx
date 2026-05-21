@@ -230,7 +230,11 @@ const Header = () => {
       <div className="bk-topline" aria-hidden="true">
         <div className="bk-topline-track">
           {[...Array(4)].map((_, index) => (
-            <p key={index}>Timeless Weaves. Unmatched Quality. Pure Banarasi.</p>
+            <p key={index}>
+              <span>Free shipping on your first order!</span>
+              <span className="bk-topline-separator" aria-hidden="true" />
+              <span>Grab Rs.100 in your wallet right after sign up</span>
+            </p>
           ))}
         </div>
       </div>
@@ -416,29 +420,31 @@ const Header = () => {
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={() => goProtected("/wishlist")}
-            className="bk-icon-link"
-            aria-label="Wishlist"
-          >
-            <span className="bk-icon-wrap">
-              <svg
-                width="29"
-                height="29"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                viewBox="0 0 24 24"
-              >
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z" />
-              </svg>
-              {getWishlistCount() > 0 && (
-                <span className="bk-count">{getWishlistCount()}</span>
-              )}
-            </span>
-            <span>Wishlist</span>
-          </button>
+          {user && (
+            <button
+              type="button"
+              onClick={() => goProtected("/wishlist")}
+              className="bk-icon-link bk-wishlist-action"
+              aria-label="Wishlist"
+            >
+              <span className="bk-icon-wrap">
+                <svg
+                  width="29"
+                  height="29"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z" />
+                </svg>
+                {getWishlistCount() > 0 && (
+                  <span className="bk-count">{getWishlistCount()}</span>
+                )}
+              </span>
+              <span>Wishlist</span>
+            </button>
+          )}
 
           <button
             type="button"

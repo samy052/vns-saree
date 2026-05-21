@@ -583,6 +583,16 @@ body.menu-open {
     0 -1px 0 rgba(45, 14, 0, 0.32);
 }
 
+.bk-topline-separator {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  margin: 0 18px;
+  border: 1px solid currentColor;
+  transform: rotate(45deg) translateY(-1px);
+  box-shadow: 0 0 10px rgba(201, 154, 56, 0.22);
+}
+
 @keyframes bk-topline-marquee {
   from {
     transform: translateX(0);
@@ -872,6 +882,10 @@ body.menu-open {
 
   .bk-icon-link {
     display: inline-flex;
+  }
+
+  .bk-wishlist-action {
+    display: none;
   }
 
   .bk-icon-link svg {

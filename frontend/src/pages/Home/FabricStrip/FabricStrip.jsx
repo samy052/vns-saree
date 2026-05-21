@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import chiffonImg from "../../../assets/fabric/chiffon.png";
 import cottonSilkImg from "../../../assets/fabric/cotton_silk.png";
@@ -20,6 +21,21 @@ const FABRICS = [
   { name: "Satin Silk", image: satinSilkImg },
 ];
 
+const FabricImage = ({ fabric }) => {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <span className={`bk-fabric-swatch ${loaded ? "is-loaded" : ""}`}>
+      <img
+        src={fabric.image}
+        alt={fabric.name}
+        onLoad={() => setLoaded(true)}
+        loading="eager"
+      />
+    </span>
+  );
+};
+
 const FabricStrip = () => {
   const navigate = useNavigate();
   const marqueeFabrics = [...FABRICS, ...FABRICS];
@@ -37,9 +53,7 @@ const FabricStrip = () => {
           className="bk-fabric-item"
           onClick={() => selectFabric(fabric.name)}
         >
-          <span className="bk-fabric-swatch">
-            <img src={fabric.image} alt={fabric.name} />
-          </span>
+          <FabricImage fabric={fabric} />
           <span className="bk-fabric-label">{fabric.name}</span>
         </button>
       ))}
@@ -52,9 +66,7 @@ const FabricStrip = () => {
           className="bk-fabric-item"
           onClick={() => selectFabric(fabric.name)}
         >
-          <span className="bk-fabric-swatch">
-            <img src={fabric.image} alt={fabric.name} />
-          </span>
+          <FabricImage fabric={fabric} />
           <span className="bk-fabric-label">{fabric.name}</span>
         </button>
       ))}

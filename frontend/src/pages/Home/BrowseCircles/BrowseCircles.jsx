@@ -69,14 +69,26 @@ const BrowseCircles = () => {
         </div>
 
         {loading ? (
-          <div className="bk-browse-row">
-            {[...Array(6)].map((_, index) => (
-              <div className="bk-browse-card bk-browse-skeleton" key={index}>
-                <span className="bk-browse-circle" />
-                <span className="bk-browse-line" />
+          <>
+            <div className="bk-browse-row bk-browse-desktop">
+              {[...Array(8)].map((_, index) => (
+                <div className="bk-browse-card bk-browse-skeleton" key={index}>
+                  <span className="bk-browse-circle" />
+                  <span className="bk-browse-line" />
+                </div>
+              ))}
+            </div>
+            <div className="bk-browse-mobile-wrap">
+              <div className="bk-browse-row bk-browse-mobile">
+                {[...Array(12)].map((_, index) => (
+                  <div className="bk-browse-card bk-browse-skeleton" key={index}>
+                    <span className="bk-browse-circle" />
+                    <span className="bk-browse-line" />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </>
         ) : items.length === 0 ? (
           <div className="bk-browse-empty" role="status">Varieties will appear here soon.</div>
         ) : (
