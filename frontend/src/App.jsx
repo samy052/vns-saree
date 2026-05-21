@@ -26,6 +26,8 @@ const MyOrders = lazy(() => import("./pages/MyOrders/MyOrders"));
 const Contact = lazy(() => import("./pages/Contact/Contact"));
 const Feedback = lazy(() => import("./pages/Feedback/Feedback"));
 
+
+
 function App() {
   const [loading, setLoading] = useState(true);
 
