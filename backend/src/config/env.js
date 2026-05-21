@@ -33,6 +33,9 @@ const config = {
   referralSignupBonus: Number(process.env.REFERRAL_SIGNUP_BONUS || 100),
   referralOrderBonus: Number(process.env.REFERRAL_ORDER_BONUS || 50),
   referralOrderDelayDays: Number(process.env.REFERRAL_ORDER_DELAY_DAYS || 7),
+  geoProvider: normalize(process.env.GEO_PROVIDER, "nominatim"),
+  geoUserAgent: normalize(process.env.GEO_USER_AGENT, "vns-saree/1.0"),
+  geoIncludeRaw: parseBoolean(process.env.GEO_INCLUDE_RAW, false),
 };
 
 module.exports = { config, parseBoolean };

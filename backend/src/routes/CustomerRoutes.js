@@ -11,6 +11,7 @@ const upload = multer({
 
 router.get("/me", authMiddleware, CustomerController.me);
 router.put("/me", authMiddleware, CustomerController.updateMe);
+router.post("/me/location", authMiddleware, CustomerController.updateMyLocation);
 router.post(
   "/me/avatar",
   authMiddleware,
@@ -19,4 +20,3 @@ router.post(
 );
 
 module.exports = router;
-
