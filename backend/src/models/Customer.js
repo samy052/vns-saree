@@ -38,6 +38,15 @@ const Customer = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    phone_verified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    firebase_phone_uid: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     reset_otp: {
       type: DataTypes.STRING(6),
       allowNull: true,

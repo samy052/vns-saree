@@ -8,6 +8,7 @@ const EmailService = require('../services/EmailService');
 const ShipRocketService = require('../services/ShipRocketService');
 const WalletService = require('../services/WalletService');
 const { config } = require('../config/env');
+const { Op } = require("sequelize");
 
 const sortProductImages = (images = []) => [...images].sort((a, b) => {
   const left = Number.isFinite(Number(a.display_order)) ? Number(a.display_order) : 999;
@@ -227,22 +228,61 @@ class OrderController {
 
       await order.update(updatePayload, { transaction: t });
 
-      // Referral reward: if this order belongs to a referred user, reward referrer
-      // after 7 days from delivery.
+      // Referral milestone reward:
+      // If this is the referred customer's *first* delivered order, and the referrer
+      // now has 3 distinct referred customers with delivered orders, credit ₹1000
+      // after 7 days from this delivery.
       if (isDelivered && updatePayload.delivered_at && order.customer_id) {
         const buyer = await Customer.findByPk(order.customer_id, { transaction: t });
         if (buyer?.referred_by_id) {
-          const availableAt = new Date(
-            updatePayload.delivered_at.getTime() + config.referralOrderDelayDays * 24 * 60 * 60 * 1000,
-          );
-          await WalletService.createPendingCredit({
-            customerId: buyer.referred_by_id,
-            amount: config.referralOrderBonus,
-            type: 'REFERRAL_ORDER_BONUS',
-            dedupeKey: `ref_order:${order.id}`,
-            availableAt,
-            meta: { order_id: order.id, referred_customer_id: buyer.id },
+          const priorDelivered = await Order.findOne({
+            where: {
+              customer_id: buyer.id,
+              delivered_at: { [Op.ne]: null },
+              id: { [Op.ne]: order.id },
+            },
+            transaction: t,
           });
+
+          if (!priorDelivered) {
+            const referredCustomers = await Customer.findAll({
+              where: { referred_by_id: buyer.referred_by_id },
+              attributes: ["id"],
+              transaction: t,
+            });
+            const referredCustomerIds = referredCustomers.map((row) => row.id);
+
+            if (referredCustomerIds.length) {
+              const qualifiedCount = await Order.count({
+                where: {
+                  customer_id: { [Op.in]: referredCustomerIds },
+                  delivered_at: { [Op.ne]: null },
+                },
+                distinct: true,
+                col: "customer_id",
+                transaction: t,
+              });
+
+              if (qualifiedCount >= config.referralMilestoneCount) {
+                const availableAt = new Date(
+                  updatePayload.delivered_at.getTime() + config.referralOrderDelayDays * 24 * 60 * 60 * 1000,
+                );
+                await WalletService.createPendingCredit({
+                  customerId: buyer.referred_by_id,
+                  amount: config.referralMilestoneBonus,
+                  type: "REFERRAL_MILESTONE_BONUS",
+                  dedupeKey: `ref_milestone:${config.referralMilestoneCount}:${buyer.referred_by_id}`,
+                  availableAt,
+                  meta: {
+                    milestone_count: config.referralMilestoneCount,
+                    triggering_order_id: order.id,
+                    referred_customer_id: buyer.id,
+                    qualified_count_at_delivery: qualifiedCount,
+                  },
+                });
+              }
+            }
+          }
         }
       }
 

@@ -30,12 +30,18 @@ const config = {
   dbSsl: normalize(process.env.DB_SSL, "auto").toLowerCase(),
   allowProductionDbSync: parseBoolean(process.env.ALLOW_PRODUCTION_DB_SYNC, false),
   corsOrigins: normalize(process.env.CORS_ORIGINS || process.env.CLIENT_URL || "*"),
+  welcomeBonus: Number(process.env.WELCOME_BONUS || 50),
   referralSignupBonus: Number(process.env.REFERRAL_SIGNUP_BONUS || 100),
   referralOrderBonus: Number(process.env.REFERRAL_ORDER_BONUS || 50),
   referralOrderDelayDays: Number(process.env.REFERRAL_ORDER_DELAY_DAYS || 7),
+  referralMilestoneCount: Number(process.env.REFERRAL_MILESTONE_COUNT || 3),
+  referralMilestoneBonus: Number(process.env.REFERRAL_MILESTONE_BONUS || 1000),
   geoProvider: normalize(process.env.GEO_PROVIDER, "nominatim"),
   geoUserAgent: normalize(process.env.GEO_USER_AGENT, "vns-saree/1.0"),
   geoIncludeRaw: parseBoolean(process.env.GEO_INCLUDE_RAW, false),
+  firebaseProjectId: normalize(process.env.FIREBASE_PROJECT_ID),
+  firebaseClientEmail: normalize(process.env.FIREBASE_CLIENT_EMAIL),
+  firebasePrivateKey: normalize(process.env.FIREBASE_PRIVATE_KEY),
 };
 
 module.exports = { config, parseBoolean };

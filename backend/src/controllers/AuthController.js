@@ -16,7 +16,8 @@ class AuthController {
       const result = await AuthService.login(email, password);
       res.json(result);
     } catch (error) {
-      res.status(401).json({ message: error.message });
+      const status = error.code === "PHONE_NOT_VERIFIED" ? 403 : 401;
+      res.status(status).json({ message: error.message, code: error.code, phone: error.phone });
     }
   }
 
@@ -76,6 +77,34 @@ class AuthController {
       res.json({ message: "Logged out successfully" });
     } catch (error) {
       res.status(500).json({ message: error.message });
+    }
+  }
+
+  async verifyPhone(req, res) {
+    try {
+      const { firebase_id_token } = req.body || {};
+      if (!firebase_id_token) return res.status(400).json({ message: "firebase_id_token is required" });
+      const result = await AuthService.verifyPhoneForCustomer({
+        customerId: req.customer.id,
+        firebaseIdToken: firebase_id_token,
+      });
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(400).json({ message: error.message, code: error.code });
+    }
+  }
+
+  async verifyPhoneAndLogin(req, res) {
+    try {
+      const { email, password, firebase_id_token } = req.body || {};
+      const result = await AuthService.verifyPhoneAndLogin({
+        email,
+        password,
+        firebaseIdToken: firebase_id_token,
+      });
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(400).json({ message: error.message, code: error.code });
     }
   }
 }

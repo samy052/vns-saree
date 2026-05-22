@@ -1,6 +1,8 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
+import { firebaseAuth } from "../config/firebase";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 const AuthContext = createContext();
 
@@ -44,8 +46,33 @@ export const AuthProvider = ({ children }) => {
       
       return customer;
     } catch (error) {
-      throw error.response?.data?.message || 'Login failed';
+      const data = error.response?.data;
+      const err = new Error(data?.message || "Login failed");
+      err.code = data?.code;
+      err.phone = data?.phone;
+      throw err;
     }
+  };
+
+  const verifyPhoneAndLogin = async ({ email, password, keepLoggedIn, firebaseIdToken }) => {
+    const response = await axios.post(`${API_ENDPOINTS.auth}/verify-phone-login`, {
+      email,
+      password,
+      firebase_id_token: firebaseIdToken,
+    });
+
+    const customer = response.data.customer || response.data.user;
+    const { accessToken, refreshToken } = response.data;
+
+    setUser(customer);
+
+    const storage = keepLoggedIn ? localStorage : sessionStorage;
+    storage.setItem('customer', JSON.stringify(customer));
+    storage.setItem('accessToken', accessToken);
+    storage.setItem('refreshToken', refreshToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+    return customer;
   };
 
   const signup = async (userData) => {
@@ -67,6 +94,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const sendPhoneOtp = async (phoneNumber) => {
+    if (!phoneNumber) throw new Error("Phone number is required");
+
+    // Ensure a single verifier instance.
+    if (!window.__vnsRecaptchaVerifier) {
+      window.__vnsRecaptchaVerifier = new RecaptchaVerifier(
+        firebaseAuth,
+        "firebase-recaptcha",
+        { size: "invisible" },
+      );
+    }
+
+    const verifier = window.__vnsRecaptchaVerifier;
+    const confirmation = await signInWithPhoneNumber(firebaseAuth, phoneNumber, verifier);
+    return confirmation;
+  };
+
+  const verifyPhoneOtpAndGetIdToken = async ({ confirmation, otp }) => {
+    if (!confirmation) throw new Error("OTP session missing");
+    if (!otp) throw new Error("OTP is required");
+    const result = await confirmation.confirm(otp);
+    const idToken = await result.user.getIdToken();
+    return idToken;
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
@@ -81,7 +133,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, loading, sendPhoneOtp, verifyPhoneOtpAndGetIdToken, verifyPhoneAndLogin }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const AuthController = require("../controllers/AuthController");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
 // Public customer auth
 router.post("/register", AuthController.register);
@@ -14,5 +15,7 @@ router.post("/refresh-token", AuthController.refreshToken);
 router.post("/forgot-password", AuthController.forgotPassword);
 router.post("/verify-otp", AuthController.verifyOTP);
 router.post("/reset-password", AuthController.resetPassword);
+router.post("/verify-phone", authMiddleware, AuthController.verifyPhone);
+router.post("/verify-phone-login", AuthController.verifyPhoneAndLogin);
 
 module.exports = router;
