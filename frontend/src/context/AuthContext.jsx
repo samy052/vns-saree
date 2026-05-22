@@ -1,7 +1,7 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
-import { firebaseAuth } from "../config/firebase";
+import { firebaseAuth, isFirebaseConfigured } from "../config/firebase";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 const AuthContext = createContext();
@@ -96,6 +96,11 @@ export const AuthProvider = ({ children }) => {
 
   const sendPhoneOtp = async (phoneNumber) => {
     if (!phoneNumber) throw new Error("Phone number is required");
+    if (!isFirebaseConfigured || !firebaseAuth) {
+      throw new Error(
+        "Phone OTP is not configured. Please set VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID.",
+      );
+    }
 
     // Ensure a single verifier instance.
     if (!window.__vnsRecaptchaVerifier) {
